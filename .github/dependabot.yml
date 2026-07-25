@@ -1,5 +1,11 @@
 # 📖 Dependabot configuration — automated dependency updates for npm and GitHub Actions
 # Checks weekly for new versions and opens PRs with changelogs
+#
+# 🆕 Groups: batches related updates into a single PR instead of 1 PR per dep.
+#    • npm patch+minor → 1 PR  (safe, reviewable in bulk)
+#    • npm major       → 1 PR  (breaking changes deserve focused review)
+#    • github-actions  → 1 PR  (actions are typically backwards-compatible)
+# Result: typically 3 PRs/week instead of 7+ individual ones.
 
 version: 2
 
@@ -16,6 +22,20 @@ updates:
       include: scope
     labels:
       - dependencies
+    groups:
+      # 🟢 Batch all minor + patch updates together — usually safe
+      patch-and-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      # 🟡 Batch all major updates together — needs human review for breaking changes
+      major-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
 
   # GitHub Actions versions
   - package-ecosystem: github-actions
@@ -30,3 +50,8 @@ updates:
     labels:
       - dependencies
       - github-actions
+    groups:
+      # 🟢 Batch all GitHub Actions updates — actions are typically backwards-compatible
+      github-actions:
+        patterns:
+          - "*"
