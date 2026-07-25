@@ -2194,11 +2194,23 @@ class RouterRuntime {
       }
 
       if (res.writableEnded) return { done: true }
-      res.writeHead(response.status, {
-        ...headerEntries(response.headers),
-        'x-fcm-router-model': key,
-        'x-request-id': requestId,
-      })
+      // 📖 Issue #137: when the previous model sent partial data, headers are
+      // 📖 already on the wire — re-calling writeHead throws ERR_HTTP_HEADERS_SENT.
+      // 📖 On a mid-stream failover we just append chunks to the existing response.
+      if (!res.headersSent) {
+        res.writeHead(response.status, {
+          ...headerEntries(response.headers),
+          'x-fcm-router-model': key,
+          'x-request-id': requestId,
+        })
+      } else {
+        // 📖 Reflect the new model in trailer-ish debug headers. Node won't let
+        // 📖 us add new headers after send, but we still update x-fcm-router-model
+        // 📖 semantics via a leading SSE comment so clients can see the switch.
+        try {
+          res.write(`: fcm-router-failover-from=${key}\n\n`)
+        } catch { /* best-effort */ }
+      }
       sentToClient = true
       res.write(firstChunkBuffer)
 
@@ -2230,6 +2242,12 @@ class RouterRuntime {
         return { done: true }
       }
       const reason = error.name === 'AbortError' ? 'timeout' : (error.message || String(error))
+      // 📖 Issue #137: stream-stall timeouts get a special tag so we can
+      // 📖 distinguish them from generic upstream errors below. Only stalls
+      // 📖 should trigger failover after a partial response — generic errors
+      // 📖 (malformed JSON, network reset, etc.) usually mean the partial
+      // 📖 data is invalid anyway, so closing cleanly is safer.
+      const isStall = reason === 'stream_stall_timeout' || reason === 'timeout'
       this.markFailure(key, reason)
       if (reason !== 'timeout') {
         this.recordRouterError('upstream_stream_error', requestId, { model: key, reason, partial: sentToClient })
@@ -2238,6 +2256,31 @@ class RouterRuntime {
       }
       this.addRequestLog({ request_id: requestId, model: key, status: 'ERR', latency_ms: null, tokens: 0, failover: attemptIndex > 0, error: reason, stream: true })
       if (sentToClient) {
+        if (isStall) {
+          // 📖 Issue #137: failover even after a partial response. Emit a
+          // 📖 synthetic SSE error event in OpenAI format so clients know the
+          // 📖 stream was truncated and that the router is failing over. The
+          // 📖 outer retry loop will then try the next model on a fresh
+          // 📖 upstream connection; its chunks are appended to the same
+          // 📖 response object so the client sees one continuous stream.
+          this.logger.warn(`Stream stall after partial response from ${key}, attempting failover`, { request_id: requestId, reason })
+          if (!res.writableEnded) {
+            try {
+              const errorPayload = JSON.stringify({
+                error: {
+                  message: `Stream truncated by router due to upstream ${reason}; failing over to next model.`,
+                  type: 'stream_error',
+                  code: 'fcm_stream_failover',
+                  reason,
+                },
+              })
+              res.write(`data: ${errorPayload}\n\n`)
+            } catch { /* best-effort */ }
+          }
+          return { done: false, failoverToNext: true, reason: `stream_stall_${reason}` }
+        }
+        // 📖 Non-stall errors after partial output: keep existing behaviour
+        // 📖 (close cleanly, no failover) to avoid sending malformed data.
         this.logger.warn(`Streaming failure after partial response from ${key}`, { request_id: requestId, reason })
         try { if (!res.writableEnded) res.end() } catch {}
         return { done: true }

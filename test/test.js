@@ -3061,6 +3061,48 @@ describe('router daemon integration hardening', () => {
     })
   })
 
+  // 📖 Regression test for issue #137: when a stream stalls after partial data
+  // 📖 was already sent, the router should now failover to the next model
+  // 📖 (and emit a synthetic SSE error event in between) instead of just
+  // 📖 truncating the response. Health degradation (markFailure) was already
+  // 📖 in place — this test locks in the failover half of the fix.
+  it('fails over to the next model when the stream stalls after partial output (issue #137)', async () => {
+    await withMockProvider((request, res) => {
+      res.writeHead(200, { 'content-type': 'text/event-stream' })
+      res.write('data: {"choices":[{"delta":{"content":"partial-"}}]}\n\n')
+      // 📖 Never sends another chunk — simulates a stalled stream. The router
+      // 📖 streamStallTimeoutMs (60ms in this test) will fire and trigger failover.
+      return null
+    }, async (groqProvider) => {
+      await withMockProvider(() => ({
+        headers: { 'content-type': 'text/event-stream' },
+        chunks: ['data: {"choices":[{"delta":{"content":"fallback"}}]}\n\n', 'data: [DONE]\n\n'],
+      }), async (nvidiaProvider) => {
+        await withSourceUrls({ groq: groqProvider.url, nvidia: nvidiaProvider.url }, async () => {
+          const config = buildRouterTestConfig([
+            { provider: 'groq', model: ROUTER_TEST_MODELS.groqFast, priority: 1 },
+            { provider: 'nvidia', model: ROUTER_TEST_MODELS.nvidiaFast, priority: 2 },
+          ], { streamStallTimeoutMs: 60 })
+          await withRouterTestServer(config, async ({ baseUrl }) => {
+            const response = await postRouterChat(baseUrl, { stream: true })
+            const text = await response.text()
+
+            assert.equal(response.status, 200)
+            // 📖 Partial data from the first model is visible to the client.
+            assert.match(text, /partial-/)
+            // 📖 The router emits a synthetic SSE error event so the client knows
+            // 📖 the stream was truncated and a failover is happening.
+            assert.match(text, /fcm_stream_failover/)
+            // 📖 Fallback stream from nvidia was appended.
+            assert.match(text, /fallback/)
+            assert.equal(groqProvider.requests.length, 1)
+            assert.equal(nvidiaProvider.requests.length, 1)
+          })
+        })
+      })
+    })
+  })
+
   it('skips remaining candidates from the same provider after an auth error', async () => {
     await withMockProvider(() => ({ status: 401, body: { error: { message: 'bad key' } } }), async (groqProvider) => {
       await withMockProvider(() => ({ body: { id: 'chatcmpl-auth-skip', choices: [] } }), async (nvidiaProvider) => {
