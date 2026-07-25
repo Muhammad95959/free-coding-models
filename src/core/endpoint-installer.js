@@ -136,7 +136,9 @@ function getManagedProviderId(providerKey) {
 }
 
 function getProviderLabel(providerKey) {
-  if (providerKey === 'fcm_router') return 'Smart Router Daemon'
+  // 📖 fcm_router is now in PROVIDER_METADATA (provider-metadata.js) so all
+  // 📖 surfaces resolve to the same label. Issue #140 surfaced because this
+  // 📖 helper was the only place that knew about fcm_router.
   return PROVIDER_METADATA[providerKey]?.label || sources[providerKey]?.name || providerKey
 }
 

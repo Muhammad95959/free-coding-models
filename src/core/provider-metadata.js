@@ -79,6 +79,18 @@ export const OPENCODE_MODEL_MAP = {
 // 📖 `rateLimits` gives a quick reminder of the free-tier quota without opening a browser.
 // 📖 `paidProviderNote` marks providers that require credits/billing despite exposing free/trial/free-tagged models.
 export const PROVIDER_METADATA = {
+  // 📖 fcm_router is the local Smart Router Daemon — it's not a remote provider
+  // 📖 with an API key or signup URL, but several UI surfaces look it up here
+  // 📖 to render a human label. Without this entry, the label resolves to the
+  // 📖 raw key `fcm_router` (which users read as "Unknown" — see issue #140).
+  fcm_router: {
+    label: 'Smart Router Daemon',
+    color: chalk.rgb(80, 200, 120),
+    signupUrl: null,
+    signupHint: null,
+    rateLimits: 'Local daemon on http://127.0.0.1:19280 — start with Shift+S',
+    noKeyNeeded: true,
+  },
   nvidia: {
     label: 'NVIDIA NIM',
     color: chalk.rgb(178, 235, 190),

@@ -18,21 +18,24 @@ const OPENCLAW_JSON = join(homedir(), '.openclaw', 'openclaw.json')
 console.log('🦞 Patching OpenClaw for full NVIDIA model support...\n')
 
 // ─── Helper functions ───────────────────────────────────────────────────────────
-function getModelConfig(tier) {
-  // S+/S tier: largest context
-  if (tier === 'S+' || tier === 'S') {
-    return { contextWindow: 128000, maxTokens: 8192 }
-  }
-  // A+ tier
-  if (tier === 'A+') {
-    return { contextWindow: 131072, maxTokens: 4096 }
-  }
-  // A/A- tier
-  if (tier === 'A' || tier === 'A-') {
-    return { contextWindow: 131072, maxTokens: 4096 }
-  }
-  // B+/B/C tier: smaller context
-  return { contextWindow: 32768, maxTokens: 2048 }
+// 📖 Parse a context-window string from sources.js: "200k" → 200_000, "1M" → 1_000_000.
+// Falls back to 8192 if the format is unexpected.
+function parseCtx(ctxStr) {
+  if (typeof ctxStr !== 'string') return 8192
+  const m = ctxStr.trim().match(/^(\d+(?:\.\d+)?)([kKmM]?)$/)
+  if (!m) return 8192
+  const n = Number(m[1])
+  const unit = m[2]
+  if (unit === 'M' || unit === 'm') return Math.round(n * 1_000_000)
+  if (unit === 'K' || unit === 'k') return Math.round(n * 1000)
+  return Math.round(n)
+}
+
+// 📖 Choose a sensible maxTokens from the real contextWindow.
+// Rule: ~5% of context, clamped between 2k and 16k.
+function defaultMaxTokens(ctx) {
+  const pct = Math.round(ctx * 0.05)
+  return Math.max(2048, Math.min(16384, pct))
 }
 
 // ─── Patch models.json ──────────────────────────────────────────────────────────
@@ -70,22 +73,29 @@ if (!modelsConfig.providers.nvidia) {
 const existingModelIds = new Set(modelsConfig.providers.nvidia.models.map(m => m.id))
 
 // Add all models from sources.js
+// 📖 Each nvidiaNim tuple is: [modelId, label, tier, sweScore, ctx] — see sources.js:39
 let addedCount = 0
-for (const [modelId, label, tier] of nvidiaNim) {
+for (const [modelId, label, tier, sweScore, ctx] of nvidiaNim) {
   if (existingModelIds.has(modelId)) {
     continue // Skip already existing models
   }
 
-  const config = getModelConfig(tier)
+  const contextWindow = parseCtx(ctx)
+  const maxTokens = defaultMaxTokens(contextWindow)
   const isThinking = modelId.includes('thinking')
 
   modelsConfig.providers.nvidia.models.push({
     id: modelId,
     name: label,
-    contextWindow: config.contextWindow,
-    maxTokens: config.maxTokens,
+    contextWindow,
+    maxTokens,
     reasoning: isThinking,
     input: ['text'],
+    // 📖 OpenClaw ignores unknown fields, but we persist the real metadata
+    // so anyone reading models.json can see the source-of-truth values.
+    tier,
+    sweScore,
+    source: 'free-coding-models/sources.js',
     cost: {
       input: 0,
       output: 0,
