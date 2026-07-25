@@ -9,8 +9,39 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { homedir } from 'os'
-import { join } from 'path'
-import { nvidiaNim } from './sources.js'
+import { join, dirname } from 'path'
+import { fileURLToPath, pathToFileURL } from 'url'
+
+// 📖 Issue #35: when users copy just patch-openclaw.js to another directory
+// 📖 (e.g. ~/.free-coding-models/) and try to run it, the relative import of
+// 📖 sources.js fails with ERR_MODULE_NOT_FOUND. Look up the tree + check CWD
+// 📖 before giving up with a helpful message.
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
+
+function findSourcesPath() {
+  const candidates = [
+    join(SCRIPT_DIR, 'sources.js'),
+    join(SCRIPT_DIR, '..', 'sources.js'),
+    join(SCRIPT_DIR, '..', '..', 'sources.js'),
+    join(SCRIPT_DIR, '..', '..', '..', 'sources.js'),
+    join(process.cwd(), 'sources.js'),
+  ]
+  for (const p of candidates) {
+    if (existsSync(p)) return p
+  }
+  return null
+}
+
+const sourcesPath = findSourcesPath()
+if (!sourcesPath) {
+  console.error('  ✖ Could not locate sources.js next to this script.')
+  console.error(`    Script location: ${SCRIPT_DIR}`)
+  console.error('    Make sure sources.js is in the same directory as patch-openclaw.js,')
+  console.error('    or run this from the free-coding-models repo root.')
+  process.exit(1)
+}
+
+const { nvidiaNim } = await import(pathToFileURL(sourcesPath).href)
 
 const MODELS_JSON = join(homedir(), '.openclaw', 'agents', 'main', 'agent', 'models.json')
 const OPENCLAW_JSON = join(homedir(), '.openclaw', 'openclaw.json')

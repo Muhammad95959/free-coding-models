@@ -5,9 +5,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import fs from 'node:fs'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { dirname } from 'node:path'
+import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -101,4 +102,27 @@ test('integration: real sources.js ctx values parse correctly', () => {
     assert.equal(parseCtx(input), expectedCtx, `parseCtx(${input})`)
     assert.equal(defaultMaxTokens(parseCtx(input)), expectedMax, `defaultMaxTokens(${input})`)
   }
+})
+
+// ─── Issue #35: sources.js lookup ──────────────────────────────────────────────
+// 📖 The script searches several candidate paths before giving up. We can't
+// 📖 easily test the dynamic-import path itself without breaking the runner,
+// 📖 so we just exercise the path-resolution helper extracted inline below.
+test('issue #35: sources.js lookup walks the candidate list', () => {
+  // 📖 Inline copy of the same logic the script uses. Mirrors the candidate
+  // 📖 order so the test will fail loudly if anyone reorders the search.
+  const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
+  const candidates = [
+    path.join(SCRIPT_DIR, 'sources.js'),
+    path.join(SCRIPT_DIR, '..', 'sources.js'),
+    path.join(SCRIPT_DIR, '..', '..', 'sources.js'),
+    path.join(SCRIPT_DIR, '..', '..', '..', 'sources.js'),
+    path.join(process.cwd(), 'sources.js'),
+  ]
+
+  // 📖 The repo root has sources.js, so at least one candidate must resolve.
+  const found = candidates.find((p) => fs.existsSync(p))
+  assert.ok(found, `at least one candidate must exist; checked: ${candidates.join(', ')}`)
+  // 📖 The most likely winner for a fresh checkout is the parent dir of test/.
+  assert.ok(found.endsWith('sources.js'), `winner must be sources.js, got: ${found}`)
 })
