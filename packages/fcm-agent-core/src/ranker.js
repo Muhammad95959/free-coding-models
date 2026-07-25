@@ -3,10 +3,16 @@
  * @description Composite ranking + scoring for free coding models (shared core).
  *
  * @details
- *   Scores models with a composite of SWE-bench (60%), latency (20%),
- *   throughput/TPS (10%), and stability/health (10%), then filters to reachable,
- *   keyed models and sorts by score. Also exposes a plain-text menu formatter
- *   (no ANSI/chalk — adapters own colour rendering).
+ *   Scores models with a composite of five factors:
+ *   - SWE-bench score (55%) — coding intelligence, primary signal
+ *   - Latency (15%)        — lower ping = better
+ *   - TPS (10%)            — generation throughput
+ *   - Stability (10%)      — uptime health from daemon
+ *   - Context window (10%) — rewards models that can hold long agent sessions
+ *                            (normalized: 16k=0 → 128k=0.5 → 1M+=1.0)
+ *
+ *   Filters to reachable + keyed models, then sorts by score descending.
+ *   Also exposes a plain-text menu formatter (no ANSI/chalk — adapters own colour rendering).
  *
  * @functions
  *   - parseSweScore → Turn '72.0%' / '-' into a number
@@ -29,17 +35,40 @@ export function parseSweScore(sweStr) {
 }
 
 /**
+ * 📖 Normalize a context window size to a 0-1 score.
+ * 📖 A 16k window (minimum usable) = ~0, 128k = ~0.5, 1M+ = 1.0.
+ * 📖 Uses log scale so the jump from 16k→128k matters more than 512k→1M.
+ *
+ * @param {number} ctxTokens - Context window in tokens
+ * @returns {number} Score from 0 to 1
+ */
+function normalizeContextWindow(ctxTokens) {
+  // 📖 Log scale: log(16k)≈9.68, log(1M)≈13.82 — map to [0, 1]
+  const MIN_LOG = Math.log(16_000)
+  const MAX_LOG = Math.log(1_000_000)
+  const val = Math.max(Math.min(ctxTokens, 1_000_000), 16_000)
+  return (Math.log(val) - MIN_LOG) / (MAX_LOG - MIN_LOG)
+}
+
+/**
  * 📖 Compute a composite score (0-1) for a scanned model.
- * 📖 Gives high weight to SWE-bench (coding intelligence) and penalizes latency/jitters.
+ *
+ * 📖 Weights:
+ * 📖   55% SWE-bench  — coding intelligence, the primary signal
+ * 📖   15% Latency    — lower ping = higher score (max penalty at 15s)
+ * 📖   10% TPS        — generation throughput (cap at 100 TPS)
+ * 📖   10% Stability  — daemon health score (0-100)
+ * 📖   10% Context    — log-normalized window size (16k→0, 1M→1)
  *
  * @param {object} model - The model record
  * @returns {number} Score from 0 to 1
  */
 export function computeCompositeScore(model) {
-  const sweWeight = 0.60
-  const latWeight = 0.20
+  const sweWeight = 0.55
+  const latWeight = 0.15
   const tpsWeight = 0.10
   const stabilityWeight = 0.10
+  const ctxWeight = 0.10
 
   // 📖 Normalize SWE score (0-1)
   const sweVal = parseSweScore(model.sweScore)
@@ -57,10 +86,27 @@ export function computeCompositeScore(model) {
   const stabilityVal = typeof model.stabilityScore === 'number' ? model.stabilityScore : 100
   const stabilityNorm = stabilityVal / 100
 
+  // 📖 Normalize Context Window — log scale so 128k vs 16k matters more than 512k vs 1M
+  // 📖 Import parseContextWindow lazily to avoid circular dep — model has ctxWindow or ctx
+  const rawCtx = model.ctxWindow ?? model.ctx
+  let ctxNorm = 0.5 // 📖 Unknown context → neutral score
+  if (rawCtx) {
+    const parseCtx = (v) => {
+      if (typeof v === 'number') return v
+      const s = String(v).trim().toLowerCase()
+      const mul = s.endsWith('m') ? 1_000_000 : s.endsWith('k') ? 1_000 : 1
+      const n = parseFloat(s.replace(/[mk]$/i, ''))
+      return isNaN(n) ? 0 : Math.round(n * mul)
+    }
+    const tokens = parseCtx(rawCtx)
+    if (tokens > 0) ctxNorm = normalizeContextWindow(tokens)
+  }
+
   return (sweWeight * sweNorm) +
          (latWeight * latNorm) +
          (tpsWeight * tpsNorm) +
-         (stabilityWeight * stabilityNorm)
+         (stabilityWeight * stabilityNorm) +
+         (ctxWeight * ctxNorm)
 }
 
 /**

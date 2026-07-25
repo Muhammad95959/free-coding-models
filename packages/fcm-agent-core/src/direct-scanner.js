@@ -4,16 +4,25 @@
  *
  * @details
  *   Runs pings and AI benchmarks directly from the host agent process by
- *   importing core FCM modules. This is the slow path (no daemon), so it limits
- *   work to the top N candidates by SWE score to avoid network thrashing.
+ *   importing core FCM modules. Works in two phases:
+ *
+ *   **Phase 1 — Ping (parallel):** Pings all candidate models concurrently
+ *   (up to `maxCandidates`, default 60). After each ping, emits a
+ *   `model-result` progress event so adapters can display models incrementally
+ *   as they come in — no more waiting for the full scan to finish.
+ *
+ *   **Phase 2 — AI Benchmark (parallel, top N survivors):** Runs a real AI
+ *   latency + TPS test on the top `maxBenchmarkCandidates` (default 8) ping
+ *   survivors. Each benchmark completion also fires a `benchmark-result` event
+ *   for live updates in the adapter UI.
  *
  *   Rendering is NOT done here. The scanner emits structured progress events
- *   via `onProgress(event)`; each adapter decides how to show them (Pi status
- *   bar, OpenCode toast, logs, …). This keeps the core free of chalk/ANSI and
- *   host-specific UI.
+ *   via `onProgress(event)`; each adapter decides how to show them (Pi live
+ *   widget, OpenCode toast, logs, …). This keeps the core free of chalk/ANSI
+ *   and host-specific UI.
  *
  * @functions
- *   - directScan → Ping + benchmark candidates, return scanned models + events
+ *   - directScan → Ping + benchmark candidates, emit progressive events, return scanned models
  */
 
 import { MODELS, sources } from 'free-coding-models/sources.js'
@@ -44,22 +53,51 @@ import { parseSweScore } from './ranker.js'
 /**
  * 📖 Scan model availability and latency directly from the agent process.
  *
+ * 📖 Emits several structured progress event shapes via `onProgress(event)`:
+ *
+ *   **Ping phase** (phase: 'probing'):
+ *   ```js
+ *   { phase: 'probing', action: 'Probing', percent, completed, total, activeModels }
+ *   ```
+ *
+ *   **Model discovered** (phase: 'model-result') — fired for every ping result:
+ *   ```js
+ *   { phase: 'model-result', model: ScannedModel, pingIndex: number, totalPings: number }
+ *   ```
+ *
+ *   **Benchmark phase** (phase: 'benchmarking'):
+ *   ```js
+ *   { phase: 'benchmarking', action: 'Benchmarking', percent, completed, total, activeModels }
+ *   ```
+ *
+ *   **Benchmark result** (phase: 'benchmark-result') — fired for each benchmark:
+ *   ```js
+ *   { phase: 'benchmark-result', model: ScannedModel }
+ *   ```
+ *
+ *   **Done** (phase: 'done'):
+ *   ```js
+ *   { phase: 'done', percent: 100, completed, total, activeModels: [] }
+ *   ```
+ *
  * @param {object} [options={}]
  * @param {function} [options.onProgress] - Structured progress callback `(event) => void`
  * @param {AbortSignal} [options.signal] - Abort signal to cancel the scan early
- * @param {number} [options.maxCandidates=30] - Cap on pinged candidates
- * @param {number} [options.maxBenchmarkCandidates=5] - Cap on benchmarked survivors
+ * @param {number} [options.maxCandidates=60] - Cap on pinged candidates (increased from 30)
+ * @param {number} [options.maxBenchmarkCandidates=8] - Cap on benchmarked survivors (increased from 5)
  * @returns {Promise<Array<ScannedModel>>} Scanned models list (unfiltered)
  */
 export async function directScan(options = {}) {
   const onProgress = typeof options.onProgress === 'function' ? options.onProgress : () => {}
   const signal = options.signal
-  const maxCandidates = options.maxCandidates ?? 30
-  const maxBenchmarkCandidates = options.maxBenchmarkCandidates ?? 5
+  const maxCandidates = options.maxCandidates ?? 60
+  const maxBenchmarkCandidates = options.maxBenchmarkCandidates ?? 8
   const keys = loadAllApiKeys()
   const scannedList = []
 
-  // 📖 Step 1: Filter models by available keys (skip zen-only / cli-only models)
+  // 📖 Step 1: Filter models by available keys (skip zen-only / cli-only models).
+  // 📖 We deliberately do NOT pre-sort by SWE here before filtering, so models
+  // 📖 with unknown SWE scores still get a chance to be pinged.
   const candidateModels = MODELS.filter(tuple => {
     const providerKey = tuple[5]
     const sourceInfo = sources[providerKey]
@@ -74,7 +112,10 @@ export async function directScan(options = {}) {
     return []
   }
 
-  // 📖 Step 2: Sort by SWE score descending, keep top N
+  // 📖 Step 2: Sort by SWE score descending, keep top N.
+  // 📖 Unknown SWE ('-') gets score 0 but is NOT pre-filtered out — they still
+  // 📖 compete for the ping slots. The higher maxCandidates cap (60) ensures
+  // 📖 we catch functional models that lack a SWE benchmark.
   const sortedCandidates = candidateModels
     .map(tuple => ({
       modelId: tuple[0],
@@ -111,7 +152,9 @@ export async function directScan(options = {}) {
 
   emit()
 
-  // 📖 Step 3: Ping candidate models in parallel (15s timeout inside ping.js)
+  // 📖 Step 3: Ping candidate models in parallel (15s timeout inside ping.js).
+  // 📖 Each completion fires a `model-result` event immediately so adapters
+  // 📖 can render models as they come in — no waiting for all pings to finish.
   const pingPromises = sortedCandidates.map(async (candidate) => {
     if (signal?.aborted) return null
     const { modelId, providerKey, sourceInfo, label } = candidate
@@ -121,6 +164,8 @@ export async function directScan(options = {}) {
     const target = { label, providerName }
     activeModels.push(target)
     emit()
+
+    let scanned = null
 
     try {
       const res = await ping(apiKey, modelId, providerKey, url)
@@ -132,7 +177,7 @@ export async function directScan(options = {}) {
         status = apiKey ? 'auth_error' : 'noauth'
       }
 
-      return {
+      scanned = {
         ...candidate,
         apiKey,
         providerName,
@@ -144,8 +189,19 @@ export async function directScan(options = {}) {
         stabilityScore: 100,
         hasKey: status !== 'noauth' && status !== 'auth_error'
       }
+
+      // 📖 Emit a live event for every resolved ping (up, down, timeout, etc.)
+      // 📖 so adapters can render a progressive list as models are discovered.
+      onProgress({
+        phase: 'model-result',
+        model: { ...scanned },
+        pingIndex: completedPings + 1,
+        totalPings
+      })
+
+      return scanned
     } catch (err) {
-      return {
+      scanned = {
         ...candidate,
         apiKey,
         providerName,
@@ -157,6 +213,15 @@ export async function directScan(options = {}) {
         stabilityScore: 100,
         hasKey: true
       }
+
+      onProgress({
+        phase: 'model-result',
+        model: { ...scanned },
+        pingIndex: completedPings + 1,
+        totalPings
+      })
+
+      return scanned
     } finally {
       completedPings++
       pct = Math.round((completedPings / totalPings) * 100)
@@ -186,7 +251,8 @@ export async function directScan(options = {}) {
     return aliveModels
   }
 
-  // 📖 Step 4: AI Latency + TPS benchmark on the top survivors
+  // 📖 Step 4: AI Latency + TPS benchmark on the top survivors.
+  // 📖 Sort by SWE score first, then take top maxBenchmarkCandidates (default 8).
   const benchmarkCandidates = usableAlive
     .sort((a, b) => parseSweScore(b.sweScore) - parseSweScore(a.sweScore))
     .slice(0, maxBenchmarkCandidates)
@@ -218,12 +284,32 @@ export async function directScan(options = {}) {
         retryDelayMs: 3000
       })
 
+      let benchResult
       if (res.ok) {
-        return { modelId, ok: true, tps: res.tokensPerSecond || null, totalMs: res.totalMs || null }
+        benchResult = { modelId, ok: true, tps: res.tokensPerSecond || null, totalMs: res.totalMs || null }
+      } else {
+        benchResult = { modelId, ok: false, code: res.code || 'ERR', totalMs: res.totalMs || null }
       }
-      return { modelId, ok: false, code: res.code || 'ERR', totalMs: res.totalMs || null }
+
+      // 📖 Emit a live benchmark-result event so Pi/OpenCode can update the
+      // 📖 progressive list with real AI latency + TPS as each benchmark finishes.
+      const updatedModel = benchResult.ok
+        ? { ...model, tps: benchResult.tps, totalBenchMs: benchResult.totalMs, benchmarkStatus: 'up' }
+        : { ...model, status: 'down', tps: null, totalBenchMs: benchResult.totalMs, benchmarkStatus: benchResult.code || 'ERR' }
+
+      onProgress({
+        phase: 'benchmark-result',
+        model: { ...updatedModel }
+      })
+
+      return benchResult
     } catch (err) {
-      return { modelId, ok: false, code: 'ERR', totalMs: null }
+      const errResult = { modelId, ok: false, code: 'ERR', totalMs: null }
+      onProgress({
+        phase: 'benchmark-result',
+        model: { ...model, status: 'down', benchmarkStatus: 'ERR' }
+      })
+      return errResult
     } finally {
       completedBenchmarks++
       pct = Math.round((completedBenchmarks / totalBenchmarks) * 100)

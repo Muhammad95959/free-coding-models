@@ -46,7 +46,10 @@ const cache = createCacheStore({ filePath: CACHE_FILE })
  */
 async function scanWithPiStatus({ ctx, mode = 'auto' }) {
   const renderer = createPiStatusRenderer({
-    setStatus: (msg) => ctx?.ui?.setStatus?.('fcm', msg)
+    setStatus: (msg) => ctx?.ui?.setStatus?.('fcm', msg),
+    // 📖 setWidget enables the live progressive model table — models appear as
+    // 📖 each ping resolves, updated in-place when benchmarks finish.
+    setWidget: (id, lines) => ctx?.ui?.setWidget?.(id, lines)
   })
   renderer.start()
   try {

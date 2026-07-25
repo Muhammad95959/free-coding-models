@@ -67,8 +67,8 @@ function mapDaemonModel(m) {
  * @param {function} [options.onNotify] - `(message, type) => void` transient notices
  * @param {AbortSignal} [options.signal] - Abort signal for the direct scan
  * @param {number} [options.minContextWindow=MIN_CONTEXT_WINDOW] - Context-safety floor
- * @param {number} [options.maxDirectCandidates=30] - Direct-scan ping cap
- * @param {number} [options.maxBenchmarkCandidates=5] - Direct-scan benchmark cap
+ * @param {number} [options.maxDirectCandidates=60] - Direct-scan ping cap (increased from 30)
+ * @param {number} [options.maxBenchmarkCandidates=8] - Direct-scan benchmark cap (increased from 5)
  * @returns {Promise<object>} `{ source, scannedAt, ranked, bestModel, diagnostics }`
  */
 export async function scanBestFcmModel(options = {}) {
@@ -137,8 +137,8 @@ export async function scanBestFcmModel(options = {}) {
   const results = await directScan({
     onProgress,
     signal: options.signal,
-    maxCandidates: options.maxDirectCandidates ?? 30,
-    maxBenchmarkCandidates: options.maxBenchmarkCandidates ?? 5
+    maxCandidates: options.maxDirectCandidates ?? 60,
+    maxBenchmarkCandidates: options.maxBenchmarkCandidates ?? 8
   })
 
   const ranked = rank(results)
