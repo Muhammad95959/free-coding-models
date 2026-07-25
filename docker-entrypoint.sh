@@ -10,6 +10,25 @@ touch "$CONFIG_FILE" "$LOG_FILE" 2>/dev/null || true
 chmod 600 "$CONFIG_FILE" 2>/dev/null || true
 chmod 640 "$LOG_FILE" 2>/dev/null || true
 
+# 📖 Issue #119: Detect when the volume was created with files owned by a
+# 📖 different UID (e.g. older images running as root, or bind-mounted host
+# 📖 dirs with a different owner). We can't auto-chown as the fcm user, so we
+# 📖 log a loud warning at startup so users see it BEFORE their first save
+# 📖 attempt fails with a confusing "Tool mode save failed" error.
+# 📖 Linux: stat -c %u, BSD/macOS: stat -f %u
+CURRENT_UID=$(id -u)
+for f in "$CONFIG_FILE" "$HOME/.free-coding-models" "$DAEMON_PORT_FILE"; do
+  if [ -e "$f" ]; then
+    FILE_UID=$(stat -c %u "$f" 2>/dev/null || stat -f %u "$f" 2>/dev/null || echo "")
+    if [ -n "$FILE_UID" ] && [ "$FILE_UID" != "$CURRENT_UID" ]; then
+      echo "⚠️  WARNING: $f is owned by UID $FILE_UID but FCM runs as UID $CURRENT_UID."
+      echo "   Saves will fail with 'Tool mode save failed' (issue #119)."
+      echo "   Fix: docker compose down && docker volume rm \$(docker volume ls -q | grep fcm)"
+      echo "         docker compose up   # recreates the volume with the right UID"
+    fi
+  fi
+done
+
 node /app/scripts/docker-init.mjs
 
 FCM_HOST="${FCM_HOST:-0.0.0.0}"

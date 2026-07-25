@@ -760,7 +760,16 @@ export function saveConfig(config, options = {}) {
     // 📖 Write failed - explicit error instead of silent failure
     let errorMsg = `Failed to write config: ${writeError.message}`
     try { unlinkSync(tempPath) } catch { /* ignore temp cleanup failures */ }
-    
+
+    // 📖 Detect permission errors and surface a Docker-specific hint. This
+    // 📖 happens when a volume was created with files owned by another UID
+    // 📖 (e.g. older images running as root, or a host bind-mount where the
+    // 📖 directory is owned by a different user). chmod 777 does NOT fix this
+    // 📖 because Linux checks file ownership, not mode bits, for write access.
+    if (writeError?.code === 'EACCES' || writeError?.code === 'EPERM') {
+      errorMsg += formatPermissionHint(writeError)
+    }
+
     // 📖 Try to restore from backup if we have one
     if (backupCreated) {
       try {
@@ -773,6 +782,37 @@ export function saveConfig(config, options = {}) {
 
     return { success: false, error: errorMsg, backupCreated }
   }
+}
+
+/**
+ * 📖 formatPermissionHint — build a friendly hint for the most common Docker
+ * 📖 permission failure (config file owned by a different UID than the running
+ * 📖 process). Returns an empty string for non-permission errors.
+ *
+ * 📖 Common symptom (issue #119): "Tool mode save failed" in the web dashboard
+ * 📖 even after `chmod -R 777`, because chmod doesn't change ownership.
+ */
+export function formatPermissionHint(writeError) {
+  // 📖 Only emit the hint for actual permission errors — silently no-op for
+  // 📖 anything else so the caller can safely concatenate the result.
+  if (writeError?.code !== 'EACCES' && writeError?.code !== 'EPERM') return ''
+  const lines = []
+  lines.push('')
+  lines.push('  💡 This is almost always a file-ownership issue, not a chmod issue.')
+  lines.push('     The config file is owned by a different user than the one running FCM.')
+  try {
+    const stat = statSync(CONFIG_PATH)
+    lines.push(`     File owner UID: ${stat.uid}, current process UID: ${process.getuid?.() ?? 'n/a'}`)
+  } catch { /* stat may also fail */ }
+  lines.push('')
+  lines.push('  Fix in Docker:')
+  lines.push('     docker compose down')
+  lines.push('     docker volume rm <project>_fcm-data   # or the volume name from `docker volume ls`')
+  lines.push('     docker compose up                    # recreates the volume with the right UID')
+  lines.push('')
+  lines.push('  Fix on host (bind mount):')
+  lines.push('     sudo chown $(id -u):$(id -g) ~/.free-coding-models.json')
+  return '\n' + lines.join('\n')
 }
 
 /**
