@@ -39,8 +39,8 @@ beforeEach(() => {
 // ─── HEADER_PAIRS structure ──────────────────────────────────────────────────
 
 describe('HEADER_PAIRS structure', () => {
-  it('contains 6 pairs in priority order', () => {
-    assert.strictEqual(HEADER_PAIRS.length, 6)
+  it('contains 8 pairs in priority order', () => {
+    assert.strictEqual(HEADER_PAIRS.length, 8)
     for (const pair of HEADER_PAIRS) {
       assert.strictEqual(typeof pair[0], 'string')
       assert.strictEqual(typeof pair[1], 'string')
@@ -114,6 +114,24 @@ describe('extractQuota — header pair coverage', () => {
       remaining: 5000, limit: 10000, percent: 50,
       source: 'x-ratelimit-remaining-day',
       windowType: 'day',
+    })
+  })
+
+  it('pair 7: x-ratelimit-remaining-tokens / x-ratelimit-limit-tokens (Cerebras tokens)', () => {
+    const r = extractQuota({ 'x-ratelimit-remaining-tokens': '500', 'x-ratelimit-limit-tokens': '1000' })
+    assert.deepStrictEqual(r, {
+      remaining: 500, limit: 1000, percent: 50,
+      source: 'x-ratelimit-remaining-tokens',
+      windowType: 'tokens',
+    })
+  })
+
+  it('pair 8: x-ratelimit-remaining-tokens-minute / x-ratelimit-limit-tokens-minute (Cerebras token-minute)', () => {
+    const r = extractQuota({ 'x-ratelimit-remaining-tokens-minute': '12000', 'x-ratelimit-limit-tokens-minute': '30000' })
+    assert.deepStrictEqual(r, {
+      remaining: 12000, limit: 30000, percent: 40,
+      source: 'x-ratelimit-remaining-tokens-minute',
+      windowType: 'tokens-minute',
     })
   })
 })

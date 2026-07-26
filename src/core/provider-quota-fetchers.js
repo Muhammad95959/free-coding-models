@@ -367,6 +367,8 @@ export const HEADER_PAIRS = [
   ['ratelimit-remaining', 'ratelimit-limit'],
   ['x-ratelimit-remaining-requests-day', 'x-ratelimit-limit-requests-day'],
   ['x-ratelimit-remaining-day', 'x-ratelimit-limit-day'],
+  ['x-ratelimit-remaining-tokens', 'x-ratelimit-limit-tokens'],
+  ['x-ratelimit-remaining-tokens-minute', 'x-ratelimit-limit-tokens-minute'],
 ]
 
 /**
