@@ -99,7 +99,7 @@ import { buildMergedModels } from '../core/model-merger.js'
 import { loadOpenCodeConfig, saveOpenCodeConfig } from '../core/opencode-config.js'
 import { usageForRow as _usageForRow } from '../core/usage-reader.js'
 import { buildProviderModelTokenKey, loadTokenUsageByProviderModel } from '../core/token-usage-reader.js'
-import { parseOpenRouterResponse, fetchProviderQuota as _fetchProviderQuotaFromModule } from '../core/provider-quota-fetchers.js'
+import { parseOpenRouterResponse, fetchProviderQuota as _fetchProviderQuotaFromModule, getAllQuotas as _getAllPassiveQuotasFromModule } from '../core/provider-quota-fetchers.js'
 import { isKnownQuotaTelemetry } from '../core/quota-capabilities.js'
 import { ALT_ENTER, ALT_LEAVE, ALT_HOME, PING_TIMEOUT, PING_INTERVAL, FPS, COL_MODEL, COL_MS, CELL_W, FRAMES, TIER_CYCLE, VERDICT_CYCLE, HEALTH_CYCLE, SETTINGS_OVERLAY_BG, HELP_OVERLAY_BG, RECOMMEND_OVERLAY_BG, OVERLAY_PANEL_WIDTH, TABLE_HEADER_LINES, TABLE_FOOTER_LINES, TABLE_FIXED_LINES, WIDTH_WARNING_MIN_COLS, msCell, spinCell } from '../core/constants.js'
 import { TIER_COLOR } from './tier-colors.js'
@@ -954,6 +954,10 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
       probeCacheMisses: state.probeCacheMisses || 0,
       probeCacheBrokenHidden: state.probeCacheBrokenHidden || 0,
       showBrokenMode: !!state.showBrokenMode,
+      // 📖 Passive quota (t2): live snapshots from response headers, populated
+      // 📖 by pings (every ping pre-warms quota for its provider). See
+      // 📖 src/core/provider-quota-fetchers.js for getAllPassiveQuotas().
+      quota: Object.fromEntries(_getAllPassiveQuotasFromModule()),
     }
     if (state.commandPaletteOpen) {
       if (!state.commandPaletteFrozenTable) {

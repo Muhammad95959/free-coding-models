@@ -155,6 +155,10 @@ export const PROVIDER_COLOR = new Proxy({}, {
  *   probeCacheMisses?: number,       // t1: number of models that needed a live probe
  *   probeCacheBrokenHidden?: number, // t1: number of broken models auto-hidden this session
  *   showBrokenMode?: boolean,        // t1: true when Shift+B has un-hidden broken models
+ *   quota?: Record<string, {         // t2: live quota from response headers
+ *     remaining: number, limit: number, percent: number,
+ *     source: 'header'|'endpoint', lastUpdated: number, windowType?: string,
+ *   }>,
  * }} opts
  * @returns {string}
  */
@@ -205,6 +209,7 @@ export function renderTable({
   probeCacheMisses = 0,
   probeCacheBrokenHidden = 0,
   showBrokenMode = false,
+  quota = {},
 } = _) {
   // 📖 Filter out hidden models for display
   const visibleResults = results.filter(r => !r.hidden)
@@ -1219,8 +1224,27 @@ export function renderTable({
     probeCacheLabel = chalk.bgRgb(40, 90, 140).rgb(220, 235, 255).bold(` ${cachedTxt}${brokenTxt} `)
   }
 
-  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Last release
-  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel) {
+  // 📖 Passive quota chip (t2): `📊 groq 78% · sambanova 41%` (top-N depleted first).
+  // 📖 Shows live rate-limit headers that the daemon / pings collected from upstream
+  // 📖 responses. Zero extra network requests — see provider-quota-fetchers.js.
+  // 📖 Cap at 5 providers to avoid footer bloat; pick most-depleted first.
+  let quotaLabel = ''
+  if (quota && typeof quota === 'object') {
+    const entries = Object.entries(quota)
+      .filter(([, s]) => s && typeof s.percent === 'number')
+      .sort((a, b) => a[1].percent - b[1].percent)  // 📖 most depleted first
+      .slice(0, 5)
+    if (entries.length > 0) {
+      const parts = entries.map(([providerKey, snap]) => {
+        const icon = snap.percent <= 10 ? '🚨' : snap.percent <= 25 ? '⚠️ ' : '📊'
+        return `${icon} ${providerKey} ${snap.percent}%`
+      })
+      quotaLabel = chalk.bgRgb(60, 100, 60).rgb(220, 255, 220).bold(` ${parts.join(' · ')} `)
+    }
+  }
+
+  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Quota + Last release
+  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel || quotaLabel) {
     const parts = [
       { text: '  ', key: null },
       { text: speedTestLabel, key: 'a' },
@@ -1230,6 +1254,8 @@ export function renderTable({
       { text: probeLabel, key: null },
       { text: probeCacheLabel ? '  ' : '', key: null },
       { text: probeCacheLabel, key: null },
+      { text: quotaLabel ? '  ' : '', key: null },
+      { text: quotaLabel, key: null },
       { text: '  ', key: null },
       { text: releaseLabel, key: null },
     ]
