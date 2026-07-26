@@ -466,6 +466,66 @@ describe('end-to-end: write → reload → freshness check', () => {
   })
 })
 
+// ─── Concurrency: read-merge-write ────────────────────────────────────────────
+
+describe('flushCache concurrency (read-merge-write)', () => {
+  let tmpDir, cachePath
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'fcm-conc-'))
+    cachePath = join(tmpDir, 'probe-cache.json')
+  })
+  afterEach(() => { rmSync(tmpDir, { recursive: true, force: true }) })
+
+  it('merges on-disk state written by another process before our flush', () => {
+    // 📖 Simulate "another process" wrote a model we don't know about.
+    const otherProcessCache = makeCache({
+      otherProvider: { models: { 'their/model': makeEntry({ latencyMs: 999 }) } },
+    })
+    writeFileSync(cachePath, JSON.stringify(otherProcessCache))
+
+    // 📖 Our process has its own deltas.
+    const ourCache = makeCache({
+      ourProvider: { models: { 'our/model': makeEntry({ latencyMs: 111 }) } },
+    })
+
+    assert.strictEqual(flushCache({ path: cachePath, cache: ourCache }), true)
+
+    // 📖 Both should be present in the final file.
+    const final = JSON.parse(readFileSync(cachePath, 'utf8'))
+    assert.ok(final.providers.otherProvider?.models?.['their/model'], 'other-process entry should survive')
+    assert.ok(final.providers.ourProvider?.models?.['our/model'], 'our entry should be written')
+  })
+
+  it('overwrites stale lastProbedAt with our fresher value (incoming wins)', () => {
+    const stale = makeEntry({ lastProbedAt: 1_000, latencyMs: 50 })
+    const fresh = makeEntry({ lastProbedAt: 9_999, latencyMs: 200 })
+    writeFileSync(cachePath, JSON.stringify(makeCache({ p: { models: { 'm': stale } } })))
+
+    const ourCache = makeCache({ p: { models: { 'm': fresh } } })
+    flushCache({ path: cachePath, cache: ourCache })
+
+    const final = JSON.parse(readFileSync(cachePath, 'utf8'))
+    assert.strictEqual(final.providers.p.models.m.lastProbedAt, 9_999)
+    assert.strictEqual(final.providers.p.models.m.latencyMs, 200)
+  })
+
+  it('writes our cache unchanged when file does not exist yet', () => {
+    const ourCache = makeCache({ p: { models: { 'm': makeEntry() } } })
+    flushCache({ path: cachePath, cache: ourCache })
+
+    const final = JSON.parse(readFileSync(cachePath, 'utf8'))
+    assert.strictEqual(final.providers.p.models.m.status, 'ok')
+  })
+
+  it('recovers from corrupt on-disk file (still writes our deltas)', () => {
+    writeFileSync(cachePath, '{ not valid json')
+    const ourCache = makeCache({ p: { models: { 'm': makeEntry() } } })
+    assert.strictEqual(flushCache({ path: cachePath, cache: ourCache }), true)
+    const final = JSON.parse(readFileSync(cachePath, 'utf8'))
+    assert.ok(final.providers.p.models.m)
+  })
+})
+
 // ─── Constants sanity ─────────────────────────────────────────────────────────
 
 describe('module constants', () => {

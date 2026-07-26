@@ -54,6 +54,15 @@ import { sendUsageTelemetry } from './telemetry.js'
 import { TIER_ORDER } from './utils.js'
 import { atomicWriteJson, safeJsonParse, sleep, maskApiKey, isRouteableProvider } from './shared-helpers.js'
 import { normalizeRequestBody } from './schema-normalizer.js'
+import {
+  loadCache as loadProbeCache,
+  flushCache as flushProbeCache,
+  recordProbeResults as recordProbeCacheResults,
+  getCacheStats as getProbeCacheStats,
+  getModelsDueForProbe,
+  isCacheFresh as isProbeCacheFresh,
+  pruneStaleEntries as pruneProbeCacheStaleEntries,
+} from './probe-cache.js'
 
 export const ROUTER_DEFAULT_PORT = 19280
 export const ROUTER_MAX_PORT = 19289
@@ -870,6 +879,12 @@ class RouterRuntime {
     this.webGlobalBenchmarkRunning = false
     this.webGlobalBenchmarkTotal = 0
     this.webGlobalBenchmarkCompleted = 0
+    // 📖 Probe-cache (t1): load the persistent probe-cache on boot so the daemon
+    // 📖 can skip fresh healthy models during its health-probe loop and write
+    // 📖 results back to the same file the CLI TUI uses. See src/core/probe-cache.js.
+    this.probeCache = loadProbeCache()
+    this.probeCacheDirty = false
+    this.probeCacheFlushTimer = null
     this.refreshRouteState()
   }
 
@@ -1023,6 +1038,39 @@ class RouterRuntime {
       latency_ms: result.latencyMs ?? null,
       circuit_state: this.circuit.get(key)?.state || 'UNKNOWN',
     })
+
+    // 📖 Probe-cache (t1): mirror the result into the persistent cross-session
+    // 📖 cache so the CLI TUI can skip fresh healthy models and auto-hide broken
+    // 📖 ones. key is `provider/modelId` — split on the first slash.
+    const slashIdx = key.indexOf('/')
+    if (slashIdx > 0) {
+      const providerKey = key.slice(0, slashIdx)
+      const modelId = key.slice(slashIdx + 1)
+      recordProbeCacheResults(providerKey, [{
+        modelId,
+        status: result.ok ? 'ok' : 'broken',
+        latencyMs: result.latencyMs ?? null,
+        lastError: result.ok ? null : (result.code != null ? String(result.code) : 'error'),
+      }])
+      this.probeCacheDirty = true
+      this.scheduleProbeCacheFlush()
+    }
+  }
+
+  /**
+   * 📖 scheduleProbeCacheFlush — debounced write to disk so we don't thrash the
+   * 📖 filesystem when a probe burst records dozens of results at once.
+   */
+  scheduleProbeCacheFlush() {
+    if (this.probeCacheFlushTimer) return
+    this.probeCacheFlushTimer = setTimeout(() => {
+      this.probeCacheFlushTimer = null
+      if (this.probeCacheDirty) {
+        flushProbeCache()
+        this.probeCacheDirty = false
+      }
+    }, 2000)
+    if (typeof this.probeCacheFlushTimer.unref === 'function') this.probeCacheFlushTimer.unref()
   }
 
   markAuthError(key, detail = 'authentication failed') {
@@ -1435,6 +1483,10 @@ class RouterRuntime {
       configPath: CONFIG_PATH,
       tokenStatsPath: ROUTER_TOKENS_PATH,
       logPath: ROUTER_LOG_PATH,
+      // 📖 Probe-cache (t1): live aggregates from the persistent probe-cache.
+      // 📖 Surfaced so the Web Dashboard + CLI can show cache hit rate + how many
+      // 📖 broken models are currently hidden. Refreshed every /stats call.
+      probeCache: getProbeCacheStats(),
     }
   }
 
@@ -1529,7 +1581,14 @@ class RouterRuntime {
     if (!set) return
     const candidates = this.scoreCandidates(set)
       .filter((candidate) => candidate.catalog?.routeable && !candidate.circuit?.stale)
-    await Promise.allSettled(candidates.map((candidate) => this.probeCandidate(candidate, {
+    // 📖 Probe-cache (t1): skip models that are still fresh + ok in the persistent
+    // 📖 cache. Broken models naturally pass through (isProbeCacheFresh returns false
+    // 📖 for them), so recovery detection keeps working unchanged.
+    const filtered = candidates.filter((c) => {
+      if (!c.catalog) return true
+      return !isProbeCacheFresh(c.catalog.providerKey, c.catalog.modelId)
+    })
+    await Promise.allSettled(filtered.map((candidate) => this.probeCandidate(candidate, {
       eco: this.routerConfig().probeMode === 'eco',
     })))
   }
@@ -3101,12 +3160,14 @@ class RouterRuntime {
     if (this.probeTimer) clearInterval(this.probeTimer)
     if (this.configReloadTimer) clearInterval(this.configReloadTimer)
     if (this.tokenFlushTimer) clearInterval(this.tokenFlushTimer)
+    if (this.probeCacheFlushTimer) clearInterval(this.probeCacheFlushTimer)
     for (const timeout of this.probeTimeouts) clearTimeout(timeout)
     const started = Date.now()
     while (this.inFlight > 0 && Date.now() - started < 30000) {
       await sleep(100)
     }
     this.tokenTracker.flush({ force: true })
+    flushProbeCache()  // 📖 t1: persist any pending probe-cache deltas before exit
     try { this.server?.close() } catch {}
     try { unlinkSync(ROUTER_PID_PATH) } catch {}
     try { unlinkSync(ROUTER_PORT_PATH) } catch {}

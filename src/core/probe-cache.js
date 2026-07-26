@@ -21,8 +21,8 @@
  *   📖   - ~/.free-coding-models/probe-cache.json otherwise
  *
  *   📖 All surface modes (CLI TUI, Web Dashboard / daemon, Tauri Desktop) read/write the
- *   📖 same file. Concurrency between daemon and CLI is handled via atomic writes plus
- *   📖 read-merge-write on flush — see flushCache() and the documented race window below.
+ *   📖 same file. Concurrency between daemon and CLI is handled via read-merge-write on
+ *   📖 every flush (see flushCache) plus the atomic tmp + rename helper from shared-helpers.
  *
  * @functions
  *   → getProbeCachePath()                       — Resolves the cache file path
@@ -148,10 +148,29 @@ export function loadCache({ path: cachePath } = {}) {
 }
 
 /**
- * 📖 Persist the in-memory cache to disk atomically (tmp + rename).
- * 📖 Concurrency: if multiple processes flush concurrently, each reads-modifies-writes
- * 📖 its own copy — the last writer wins, losing at most one batch of deltas (NOT the
- * 📖 whole file, thanks to the rename atomicity). Acceptable per the t1 risk register.
+ * 📖 Merge two cache objects: incoming wins on key collision, but absent fields
+ * 📖 from incoming do NOT delete fields from base. Used by flushCache to merge
+ * 📖 our in-memory mirror with whatever the on-disk file now contains (covers
+ * 📖 the daemon + CLI running concurrently case).
+ */
+function mergeCache(base, incoming) {
+  if (!base || typeof base !== 'object') return incoming
+  if (!incoming || typeof incoming !== 'object') return base
+  const out = { ...incoming, providers: { ...(incoming.providers || {}) } }
+  for (const [providerKey, providerBucket] of Object.entries(base.providers || {})) {
+    const incomingBucket = out.providers[providerKey] || { models: {} }
+    out.providers[providerKey] = {
+      models: { ...(providerBucket?.models || {}), ...(incomingBucket.models || {}) },
+    }
+  }
+  return out
+}
+
+/**
+ * 📖 Persist the in-memory cache to disk atomically (tmp + rename) with a
+ * 📖 read-merge-write pass so concurrent daemons and CLIs don't clobber each
+ * 📖 other. Worst case: one batch of deltas is merged twice (idempotent), or
+ * 📖 a stale `lastProbedAt` survives briefly (acceptable per t1 risk register).
  *
  * @param {object} [opts]
  * @param {string} [opts.path]  — Override the cache file path.
@@ -160,10 +179,25 @@ export function loadCache({ path: cachePath } = {}) {
  */
 export function flushCache({ path: cachePath, cache } = {}) {
   const target = cachePath ?? _cacheLoadedFrom ?? getProbeCachePath()
-  const data = cache ?? _cache ?? emptyCache()
+  const localData = cache ?? _cache ?? emptyCache()
+
+  // 📖 Read whatever is on disk RIGHT NOW (may have been written by another process
+  // 📖 since we last loaded), and merge our deltas over the top.
+  let onDisk = null
   try {
-    atomicWriteJson(target, data, 0o600)
+    const raw = fs.readFileSync(target, 'utf-8')
+    onDisk = JSON.parse(raw)
+    if (!onDisk || typeof onDisk !== 'object') onDisk = null
+  } catch {
+    onDisk = null
+  }
+
+  const merged = onDisk ? mergeCache(onDisk, localData) : localData
+
+  try {
+    atomicWriteJson(target, merged, 0o600)
     _cacheLoadedFrom = target
+    _cache = merged
     return true
   } catch {
     return false
