@@ -949,6 +949,11 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
       probeTotal: state.probeTotal,
       probeCompleted: state.probeCompleted,
       probeHiddenCount: state.probeHiddenCount,
+      // 📖 Probe-cache (t1): footer chip stats
+      probeCacheHits: state.probeCacheHits || 0,
+      probeCacheMisses: state.probeCacheMisses || 0,
+      probeCacheBrokenHidden: state.probeCacheBrokenHidden || 0,
+      showBrokenMode: !!state.showBrokenMode,
     }
     if (state.commandPaletteOpen) {
       if (!state.commandPaletteFrozenTable) {

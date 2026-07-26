@@ -2784,6 +2784,25 @@ export function createKeyHandler(ctx) {
       return
     }
 
+    // 📖 Shift+B: Toggle visibility of probe-cache-broken models (t1).
+    // 📖 When toggled on, hidden broken rows become visible (greyed/dimmed via render-table).
+    // 📖 When toggled off, they go back to hidden. Persisted for the current session.
+    if (key.name === 'b' && key.shift && !key.ctrl && !key.meta) {
+      const nextShowBroken = !state.showBrokenMode
+      state.showBrokenMode = nextShowBroken
+      // 📖 If enabling, restore all broken rows to visible; if disabling, re-hide them.
+      for (const r of state.results) {
+        if (r.cachedBroken) {
+          r.hidden = !nextShowBroken
+        }
+      }
+      // 📖 Refresh the footer counter chip + cursor bounds.
+      state.probeCacheBrokenHidden = state.results.filter(x => x.cachedBroken && x.hidden).length
+      applyTierFilter()
+      refreshVisibleSorted({ resetCursor: false })
+      return
+    }
+
     // 📖 X clears the active free-text filter set from the command palette.
     if (key.name === 'x' && !key.ctrl && !key.meta) {
       if (!state.customTextFilter) return

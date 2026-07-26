@@ -151,6 +151,10 @@ export const PROVIDER_COLOR = new Proxy({}, {
  *   routerFooterTodayTokens?: number,
  *   routerFooterAllTimeTokens?: number,
  *   routerFooterRequests?: number,
+ *   probeCacheHits?: number,         // t1: number of fresh ok entries served from probe-cache
+ *   probeCacheMisses?: number,       // t1: number of models that needed a live probe
+ *   probeCacheBrokenHidden?: number, // t1: number of broken models auto-hidden this session
+ *   showBrokenMode?: boolean,        // t1: true when Shift+B has un-hidden broken models
  * }} opts
  * @returns {string}
  */
@@ -197,6 +201,10 @@ export function renderTable({
   probeTotal = 0,
   probeCompleted = 0,
   probeHiddenCount = 0,
+  probeCacheHits = 0,
+  probeCacheMisses = 0,
+  probeCacheBrokenHidden = 0,
+  showBrokenMode = false,
 } = _) {
   // 📖 Filter out hidden models for display
   const visibleResults = results.filter(r => !r.hidden)
@@ -1199,8 +1207,20 @@ export function renderTable({
     probeLabel = chalk.bgRgb(120, 60, 60).rgb(255, 200, 200).bold(` 🔍 Probe done: ${probeHiddenCount} broken model${probeHiddenCount > 1 ? 's' : ''} hidden `)
   }
 
-  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Last release
-  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel) {
+  // 📖 Probe-cache chip (t1): `⚡ N cached · 🔴 M broken (Shift+B)`
+  // 📖 Always shown once any probe-cache state exists — gives the user a hint that
+  // 📖 cache hits are happening (and that broken models are being hidden for them).
+  let probeCacheLabel = ''
+  if (probeCacheHits > 0 || probeCacheBrokenHidden > 0 || showBrokenMode) {
+    const cachedTxt = `⚡ ${probeCacheHits} cached`
+    const brokenTxt = probeCacheBrokenHidden > 0
+      ? ` 🔴 ${probeCacheBrokenHidden} broken${showBrokenMode ? ' (visible)' : ' (Shift+B)'}`
+      : ''
+    probeCacheLabel = chalk.bgRgb(40, 90, 140).rgb(220, 235, 255).bold(` ${cachedTxt}${brokenTxt} `)
+  }
+
+  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Last release
+  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel) {
     const parts = [
       { text: '  ', key: null },
       { text: speedTestLabel, key: 'a' },
@@ -1208,6 +1228,8 @@ export function renderTable({
       { text: globalBenchmarkLabel, key: 'u' },
       { text: probeLabel ? '  ' : '', key: null },
       { text: probeLabel, key: null },
+      { text: probeCacheLabel ? '  ' : '', key: null },
+      { text: probeCacheLabel, key: null },
       { text: '  ', key: null },
       { text: releaseLabel, key: null },
     ]

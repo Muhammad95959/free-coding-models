@@ -33,6 +33,9 @@ const ANALYSIS_FLAGS = [
   { flag: '--ping-interval <ms>', description: 'Override ping interval in milliseconds' },
   { flag: '--hide-unconfigured', description: 'Hide models without configured API keys' },
   { flag: '--show-unconfigured', description: 'Show all models regardless of API key config' },
+  { flag: '--reprobe, --no-cache', description: 'Force-rebuild the persistent probe-cache this run (skip cached healthy models)' },
+  { flag: '--probe-ttl <ms>', description: 'Override probe-cache TTL (default 24h); healthy models within TTL are not re-pinged' },
+  { flag: '--show-broken', description: "Don't auto-hide models that the probe-cache marked broken (one-shot override)" },
 ]
 
 const CONFIG_FLAGS = [
