@@ -1125,3 +1125,56 @@
   background: var(--error, #ff5a5a);
   color: #fff;
 }
+
+/* ── Passive quota (t2) ───────────────────────────────────────────────── */
+
+.quotaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.quotaCell {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quotaSource {
+  font-size: 14px;
+  text-align: center;
+}
+
+.quotaName {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  text-transform: lowercase;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, monospace);
+}
+
+.quotaBar {
+  grid-column: 1 / -1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.quotaFill {
+  height: 100%;
+  transition: width 0.4s ease-out;
+}
+
+.quotaPct {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

@@ -41,7 +41,7 @@
  */
 
 import { PING_TIMEOUT } from './constants.js'
-import { fetchProviderQuota as _fetchProviderQuotaFromModule } from './provider-quota-fetchers.js'
+import { fetchProviderQuota as _fetchProviderQuotaFromModule, extractQuota as _extractQuotaFromModule, processResponseHeaders as _processResponseHeadersFromModule } from './provider-quota-fetchers.js'
 import { supportsUsagePercent } from './quota-capabilities.js'
 
 const DISABLED_THINKING_RETRY_STATUSES = new Set([400, 422])
@@ -173,10 +173,15 @@ export async function ping(apiKey, modelId, providerKey, url) {
     }
     // 📖 Normalize all HTTP 2xx statuses to "200" so existing verdict/avg logic still works.
     const code = resp.status >= 200 && resp.status < 300 ? '200' : String(resp.status)
+    // 📖 Passive quota tracker (t2): parse the response headers via the shared module.
+    // 📖 1) Write to the passive snapshot map so /stats + TUI footer see live quota.
+    // 📖 2) Return the percent number for the per-call consumer below.
+    const extracted = _extractQuotaFromModule(resp.headers)
+    _processResponseHeadersFromModule(providerKey, resp.headers)
     return {
       code,
       ms: Math.round(performance.now() - t0),
-      quotaPercent: extractQuotaPercent(resp.headers),
+      quotaPercent: extracted ? extracted.percent : null,
     }
   } catch (err) {
     const isTimeout = err.name === 'AbortError'
