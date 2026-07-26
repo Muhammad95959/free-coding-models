@@ -128,6 +128,17 @@ import { startExternalTool } from '../core/tool-launchers.js'
 import { getToolInstallPlan, installToolWithPlan, isToolInstalled } from '../core/tool-bootstrap.js'
 import { getConfiguredInstallableProviders, installProviderEndpoints, refreshInstalledEndpoints, getInstallTargetModes, getProviderCatalogModels } from '../core/endpoint-installer.js'
 import { loadCache, saveCache, clearCache, getCacheAge } from '../core/cache.js'
+import {
+  loadCache as loadProbeCache,
+  flushCache as flushProbeCache,
+  clearCache as clearProbeCache,
+  getModelsDueForProbe,
+  isCacheFresh,
+  recordProbeResults,
+  getCacheStats as getProbeCacheStats,
+  pruneStaleEntries as pruneProbeCacheStaleEntries,
+  DEFAULT_PROBE_TTL_MS,
+} from '../core/probe-cache.js'
 import { checkConfigSecurity } from '../core/security.js'
 import { buildCliHelpText } from './cli-help.js'
 import { detectActiveTheme, THEME_BG_RGB, getTheme, patchThemeBg } from './theme.js'
@@ -424,6 +435,78 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
     }
   }
 
+  // 📖 Probe-cache (t1): persistent per-provider health cache with TTL + auto-hide broken.
+  // 📖 Lives at ~/.free-coding-models/probe-cache.json, shared with daemon + Tauri surfaces.
+  // 📖 Honors CLI flags: --reprobe (force clear), --probe-ttl <ms>, --show-broken (don't hide).
+  if (cliArgs.reprobeMode) {
+    // 📖 --reprobe / --no-cache: nuke the cache so this run pings everything fresh.
+    clearProbeCache()
+  }
+  const probeCacheTtlMs = cliArgs.probeTtlMs ?? DEFAULT_PROBE_TTL_MS
+  state.probeCacheTtlMs = probeCacheTtlMs
+  state.showBrokenMode = !!cliArgs.showBrokenMode
+  const probeCache = loadProbeCache()
+
+  // 📖 Prune entries whose modelId is no longer in the catalog (one-time per boot).
+  for (const providerKey of new Set(state.results.map(r => r.providerKey))) {
+    const liveIds = state.results.filter(r => r.providerKey === providerKey).map(r => r.modelId)
+    pruneProbeCacheStaleEntries(providerKey, liveIds)
+  }
+
+  // 📖 Apply probe-cache to results: auto-hide broken, pre-fill fresh ok stats.
+  let probeCacheHits = 0
+  let probeCacheMisses = 0
+  for (const r of state.results) {
+    const entry = probeCache?.providers?.[r.providerKey]?.models?.[r.modelId]
+    if (!entry) {
+      probeCacheMisses++
+      continue
+    }
+    if (entry.status === 'broken') {
+      probeCacheHits++
+      r.cachedBroken = true
+      r.lastProbedAt = entry.lastProbedAt
+      r.lastError = entry.lastError ?? null
+      // 📖 Auto-hide broken models (unless --show-broken or feature disabled).
+      const autoHideEnabled = config.settings?.autoHideBrokenModels !== false
+      if (!state.showBrokenMode && autoHideEnabled) {
+        r.hidden = true
+        r.status = 'down'
+      }
+      continue
+    }
+    if (entry.status !== 'ok') {
+      probeCacheMisses++
+      continue
+    }
+    if (entry.probeVersion !== 2) {
+      // 📖 Stale version — count as miss, force re-probe this run.
+      probeCacheMisses++
+      continue
+    }
+    if (Date.now() - entry.lastProbedAt < probeCacheTtlMs) {
+      // 📖 Fresh ok entry — pre-fill the row so the TUI has data on frame 1.
+      probeCacheHits++
+      r.fromProbeCache = true
+      r.lastProbedAt = entry.lastProbedAt
+      const cachedLatency = typeof entry.latencyMs === 'number' ? entry.latencyMs : 0
+      r.avg = cachedLatency
+      r.p95 = cachedLatency
+      r.jitter = 0
+      r.stability = 100
+      r.uptime = 100
+      r.verdict = 'Cached'
+      r.status = 'up'
+      r.httpCode = '200'
+      r.pings = [{ ms: cachedLatency, code: '200' }]
+    } else {
+      probeCacheMisses++
+    }
+  }
+  state.probeCacheHits = probeCacheHits
+  state.probeCacheMisses = probeCacheMisses
+  state.probeCacheBrokenHidden = state.results.filter(r => r.cachedBroken && r.hidden).length
+
   // 📖 Define pingModel before JSON mode so `--json` can reuse the same provider-aware
   // 📖 ping path as the interactive TUI without waiting for the PTY/render loop setup.
   pingModel = async (r) => {
@@ -444,6 +527,26 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
       }
 
       r.pings.push({ ms, code })
+
+      // 📖 Probe-cache (t1): record the result so future runs can skip healthy models
+      // 📖 and auto-hide broken ones. Uses the module-level in-memory cache; flushed
+      // 📖 on exit (see exit()) and on graceful shutdown.
+      const probeStatus = code === '200' ? 'ok' : 'broken'
+      recordProbeResults(r.providerKey, [{
+        modelId: r.modelId,
+        status: probeStatus,
+        latencyMs: typeof ms === 'number' ? ms : null,
+        lastError: probeStatus === 'broken' ? String(code) : null,
+      }])
+      // 📖 If a previously-broken model comes back ok, un-hide it automatically so the
+      // 📖 user sees the recovery without a restart. (Skip when --show-broken keeps them visible.)
+      if (probeStatus === 'ok' && r.cachedBroken && !state.showBrokenMode) {
+        r.cachedBroken = false
+        r.hidden = false
+        r.lastError = null
+        // 📖 Re-evaluate the broken-hidden counter for the footer chip.
+        state.probeCacheBrokenHidden = state.results.filter(x => x.cachedBroken && x.hidden).length
+      }
 
       if (code === '200') {
         r.status = 'up'
@@ -541,6 +644,7 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
   // 📖 Ensure we always leave alt screen cleanly (Ctrl+C, crash, normal exit)
   const exit = (code = 0) => {
     saveCache(state.results, state.pingMode)
+    flushProbeCache()
     clearInterval(ticker)
     clearTimeout(state.pingIntervalObj)
     clearInterval(state.versionRecheckTimer)
@@ -970,8 +1074,13 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
 
   // ── Continuous ping loop — ping all models every N seconds forever ──────────
 
-  // 📖 Initial ping of all models
-  const initialPing = Promise.all(state.results.map(r => pingModel(r)))
+  // 📖 Initial ping: skip models that are still fresh in the probe-cache (t1).
+  // 📖 They already have valid data pre-filled and will be re-probed when their TTL expires.
+  // 📖 Broken models are always re-probed so recovery is detected.
+  const initialDueModels = state.results.filter(r => !isCacheFresh(r.providerKey, r.modelId, {
+    ttlMs: state.probeCacheTtlMs,
+  }))
+  const initialPing = Promise.all(initialDueModels.map(r => pingModel(r)))
 
   // 📖 Continuous ping loop with mode-driven cadence.
   const runPingCycle = async () => {
@@ -1008,6 +1117,13 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
         if (!state.config.favorites.includes(favKey)) return
       }
 
+      // 📖 Probe-cache (t1): skip models that are still fresh + ok in the cache.
+      // 📖 Broken models always pass through isCacheFresh() (it returns false for them),
+      // 📖 which gives us automatic recovery detection for free.
+      if (isCacheFresh(r.providerKey, r.modelId, { ttlMs: state.probeCacheTtlMs })) {
+        return
+      }
+
       pingModel(r).catch(() => {
         // Individual ping failures don't crash the loop
       })
@@ -1031,8 +1147,11 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
   await initialPing
   scheduleAiSpeedScanOnStartup()
 
-  // 📖 Save cache after initial pings complete for faster next startup
+  // 📖 Save caches after initial pings complete for faster next startup.
+  // 📖 Both caches live side-by-side: the old per-session cache for instant frame-1
+  // 📖 data, and the new persistent probe-cache for cross-session skip + auto-hide.
   saveCache(state.results, state.pingMode)
+  flushProbeCache()
 
   // 📖 Background version re-check: poll npm registry every 5 minutes.
   // 📖 If a new version appears (wasn't there at startup), update the banner live.

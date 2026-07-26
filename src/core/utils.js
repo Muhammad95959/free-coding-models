@@ -452,11 +452,16 @@ export function findBestModel(results) {
 //     --daemon-status, --no-telemetry, --json, --help/-h (case-insensitive)
 //     --playground / playground subcommand (open the in-TUI chat playground)
 //   - Value flag: --tier <letter> (the next non-flag arg is the tier value)
+//   - Probe-cache flags (t1):
+//     --reprobe / --no-cache (boolean) — force-rebuild the probe cache this run
+//     --probe-ttl <ms> (value)          — override the 24h default TTL
+//     --show-broken (boolean)           — don't auto-hide broken models (one-shot)
 //
 // Returns:
 //   { apiKey, bestMode, fiableMode, openCodeMode, openCodeDesktopMode, openCodeWebMode, openClawMode,
 //     aiderMode, crushMode, gooseMode, qwenMode, openHandsMode, ampMode,
-//     piMode, jcodeMode, copilotMode, forgecodeMode, zcodeMode, noTelemetry, jsonMode, helpMode, tierFilter }
+//     piMode, jcodeMode, copilotMode, forgecodeMode, zcodeMode, noTelemetry, jsonMode, helpMode, tierFilter,
+//     reprobeMode, probeTtlMs, showBrokenMode }
 //
 // 📖 Note: apiKey may be null here — the main CLI falls back to env vars and saved config.
 export function parseArgs(argv) {
@@ -486,6 +491,12 @@ export function parseArgs(argv) {
     ? pingIntervalIdx + 1
     : -1
 
+  // 📖 --probe-ttl <ms> — override the 24h probe-cache TTL (power users / debugging)
+  const probeTtlIdx = args.findIndex(a => a.toLowerCase() === '--probe-ttl')
+  const probeTtlValueIdx = (probeTtlIdx !== -1 && args[probeTtlIdx + 1] && !args[probeTtlIdx + 1].startsWith('--'))
+    ? probeTtlIdx + 1
+    : -1
+
   // 📖 --sync-set [name] — auto-discover and live-probe models into a named router set
   const syncSetIdx = args.findIndex(a => a.toLowerCase() === '--sync-set')
   const syncSetValueIdx = (syncSetIdx !== -1 && args[syncSetIdx + 1] && !args[syncSetIdx + 1].startsWith('--'))
@@ -499,6 +510,7 @@ export function parseArgs(argv) {
   if (originValueIdx !== -1) skipIndices.add(originValueIdx)
   if (pingIntervalValueIdx !== -1) skipIndices.add(pingIntervalValueIdx)
   if (syncSetValueIdx !== -1) skipIndices.add(syncSetValueIdx)
+  if (probeTtlValueIdx !== -1) skipIndices.add(probeTtlValueIdx)
 
   for (const [i, arg] of args.entries()) {
     if (arg.startsWith('--') || arg === '-h') {
@@ -574,6 +586,13 @@ export function parseArgs(argv) {
   // 📖 --recommend — launch directly into Smart Recommend mode (Q key equivalent)
   const recommendMode = flags.includes('--recommend')
 
+  // 📖 Probe-cache flags (t1): --reprobe / --no-cache force a fresh probe pass;
+  // 📖 --probe-ttl overrides the 24h default; --show-broken un-hides broken models for this run.
+  const reprobeMode = flags.includes('--reprobe') || flags.includes('--no-cache')
+  const showBrokenMode = flags.includes('--show-broken')
+  const probeTtlRaw = probeTtlValueIdx !== -1 ? args[probeTtlValueIdx] : null
+  const probeTtlMs = probeTtlRaw !== null ? parseInt(probeTtlRaw, 10) : null
+
   return {
     apiKey,
     bestMode,
@@ -621,6 +640,10 @@ export function parseArgs(argv) {
     devMode,
     syncSetMode,
     syncSetName,
+    // 📖 Probe-cache flags (t1) — see src/core/probe-cache.js
+    reprobeMode,
+    probeTtlMs: Number.isFinite(probeTtlMs) && probeTtlMs > 0 ? probeTtlMs : null,
+    showBrokenMode,
   }
 }
 
