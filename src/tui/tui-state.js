@@ -286,6 +286,17 @@ export function createTuiState({
     probeCompleted: 0,
     probeHiddenCount: 0,
 
+    // 📖 Persistent probe-cache (t1): TTL'd cross-session health cache.
+    // 📖 - probeCacheHits / Misses: telemetry counters per session (footer chip).
+    // 📖 - probeCacheBrokenHidden: live count of broken rows currently hidden.
+    // 📖 - probeCacheTtlMs: TTL override from --probe-ttl CLI flag (default 24h).
+    // 📖 - showBrokenMode: Shift+B toggle; true = broken rows are visible (dimmed).
+    probeCacheHits: 0,
+    probeCacheMisses: 0,
+    probeCacheBrokenHidden: 0,
+    probeCacheTtlMs: null,        // 📖 Set in app.js from cliArgs.probeTtlMs || DEFAULT
+    showBrokenMode: false,
+
     // 📖 Header click flash animation: briefly highlights the clicked column header
     // 📖 with an inverse/bright style for ~250ms (3 frames at 12 FPS).
     headerFlashColumn: null,       // 📖 Column name being flashed (null = no flash active)

@@ -466,6 +466,57 @@ When a tool mode is active (via `Z`), models incompatible with that tool are hig
 
 ---
 
+## 🧠 Persistent probe cache
+
+Every health probe result is cached to `~/.free-coding-models/probe-cache.json` for **24 hours** and **shared across all surfaces** (CLI TUI, Web Dashboard / daemon, Tauri Desktop).
+
+- **Warm start** renders the full ranking in <500ms using the cached results, then re-pings only the models that are due (broken or past TTL).
+- **Broken models** are auto-hidden across sessions — a model that 401s today stays out of tomorrow's default view. Recovery is automatic: if it comes back `ok`, it un-hides on the next probe.
+- **Cross-process safe**: a debounced flush + atomic rename + read-merge-write means the CLI and the daemon can share the file without clobbering each other.
+
+### Where the cache lives
+
+| Env / OS | Path |
+|----------|------|
+| `XDG_CACHE_HOME` set | `$XDG_CACHE_HOME/free-coding-models/probe-cache.json` |
+| Default (macOS / Linux) | `~/.free-coding-models/probe-cache.json` |
+| Windows | `%USERPROFILE%\.free-coding-models\probe-cache.json` |
+
+Inspect or wipe it manually any time — it's plain JSON with `0600` perms.
+
+### CLI flags
+
+| Flag | Effect |
+|------|--------|
+| `--reprobe` / `--no-cache` | Nuke the cache before this run; ping everything fresh |
+| `--probe-ttl <ms>` | Override the 24h TTL (e.g. `--probe-ttl 3600000` for 1h) |
+| `--show-broken` | Don't auto-hide broken models this run (one-shot override) |
+
+### TUI keys
+
+| Key | Effect |
+|-----|--------|
+| **Shift+B** | Toggle visibility of broken models (footer chip shows `⚡ N cached · 🔴 M broken`) |
+
+### Daemon `/stats` shape
+
+```json
+{
+  "probeCache": {
+    "total": 191,
+    "ok": 178,
+    "broken": 13,
+    "freshCount": 165,
+    "staleCount": 13,
+    "dueCount": 26,
+    "hiddenCount": 13,
+    "providers": 9
+  }
+}
+```
+
+---
+
 ## π Pi Extension — FCM-Pi ⚠️ BETA
 
 **FCM-Pi** is a native [Pi coding agent](https://pi.dev) extension that integrates `free-coding-models` directly into your Pi session. It stays silent by default, scans only when you run `/fcm`, and lets you explicitly hot-swap models mid-session.
@@ -678,6 +729,7 @@ See [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md) f
 - **Auto-retry** — timeout models keep getting retried
 - **Mandatory self-update policy** — startup checks npm for a newer FCM and installs it automatically without a prompt. If the install fails twice in a row (offline, proxy, or permissions), FCM still starts but shows a red outdated-version warning until the user retries with `Shift+U` or runs the displayed install command.
 - **Last release timestamp** — light pink footer shows `Last release: Mar 27, 2026, 09:42 PM` from npm so users know how fresh the data is
+- **Persistent probe-cache (t1)** — every health probe result is cached to `~/.free-coding-models/probe-cache.json` for 24h. Warm starts render the full ranking in <500ms, only re-ping the models that are due (broken or TTL-expired). Broken models are auto-hidden across sessions — toggle visibility with **Shift+B**. See [Persistent probe cache](#-persistent-probe-cache) below for `--reprobe`, `--probe-ttl`, `--show-broken`.
 
 ---
 
