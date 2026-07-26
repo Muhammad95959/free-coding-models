@@ -53,7 +53,7 @@
   ],
   "scripts": {
     "start": "node bin/free-coding-models.js",
-    "test": "node --test test/test.js test/fcm-agent-core.test.js test/patch-openclaw.test.js test/provider-metadata.test.js test/config-permission-hint.test.js test/probe-cache.test.js",
+    "test": "node --test test/test.js test/fcm-agent-core.test.js test/patch-openclaw.test.js test/provider-metadata.test.js test/config-permission-hint.test.js test/probe-cache.test.js test/passive-quota.test.js",
     "prepack": "npm run build:web",
     "dev": "node scripts/dev-web.mjs",
     "dev:web": "node scripts/dev-web.mjs",

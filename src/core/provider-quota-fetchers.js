@@ -1,23 +1,42 @@
 /**
  * @file lib/provider-quota-fetchers.js
- * @description Provider endpoint quota pollers for publicly available endpoints.
+ * @description Provider endpoint quota pollers + passive rate-limit header parser.
  *
- * Supported providers:
+ * Active fetchers (existing):
  *   - openrouter: GET https://openrouter.ai/api/v1/key
  *       derives percent from limit_remaining/limit (with fallback field names)
  *   - siliconflow: GET https://api.siliconflow.cn/v1/user/info
  *       returns balance info; percent is null (no limit field to derive from)
+ *
+ * Passive tracker (t2):
+ *   - Every chat-completion response carries rate-limit headers (x-ratelimit-*).
+ *   - processResponseHeaders() parses those headers in 6 priority variants and
+ *     writes to an in-memory map, kept fresh per `STALENESS_MS` (5 min default).
+ *   - getQuota() merges the passive snapshot with the latest active fetch,
+ *     returning whichever is freshest — so quota is *always* live when traffic
+ *     flows, with the active fetcher as a safety net for idle periods.
+ *   - Zero extra network requests: the headers are already on every response.
  *
  * Features:
  *   - TTL cache (default 60s) prevents hammering endpoints
  *   - Error backoff (default 15s) after failures
  *   - Injectable fetch + time for testing
  *   - API keys are never logged
+ *   - Case-insensitive header parsing (some proxies vary casing)
  *
  * @exports parseOpenRouterResponse(data) → number|null
  * @exports parseSiliconFlowResponse(data) → { balance, chargeBalance, totalBalance }|null
  * @exports createProviderQuotaFetcher(options) → fetcher(providerKey, apiKey) → Promise<number|null>
  * @exports fetchProviderQuota(providerKey, apiKey, options) → Promise<number|null>
+ * @exports extractQuota(headers) → { remaining, limit, percent, source, windowType }|null
+ * @exports processResponseHeaders(providerKey, headers, opts?) → boolean
+ * @exports getQuota(providerKey, opts?) → QuotaSnapshot|null
+ * @exports getAllQuotas(opts?) → ReadonlyMap<string, QuotaSnapshot>
+ * @exports formatQuotaStatus(providerKey, opts?) → string|undefined
+ * @exports resetPassiveQuota() — clear the in-memory passive map (tests)
+ * @exports HEADER_PAIRS — readonly array of [remainingKey, limitKey] pairs in priority order
+ * @exports STALENESS_MS — passive snapshots older than this are considered stale
+ * @exports QUOTA_WINDOW_LABELS — map of windowType → short label for tooltips
  */
 
 // ─── Response parsers (pure, no I/O) ─────────────────────────────────────────
@@ -316,4 +335,235 @@ export async function fetchProviderQuota(providerKey, apiKey, options = {}) {
   })
 
   return pendingPromise
+}
+
+// ─── Passive rate-limit header tracker (t2) ───────────────────────────────────
+
+/**
+ * 📖 STALENESS_MS: how long a passive snapshot stays "fresh" before we prefer
+ * 📖 the active fetcher result (or hide the chip entirely if neither is fresh).
+ * 📖 Mirrors pi-free's 5-minute window. Override per call via opts.now - opts.maxAgeMs.
+ */
+export const STALENESS_MS = 5 * 60 * 1000
+
+/**
+ * 📖 HEADER_PAIRS: ordered list of [remainingKey, limitKey] pairs to try when
+ * 📖 parsing a response's rate-limit headers. First pair where both values parse
+ * 📖 as finite numbers AND limit > 0 wins. Order matters: most-specific (day,
+ * 📖 tokens) comes before generic (requests) where applicable.
+ *
+ * 📖 Provenance:
+ * 📖   - x-ratelimit-remaining-requests / x-ratelimit-limit-requests  → SambaNova
+ * 📖   - x-ratelimit-remaining          / x-ratelimit-limit            → Mistral / generic
+ * 📖   - ratelimit-remaining-requests    / ratelimit-limit-requests      → proxies that strip 'x-' prefix
+ * 📖   - ratelimit-remaining             / ratelimit-limit               → same, generic
+ * 📖   - x-ratelimit-remaining-requests-day / x-ratelimit-limit-requests-day → SambaNova daily window
+ * 📖   - x-ratelimit-remaining-day / x-ratelimit-limit-day → generic daily
+ */
+export const HEADER_PAIRS = [
+  ['x-ratelimit-remaining-requests', 'x-ratelimit-limit-requests'],
+  ['x-ratelimit-remaining', 'x-ratelimit-limit'],
+  ['ratelimit-remaining-requests', 'ratelimit-limit-requests'],
+  ['ratelimit-remaining', 'ratelimit-limit'],
+  ['x-ratelimit-remaining-requests-day', 'x-ratelimit-limit-requests-day'],
+  ['x-ratelimit-remaining-day', 'x-ratelimit-limit-day'],
+]
+
+/**
+ * 📖 QUOTA_WINDOW_LABELS: short tooltip labels keyed by windowType suffix
+ * 📖 detected in the matched header pair name. Used by formatQuotaStatus to
+ * 📖 indicate whether the user is looking at a per-minute or per-day window.
+ */
+export const QUOTA_WINDOW_LABELS = {
+  day: 'day',
+  requests: 'min',
+  tokens: 'tok',
+  'tokens-minute': 'tok/min',
+}
+
+/**
+ * 📖 Internal: in-memory map of latest passive quota snapshot per provider.
+ * 📖 Keyed by providerKey; never persisted to disk (passive tracking is local-only).
+ */
+const _passiveQuota = new Map() // providerKey -> QuotaSnapshot
+
+/**
+ * 📖 Case-insensitive header lookup. Accepts both Fetch `Headers` objects and
+ * 📖 plain object literals (some test doubles pass plain objects).
+ */
+function readHeader(headers, key) {
+  if (!headers) return null
+  if (typeof headers.get === 'function') {
+    return headers.get(key) ?? headers.get(key.toLowerCase()) ?? null
+  }
+  if (typeof headers === 'object') {
+    if (key in headers) return headers[key]
+    const lower = key.toLowerCase()
+    if (lower in headers) return headers[lower]
+    // 📖 Iterate as a last resort — some servers use unusual casings.
+    for (const k of Object.keys(headers)) {
+      if (k.toLowerCase() === lower) return headers[k]
+    }
+  }
+  return null
+}
+
+/**
+ * 📖 Parse rate-limit headers and extract a structured quota snapshot.
+ * 📖 Returns null when no header pair matches (caller decides to keep stale).
+ *
+ * @param {Headers | Record<string, string> | null | undefined} headers
+ * @returns {{ remaining: number, limit: number, percent: number, source: string, windowType: string } | null}
+ */
+export function extractQuota(headers) {
+  for (const [remainingKey, limitKey] of HEADER_PAIRS) {
+    const remainingRaw = readHeader(headers, remainingKey)
+    const limitRaw = readHeader(headers, limitKey)
+    if (remainingRaw == null || limitRaw == null) continue
+    const remaining = Number.parseFloat(remainingRaw)
+    const limit = Number.parseFloat(limitRaw)
+    if (!Number.isFinite(remaining) || !Number.isFinite(limit) || limit <= 0) continue
+    const percent = Math.max(0, Math.min(100, Math.round((remaining / limit) * 100)))
+    // 📖 Derive windowType from the matching pair's key suffix.
+    let windowType = 'requests'
+    if (remainingKey.endsWith('-day')) windowType = 'day'
+    else if (remainingKey.endsWith('-tokens-minute')) windowType = 'tokens-minute'
+    else if (remainingKey.endsWith('-tokens')) windowType = 'tokens'
+    return { remaining, limit, percent, source: remainingKey, windowType }
+  }
+  return null
+}
+
+/**
+ * 📖 Internal: build a QuotaSnapshot from extractQuota() output + timestamp.
+ */
+function makeSnapshot(extracted, source = 'header', now = Date.now()) {
+  return {
+    remaining: extracted.remaining,
+    limit: extracted.limit,
+    percent: extracted.percent,
+    windowType: extracted.windowType,
+    headerSource: extracted.source,
+    source,        // 'header' (passive) or 'endpoint' (active fetcher)
+    lastUpdated: now,
+  }
+}
+
+/**
+ * 📖 processResponseHeaders: hook for the daemon reverse-proxy + ping responses.
+ * 📖 Parses the response headers, writes the snapshot to the passive map, and
+ * 📖 returns true if a snapshot was stored (so callers can decide to log).
+ *
+ * @param {string} providerKey
+ * @param {Headers | Record<string, string> | null | undefined} headers
+ * @param {object} [opts]
+ * @param {number} [opts.now=Date.now()]
+ * @returns {boolean} true if a snapshot was written
+ */
+export function processResponseHeaders(providerKey, headers, opts = {}) {
+  if (!providerKey || typeof providerKey !== 'string') return false
+  const now = opts.now ?? Date.now()
+  const extracted = extractQuota(headers)
+  if (!extracted) return false
+  _passiveQuota.set(providerKey, makeSnapshot(extracted, 'header', now))
+  return true
+}
+
+/**
+ * 📖 Internal: read the latest active-fetcher snapshot for a provider. The active
+ * 📖 fetcher uses a per-key Map of { value, expiresAt } entries; we synthesise a
+ * 📖 QuotaSnapshot from that. Returns null if the active cache is empty/expired.
+ */
+function getActiveSnapshot(providerKey, now = Date.now()) {
+  for (const [cacheKey, entry] of _defaultCache.entries()) {
+    if (!cacheKey.startsWith(`${providerKey}:`)) continue
+    if (!entry || typeof entry !== 'object') continue
+    if (typeof entry.expiresAt !== 'number' || entry.expiresAt <= now) continue
+    const value = entry.value
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue
+    return makeSnapshot(
+      { remaining: value, limit: 100, percent: value, windowType: 'unknown', source: 'active_fetcher' },
+      'endpoint',
+      // 📖 active fetcher stores wall-clock ms at fetch time; expose it so
+      // 📖 getQuota's freshest-wins logic works on real timestamps.
+      now,
+    )
+  }
+  return null
+}
+
+/**
+ * 📖 getQuota: merge passive + active snapshots, return the freshest.
+ * 📖 A snapshot is "stale" when older than STALENESS_MS. If both are stale,
+ * 📖 returns null (caller should hide the chip).
+ *
+ * @param {string} providerKey
+ * @param {object} [opts]
+ * @param {number} [opts.now=Date.now()]
+ * @param {number} [opts.maxAgeMs=STALENESS_MS]
+ * @returns {QuotaSnapshot | null}
+ */
+export function getQuota(providerKey, opts = {}) {
+  if (!providerKey) return null
+  const now = opts.now ?? Date.now()
+  const maxAgeMs = opts.maxAgeMs ?? STALENESS_MS
+  const passive = _passiveQuota.get(providerKey) || null
+  const active = getActiveSnapshot(providerKey, now)
+
+  // 📖 Drop stale snapshots.
+  const candidates = []
+  if (passive && now - passive.lastUpdated <= maxAgeMs) candidates.push(passive)
+  if (active && now - active.lastUpdated <= maxAgeMs) candidates.push(active)
+
+  if (candidates.length === 0) return null
+  // 📖 Freshest wins — tied timestamps prefer passive (it's the live signal).
+  return candidates.reduce((a, b) => (a.lastUpdated >= b.lastUpdated ? a : b))
+}
+
+/**
+ * 📖 getAllQuotas: snapshot of every provider we know about, merged passive+active.
+ * 📖 Stale entries (older than maxAgeMs) are excluded. Used by /stats and the TUI footer.
+ *
+ * @param {object} [opts]
+ * @returns {ReadonlyMap<string, QuotaSnapshot>}
+ */
+export function getAllQuotas(opts = {}) {
+  const now = opts.now ?? Date.now()
+  const maxAgeMs = opts.maxAgeMs ?? STALENESS_MS
+  const out = new Map()
+  // 📖 Union the keys from both passive and active stores so we don't miss a
+  // 📖 provider whose latest signal only exists in one.
+  const allKeys = new Set([..._passiveQuota.keys()])
+  for (const cacheKey of _defaultCache.keys()) {
+    const colon = cacheKey.indexOf(':')
+    if (colon > 0) allKeys.add(cacheKey.slice(0, colon))
+  }
+  for (const providerKey of allKeys) {
+    const q = getQuota(providerKey, { now, maxAgeMs })
+    if (q) out.set(providerKey, q)
+  }
+  return out
+}
+
+/**
+ * 📖 formatQuotaStatus: human-readable "⚠️ groq: 12/100 (12%) [day]" string.
+ * 📖 Returns undefined when the snapshot is missing or stale (caller hides the chip).
+ *
+ * @param {string} providerKey
+ * @param {object} [opts]
+ * @returns {string | undefined}
+ */
+export function formatQuotaStatus(providerKey, opts = {}) {
+  const snapshot = getQuota(providerKey, opts)
+  if (!snapshot) return undefined
+  const window = QUOTA_WINDOW_LABELS[snapshot.windowType] || snapshot.windowType
+  const icon = snapshot.percent <= 10 ? '🚨' : snapshot.percent <= 25 ? '⚠️ ' : '📊'
+  return `${icon} ${providerKey}: ${snapshot.remaining}/${snapshot.limit} (${snapshot.percent}%) [${window}]`
+}
+
+/**
+ * 📖 resetPassiveQuota: clear the in-memory passive map. Test-only utility.
+ */
+export function resetPassiveQuota() {
+  _passiveQuota.clear()
 }
