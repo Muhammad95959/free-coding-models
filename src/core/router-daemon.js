@@ -63,6 +63,11 @@ import {
   isCacheFresh as isProbeCacheFresh,
   pruneStaleEntries as pruneProbeCacheStaleEntries,
 } from './probe-cache.js'
+import {
+  processResponseHeaders as processPassiveQuotaHeaders,
+  getAllQuotas as getAllPassiveQuotas,
+  STALENESS_MS as PASSIVE_QUOTA_STALENESS_MS,
+} from './provider-quota-fetchers.js'
 
 export const ROUTER_DEFAULT_PORT = 19280
 export const ROUTER_MAX_PORT = 19289
@@ -475,11 +480,16 @@ function serveWebStaticFile(res, pathname, requestId) {
   serveStaticFromDist(res, candidate)
 }
 
-function buildUpstreamMeta(response, text = '') {
+function buildUpstreamMeta(response, text = '', providerKey = '') {
   // 📖 Keep quota diagnostics structural only: headers and retry timing are safe,
   // 📖 while upstream response bodies stay out of logs and telemetry.
   const rateLimitHeaders = extractRateLimitHeaders(response.headers)
   const retryAfterMs = parseRetryAfterMs(rateLimitHeaders['retry-after'])
+  // 📖 Passive quota tracker (t2): every upstream response carries rate-limit
+  // 📖 headers — we parse them once here and write to the in-memory snapshot
+  // 📖 map. Zero extra network requests; works on providers with no quota
+  // 📖 endpoint. See src/core/provider-quota-fetchers.js for the 8 header pairs.
+  if (providerKey) processPassiveQuotaHeaders(providerKey, response.headers)
   const quotaExhausted = response.status === 429
     || hasZeroRemainingQuota(rateLimitHeaders)
     || /\b(quota|rate[_ -]?limit|too many requests)\b/i.test(text || '')
@@ -1487,6 +1497,12 @@ class RouterRuntime {
       // 📖 Surfaced so the Web Dashboard + CLI can show cache hit rate + how many
       // 📖 broken models are currently hidden. Refreshed every /stats call.
       probeCache: getProbeCacheStats(),
+      // 📖 Passive quota (t2): latest known rate-limit headers per provider, keyed
+      // 📖 by providerKey. Each entry is { remaining, limit, percent, source,
+      // 📖 lastUpdated } — source can be 'header' (live) or 'endpoint' (active
+      // 📖 fetcher fallback). Stale entries (older than PASSIVE_QUOTA_STALENESS_MS)
+      // 📖 are excluded so the consumer only sees fresh data.
+      quota: Object.fromEntries(getAllPassiveQuotas()),
     }
   }
 
@@ -2051,7 +2067,7 @@ class RouterRuntime {
       clearTimeout(timeout)
       const latencyMs = Math.round(performance.now() - started)
       const text = await response.text()
-      const upstreamMeta = buildUpstreamMeta(response, text)
+      const upstreamMeta = buildUpstreamMeta(response, text, candidate.provider)
 
       if (isLikelyHtmlResponse(response.headers, text)) {
         this.markFailure(key, 'upstream_html_maintenance', 503, upstreamMeta)
@@ -2193,7 +2209,7 @@ class RouterRuntime {
       })
       clearTimeout(timeout)
       const latencyMs = Math.round(performance.now() - started)
-      const upstreamMeta = buildUpstreamMeta(response)
+      const upstreamMeta = buildUpstreamMeta(response, '', candidate.provider)
       if (isLikelyHtmlResponse(response.headers)) {
         this.markFailure(key, 'upstream_html_maintenance', 503, upstreamMeta)
         this.recordRouterError('upstream_html_maintenance', requestId, { model: key, status: response.status, stream: true })
