@@ -550,6 +550,35 @@ The `source` field is `"header"` when the value came from a passive response hea
 
 ---
 
+## 📈 Runtime telemetry: real-world scores
+
+Every routed request through the daemon feeds a persistent per-model telemetry file (`~/.free-coding-models/runtime-telemetry.json`) — the **honesty layer** that complements SWE-bench with what models actually do on free tiers.
+
+- **Real success rate** — `(successCalls / totalCalls)` updated on every routed request (success and failure paths alike).
+- **Real throughput** — `avgTokensPerSecond` derived from completion tokens / total latency, so you see what your code actually streams at.
+- **Recent calls (last 50)** — for debugging "why did this just 500?" without rebuilding state.
+- **Composite `Real` score** — `successRate × 0.6 + sigmoid01(tok/s) × 0.25 + recency × 0.15`. Null when below `MIN_CALLS_FOR_SCORE = 5` (no penalty for new models).
+
+### Where it shows up
+
+| Surface | What you'll see |
+|---------|-----------------|
+| TUI `Real` column | Inline composite score per row, `–` when insufficient data |
+| TUI `W` sort key | Sort by real-world score descending |
+| TUI `Shift+W` | Runtime Report overlay — per-model breakdown + recent calls |
+| Web Dashboard | "Runtime Telemetry" cards with animated success-rate bars |
+| `/api/router/stats.runtime` | `{ stats: { modelsTracked, totalCalls, modelsWithSignal }, models: { ... } }` |
+
+### Privacy
+
+The telemetry file lives **locally only** (`~/.free-coding-models/runtime-telemetry.json`, `0600` perms). Nothing is sent upstream unless you opt in to a future aggregate leaderboard. The file holds **metadata only** — success, latency, tokens, error reason. No prompts, no responses, no content.
+
+### CLI flag
+
+- `--clear-runtime` — wipe the file before launching (reset the baseline).
+
+---
+
 ## π Pi Extension — FCM-Pi ⚠️ BETA
 
 **FCM-Pi** is a native [Pi coding agent](https://pi.dev) extension that integrates `free-coding-models` directly into your Pi session. It stays silent by default, scans only when you run `/fcm`, and lets you explicitly hot-swap models mid-session.
@@ -764,6 +793,7 @@ See [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md) f
 - **Last release timestamp** — light pink footer shows `Last release: Mar 27, 2026, 09:42 PM` from npm so users know how fresh the data is
 - **Persistent probe-cache (t1)** — every health probe result is cached to `~/.free-coding-models/probe-cache.json` for 24h. Warm starts render the full ranking in <500ms, only re-ping the models that are due (broken or TTL-expired). Broken models are auto-hidden across sessions — toggle visibility with **Shift+B**. See [Persistent probe cache](#-persistent-probe-cache) below for `--reprobe`, `--probe-ttl`, `--show-broken`.
 - **Live quota from response headers (t2)** — every routed chat-completion response already carries `x-ratelimit-*` headers. The daemon parses them in 8 variants and exposes live per-provider quota on the TUI footer (`📊 groq 78% · sambanova 41%`) and in the Web Dashboard (`Provider Quota` section with animated progress bars). Zero extra network requests, zero quota waste. See [Live quota from headers](#-live-quota-from-response-headers) below.
+- **Runtime telemetry: real-world scores (t3)** — every routed request through the daemon feeds a persistent per-model telemetry file (`~/.free-coding-models/runtime-telemetry.json`) with real success rate, throughput, and recent calls. The `Real` column + `W` sort key in the TUI rank models by what *actually* works on free tiers, not what they claim on SWE-bench. See [Runtime telemetry](#-runtime-telemetry-real-world-scores) below.
 
 ---
 
