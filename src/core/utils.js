@@ -380,6 +380,15 @@ export const sortResults = (results, sortColumn, sortDirection, { benchmarkResul
         // 📖 via JS stable sort preserving original order when values are equal
         cmp = (a.usagePercent ?? 0) - (b.usagePercent ?? 0)
         break
+      case 'realworld':
+        // 📖 Sort by real-world score (t3) — composite of success rate, throughput,
+        // 📖 and recency. Models with insufficient data (r.realWorldScore === null)
+        // 📖 sort to the bottom in BOTH directions (treat null as -Infinity for asc,
+        // 📖 so high-to-low puts the score-havers first regardless of null).
+        const aRW = typeof a.realWorldScore === 'number' ? a.realWorldScore : -Infinity
+        const bRW = typeof b.realWorldScore === 'number' ? b.realWorldScore : -Infinity
+        cmp = aRW - bRW
+        break
     }
 
     // 📖 Flip comparison for descending order

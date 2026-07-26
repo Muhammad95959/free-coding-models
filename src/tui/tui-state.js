@@ -297,6 +297,15 @@ export function createTuiState({
     probeCacheTtlMs: null,        // 📖 Set in app.js from cliArgs.probeTtlMs || DEFAULT
     showBrokenMode: false,
 
+    // 📖 Runtime telemetry overlay state (t3): Shift+W opens the Runtime Report
+    // 📖 overlay. Data is loaded fresh from ~/.free-coding-models/runtime-telemetry.json
+    // 📖 when the overlay opens — no polling, no daemon dependency.
+    runtimeReportOpen: false,
+    runtimeReportScrollOffset: 0,
+    runtimeReportError: null,
+    runtimeReportData: null,        // 📖 Array<[key, ModelTelemetry]>
+    runtimeReportSelectedKey: null, // 📖 Pre-selected model key
+
     // 📖 Header click flash animation: briefly highlights the clicked column header
     // 📖 with an inverse/bright style for ~250ms (3 frames at 12 FPS).
     headerFlashColumn: null,       // 📖 Column name being flashed (null = no flash active)
