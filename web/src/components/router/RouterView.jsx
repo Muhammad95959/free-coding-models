@@ -1015,6 +1015,40 @@ export default function RouterView({ onClose, onToast, favorites }) {
             </div>
           )}
 
+          {/* Passive quota (t2): per-provider live quota from response headers.
+              📖 Updated every /stats poll (5s). See provider-quota-fetchers.js. */}
+          {stats?.quota && Object.keys(stats.quota).length > 0 && (
+            <div className={styles.section} style={{ marginTop: 12 }}>
+              <h3 className={styles.sectionTitle}>
+                📊 Provider Quota
+                <span className={styles.miniPgHint}>live from response headers (no extra requests)</span>
+              </h3>
+              <div className={styles.quotaGrid}>
+                {Object.entries(stats.quota)
+                  .sort((a, b) => (a[1]?.percent ?? 100) - (b[1]?.percent ?? 100))
+                  .map(([providerKey, snap]) => {
+                    const pct = snap?.percent ?? 0
+                    const color = pct <= 10 ? '#dc2626' : pct <= 25 ? '#f59e0b' : '#16a34a'
+                    const window = snap?.windowType && snap.windowType !== 'unknown' ? snap.windowType : ''
+                    const source = snap?.source === 'header' ? '🛰️' : '🔌'
+                    return (
+                      <div key={providerKey} className={styles.quotaCell} title={`${providerKey}: ${snap?.remaining ?? '?'}/${snap?.limit ?? '?'} (${pct}%) ${window ? `[${window}]` : ''}`}>
+                        <span className={styles.quotaSource}>{source}</span>
+                        <span className={styles.quotaName}>{providerKey}</span>
+                        <div className={styles.quotaBar}>
+                          <div
+                            className={styles.quotaFill}
+                            style={{ width: `${pct}%`, background: color }}
+                          />
+                        </div>
+                        <span className={styles.quotaPct} style={{ color }}>{pct}%</span>
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
+
           {/* Server health (small chip at the bottom for visibility) */}
           <div className={styles.section} style={{ marginBottom: 0, marginTop: 16 }}>
             <span className={styles.saveStatus}>
