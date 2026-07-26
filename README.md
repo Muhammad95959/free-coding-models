@@ -517,6 +517,39 @@ Inspect or wipe it manually any time — it's plain JSON with `0600` perms.
 
 ---
 
+## 📊 Live quota from response headers
+
+Every chat-completion response carries rate-limit headers (`x-ratelimit-remaining-requests`, etc.). The daemon parses them passively on every routed request — **zero extra network requests, zero quota waste**.
+
+- **8 header variants** supported: SambaNova, Mistral, generic `x-ratelimit-*`, the `ratelimit-*` (no-`x-`) variant some proxies use, and 3 daily / token / token-minute variants for Cerebras-style providers.
+- **Pre-warmed by pings**: even health-check pings return headers, so quota is visible in the CLI before you ever route a real request through the daemon.
+- **5-minute staleness**: snapshots older than 5 minutes are excluded, with the active `/api/v1/key` fetcher as fallback for idle providers.
+- **Case-insensitive**: some proxies vary casing; we handle all of them.
+- **Garbage-safe**: `limit: 0`, non-numeric values, or missing pairs return `null` (no crash).
+
+### Where it shows up
+
+| Surface | What you'll see |
+|---------|-----------------|
+| TUI footer | `📊 groq 78% · sambanova 41%` chip (top 5 most-depleted first) |
+| Web Dashboard | New `Provider Quota` section with animated progress bars per provider |
+| `/api/router/stats` | `quota: { providerKey: { remaining, limit, percent, source, lastUpdated, windowType } }` |
+
+### Daemon `/stats.quota` shape
+
+```json
+{
+  "quota": {
+    "groq": { "remaining": 14, "limit": 30, "percent": 47, "windowType": "requests", "source": "header", "lastUpdated": 1753478400000 },
+    "sambanova": { "remaining": 1500, "limit": 14400, "percent": 10, "windowType": "day", "source": "header", "lastUpdated": 1753478400000 }
+  }
+}
+```
+
+The `source` field is `"header"` when the value came from a passive response header, `"endpoint"` when it came from the active `/api/v1/key` fetcher. Use it in devtools to debug why a provider shows the value it does.
+
+---
+
 ## π Pi Extension — FCM-Pi ⚠️ BETA
 
 **FCM-Pi** is a native [Pi coding agent](https://pi.dev) extension that integrates `free-coding-models` directly into your Pi session. It stays silent by default, scans only when you run `/fcm`, and lets you explicitly hot-swap models mid-session.
@@ -730,6 +763,7 @@ See [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md) f
 - **Mandatory self-update policy** — startup checks npm for a newer FCM and installs it automatically without a prompt. If the install fails twice in a row (offline, proxy, or permissions), FCM still starts but shows a red outdated-version warning until the user retries with `Shift+U` or runs the displayed install command.
 - **Last release timestamp** — light pink footer shows `Last release: Mar 27, 2026, 09:42 PM` from npm so users know how fresh the data is
 - **Persistent probe-cache (t1)** — every health probe result is cached to `~/.free-coding-models/probe-cache.json` for 24h. Warm starts render the full ranking in <500ms, only re-ping the models that are due (broken or TTL-expired). Broken models are auto-hidden across sessions — toggle visibility with **Shift+B**. See [Persistent probe cache](#-persistent-probe-cache) below for `--reprobe`, `--probe-ttl`, `--show-broken`.
+- **Live quota from response headers (t2)** — every routed chat-completion response already carries `x-ratelimit-*` headers. The daemon parses them in 8 variants and exposes live per-provider quota on the TUI footer (`📊 groq 78% · sambanova 41%`) and in the Web Dashboard (`Provider Quota` section with animated progress bars). Zero extra network requests, zero quota waste. See [Live quota from headers](#-live-quota-from-response-headers) below.
 
 ---
 
