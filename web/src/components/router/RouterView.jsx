@@ -1015,6 +1015,40 @@ export default function RouterView({ onClose, onToast, favorites }) {
             </div>
           )}
 
+          {/* Runtime telemetry (t3): per-model real-world success rate + throughput.
+              📖 Read from /stats.runtime (same poll, 5s refresh). Models with
+              📖 insufficient data (< 5 calls) are hidden — no penalty for new
+              📖 models. */}
+          {stats?.runtimeTelemetry?.stats?.modelsTracked > 0 && (
+            <div className={styles.section} style={{ marginTop: 12 }}>
+              <h3 className={styles.sectionTitle}>
+                📈 Runtime Telemetry
+                <span className={styles.miniPgHint}>{stats.runtimeTelemetry.stats.totalCalls} calls tracked · local-only</span>
+              </h3>
+              <div className={styles.quotaGrid}>
+                {Object.entries(stats.runtimeTelemetry.models)
+                  .filter(([, m]) => m.totalCalls >= 5)
+                  .sort((a, b) => (b[1]?.successRate ?? 0) - (a[1]?.successRate ?? 0))
+                  .slice(0, 6)
+                  .map(([key, m]) => {
+                    const srPct = Math.round((m.successRate ?? 0) * 100)
+                    const tps = m.avgTokensPerSecond || 0
+                    const srColor = srPct <= 50 ? '#dc2626' : srPct <= 80 ? '#f59e0b' : '#16a34a'
+                    return (
+                      <div key={key} className={styles.quotaCell} title={`${key}: ${m.totalCalls} calls, ${m.successCalls} ok, ${m.errorCalls} err, ${tps.toFixed(1)} tok/s avg`}>
+                        <span className={styles.quotaSource}>📈</span>
+                        <span className={styles.quotaName}>{key.split('/')[1] || key}</span>
+                        <div className={styles.quotaBar}>
+                          <div className={styles.quotaFill} style={{ width: `${srPct}%`, background: srColor }} />
+                        </div>
+                        <span className={styles.quotaPct} style={{ color: srColor }}>{srPct}%</span>
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
+
           {/* Passive quota (t2): per-provider live quota from response headers.
               📖 Updated every /stats poll (5s). See provider-quota-fetchers.js. */}
           {stats?.quota && Object.keys(stats.quota).length > 0 && (

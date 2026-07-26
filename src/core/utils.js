@@ -380,6 +380,15 @@ export const sortResults = (results, sortColumn, sortDirection, { benchmarkResul
         // 📖 via JS stable sort preserving original order when values are equal
         cmp = (a.usagePercent ?? 0) - (b.usagePercent ?? 0)
         break
+      case 'realworld':
+        // 📖 Sort by real-world score (t3) — composite of success rate, throughput,
+        // 📖 and recency. Models with insufficient data (r.realWorldScore === null)
+        // 📖 sort to the bottom in BOTH directions (treat null as -Infinity for asc,
+        // 📖 so high-to-low puts the score-havers first regardless of null).
+        const aRW = typeof a.realWorldScore === 'number' ? a.realWorldScore : -Infinity
+        const bRW = typeof b.realWorldScore === 'number' ? b.realWorldScore : -Infinity
+        cmp = aRW - bRW
+        break
     }
 
     // 📖 Flip comparison for descending order
@@ -586,6 +595,10 @@ export function parseArgs(argv) {
   // 📖 --recommend — launch directly into Smart Recommend mode (Q key equivalent)
   const recommendMode = flags.includes('--recommend')
 
+  // 📖 --clear-runtime — wipe ~/.free-coding-models/runtime-telemetry.json (t3).
+  // 📖 Useful when the user wants to reset the real-world-score baseline.
+  const clearRuntimeMode = flags.includes('--clear-runtime')
+
   // 📖 Probe-cache flags (t1): --reprobe / --no-cache force a fresh probe pass;
   // 📖 --probe-ttl overrides the 24h default; --show-broken un-hides broken models for this run.
   const reprobeMode = flags.includes('--reprobe') || flags.includes('--no-cache')
@@ -644,6 +657,8 @@ export function parseArgs(argv) {
     reprobeMode,
     probeTtlMs: Number.isFinite(probeTtlMs) && probeTtlMs > 0 ? probeTtlMs : null,
     showBrokenMode,
+    // 📖 Runtime telemetry flag (t3) — see src/core/runtime-telemetry.js
+    clearRuntimeMode,
   }
 }
 

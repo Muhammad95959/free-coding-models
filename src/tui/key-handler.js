@@ -836,6 +836,40 @@ export function createKeyHandler(ctx) {
     state.tokenUsageError = null
   }
 
+  // 📖 Runtime Report overlay (t3): per-model real-world breakdown + recent calls.
+  // 📖 Reads the local ~/.free-coding-models/runtime-telemetry.json file directly
+  // 📖 (the daemon writes to the same file; the CLI doesn't need to talk to it).
+  async function openRuntimeReportOverlay() {
+    state.runtimeReportOpen = true
+    state.runtimeReportScrollOffset = 0
+    state.runtimeReportError = null
+    state.runtimeReportData = null
+    state.runtimeReportSelectedKey = null
+    try {
+      const { loadRuntimeTelemetry, getAllModelTelemetry } = await import('../core/runtime-telemetry.js')
+      const cache = loadRuntimeTelemetry()
+      const all = getAllModelTelemetry({ cache })
+      const entries = Object.entries(all).sort((a, b) => (b[1].totalCalls || 0) - (a[1].totalCalls || 0))
+      state.runtimeReportData = entries
+      // 📖 Pre-select the currently-focused model if it has telemetry.
+      const focused = state.visibleSorted?.[state.cursor]
+      if (focused) {
+        const key = `${focused.providerKey}/${focused.modelId}`
+        if (entries.find(([k]) => k === key)) state.runtimeReportSelectedKey = key
+      }
+    } catch (err) {
+      state.runtimeReportError = err?.message || 'Failed to load runtime telemetry'
+    }
+  }
+
+  function closeRuntimeReportOverlay() {
+    state.runtimeReportOpen = false
+    state.runtimeReportScrollOffset = 0
+    state.runtimeReportError = null
+    state.runtimeReportData = null
+    state.runtimeReportSelectedKey = null
+  }
+
 
   function cycleToolMode() {
     const modeOrder = getToolModeOrder()
@@ -1355,6 +1389,7 @@ export function createKeyHandler(ctx) {
       case 'sort-verdict': return setSortColumnFromCommand('verdict')
       case 'sort-stability': return setSortColumnFromCommand('stability')
       case 'sort-uptime': return setSortColumnFromCommand('uptime')
+      case 'sort-realworld': return setSortColumnFromCommand('realworld')
       case 'open-settings': return openSettingsOverlay()
       case 'open-help':
         state.helpVisible = true
@@ -1366,6 +1401,7 @@ export function createKeyHandler(ctx) {
       case 'open-router-dashboard': return openRouterDashboardOverlay(state)
       case 'open-playground': return openPlaygroundOverlay(state)
       case 'open-token-usage': return openTokenUsageOverlay()
+      case 'open-runtime-report': return openRuntimeReportOverlay()
       case 'open-install-endpoints': return openInstallEndpointsOverlay()
       case 'open-installed-models': return openInstalledModelsOverlay()
       case 'action-cycle-theme': return cycleGlobalTheme()
@@ -2120,6 +2156,42 @@ export function createKeyHandler(ctx) {
       return
     }
 
+    // 📖 Runtime Report overlay (t3): Shift+W. Per-model real-world breakdown +
+    // 📖 recent calls. Scrolling with up/down/pageup/pagedown/escape.
+    if (state.runtimeReportOpen) {
+      if (key.ctrl && key.name === 'c') { exit(0); return }
+      const pageStep = Math.max(1, (state.terminalRows || 1) - 4)
+      if (key.name === 'escape') {
+        closeRuntimeReportOverlay()
+        return
+      }
+      if (key.name === 'up' || key.name === 'k') {
+        state.runtimeReportScrollOffset = Math.max(0, state.runtimeReportScrollOffset - 1)
+        return
+      }
+      if (key.name === 'down' || key.name === 'j') {
+        state.runtimeReportScrollOffset += 1
+        return
+      }
+      if (key.name === 'pageup') {
+        state.runtimeReportScrollOffset = Math.max(0, state.runtimeReportScrollOffset - pageStep)
+        return
+      }
+      if (key.name === 'pagedown') {
+        state.runtimeReportScrollOffset += pageStep
+        return
+      }
+      if (key.name === 'home') {
+        state.runtimeReportScrollOffset = 0
+        return
+      }
+      if (key.name === 'end') {
+        state.runtimeReportScrollOffset = Number.MAX_SAFE_INTEGER
+        return
+      }
+      return
+    }
+
     // 📖 Router Onboarding overlay: shown on first launch. Y=yes enable, N=not now, Esc=cancel.
     if (state.routerOnboardingOpen) {
       if (key.ctrl && key.name === 'c') { exit(0); return }
@@ -2869,6 +2941,14 @@ export function createKeyHandler(ctx) {
       const currentIdx = PING_MODE_CYCLE.indexOf(state.pingMode)
       const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % PING_MODE_CYCLE.length : 0
       setPingMode(PING_MODE_CYCLE[nextIdx], 'manual')
+      return
+    }
+
+    // 📖 Shift+W: open the Runtime Report overlay (t3) — per-model real-world
+    // 📖 success rate + throughput + recent calls. See command palette
+    // 📖 'open-runtime-report' for the same action.
+    if (key.name === 'w' && key.shift && !key.alt && !key.ctrl && !key.meta) {
+      openRuntimeReportOverlay()
       return
     }
 

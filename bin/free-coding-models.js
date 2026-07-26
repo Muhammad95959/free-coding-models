@@ -62,6 +62,18 @@ async function main() {
     process.exit(0);
   }
 
+  // 📖 --clear-runtime (t3): wipe ~/.free-coding-models/runtime-telemetry.json
+  // 📖 before launching any surface. Keeps the TUI / daemon / web flows consistent.
+  if (cliArgs.clearRuntimeMode) {
+    try {
+      const { clearRuntimeTelemetry } = await import('../src/core/runtime-telemetry.js')
+      const ok = clearRuntimeTelemetry()
+      console.log(chalk.dim(`  ${ok ? '✓' : '✗'} runtime-telemetry.json ${ok ? 'cleared' : 'clear failed'}`))
+    } catch (err) {
+      console.log(chalk.dim(`  runtime-telemetry.json clear failed: ${err?.message || err}`))
+    }
+  }
+
   // Load JSON config before operational modes so the mandatory update policy can
   // 📖 persist failure counters for TUI, Web Dashboard, Docker daemon, and Desktop sidecar launches.
   const config = loadConfig();

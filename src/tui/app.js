@@ -507,6 +507,23 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
   state.probeCacheMisses = probeCacheMisses
   state.probeCacheBrokenHidden = state.results.filter(r => r.cachedBroken && r.hidden).length
 
+  // 📖 Runtime telemetry (t3): load the per-model metrics file + compute the
+  // 📖 real-world score for each result so the table can sort/display it.
+  // 📖 The file may not exist yet (no daemon traffic) — that's fine, every
+  // 📖 r.realWorldScore stays null and we fall back to SWE-bench.
+  try {
+    const { loadRuntimeTelemetry, getRealWorldScore } = await import('../core/runtime-telemetry.js')
+    loadRuntimeTelemetry()  // 📖 populate module-level cache
+    for (const r of state.results) {
+      const score = getRealWorldScore(r.providerKey, r.modelId)
+      r.realWorldScore = score  // null when below MIN_CALLS_FOR_SCORE
+    }
+    state.runtimeTelemetryLoaded = true
+  } catch (err) {
+    state.runtimeTelemetryLoaded = false
+    state.runtimeTelemetryError = err?.message || String(err)
+  }
+
   // 📖 Define pingModel before JSON mode so `--json` can reuse the same provider-aware
   // 📖 ping path as the interactive TUI without waiting for the PTY/render loop setup.
   pingModel = async (r) => {
