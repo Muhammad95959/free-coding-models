@@ -68,6 +68,17 @@ import {
   getAllQuotas as getAllPassiveQuotas,
   STALENESS_MS as PASSIVE_QUOTA_STALENESS_MS,
 } from './provider-quota-fetchers.js'
+import {
+  recordModelCall as recordRuntimeModelCall,
+  getAllModelTelemetry as getAllRuntimeTelemetry,
+  getRealWorldScore as getRuntimeRealWorldScore,
+  getCacheStats as getRuntimeCacheStats,
+  loadRuntimeTelemetry,
+  flushRuntimeTelemetry as flushRuntimeTelemetryStore,
+  clearRuntimeTelemetry as clearRuntimeTelemetryStore,
+  pruneStaleEntries as pruneRuntimeTelemetry,
+  DEFAULT_MIN_CALLS_FOR_SCORE as RUNTIME_MIN_CALLS,
+} from './runtime-telemetry.js'
 
 export const ROUTER_DEFAULT_PORT = 19280
 export const ROUTER_MAX_PORT = 19289
@@ -895,7 +906,48 @@ class RouterRuntime {
     this.probeCache = loadProbeCache()
     this.probeCacheDirty = false
     this.probeCacheFlushTimer = null
+    // 📖 Runtime telemetry (t3): load the persistent per-model metrics file on boot.
+    // 📖 Prune models that haven't been seen in 30 days to keep file size bounded.
+    loadRuntimeTelemetry()
+    pruneRuntimeTelemetry(30 * 24 * 60 * 60 * 1000)
+    this.runtimeTelemetryDirty = false
+    this.runtimeTelemetryFlushTimer = null
     this.refreshRouteState()
+  }
+
+  /**
+   * 📖 scheduleRuntimeTelemetryFlush — debounced write so we don't thrash the
+   * 📖 filesystem when many requests succeed in quick succession.
+   */
+  scheduleRuntimeTelemetryFlush() {
+    if (this.runtimeTelemetryFlushTimer) return
+    this.runtimeTelemetryFlushTimer = setTimeout(() => {
+      this.runtimeTelemetryFlushTimer = null
+      if (this.runtimeTelemetryDirty) {
+        flushRuntimeTelemetryStore()
+        this.runtimeTelemetryDirty = false
+      }
+    }, 5000)
+    if (typeof this.runtimeTelemetryFlushTimer.unref === 'function') this.runtimeTelemetryFlushTimer.unref()
+  }
+
+  /**
+   * 📖 recordRuntimeCall — central helper invoked from both success and failure
+   * 📖 paths in the reverse proxy. Wraps recordModelCall with the call-shape
+   * 📖 translation so every routed outcome (success or fail) feeds the telemetry.
+   */
+  recordRuntimeCall({ providerKey, modelId, success, latencyMs, usage, error }) {
+    if (!providerKey || !modelId) return
+    recordRuntimeModelCall(providerKey, modelId, {
+      success: !!success,
+      latencyMs: typeof latencyMs === 'number' && Number.isFinite(latencyMs) ? latencyMs : 0,
+      promptTokens: usage?.prompt_tokens,
+      completionTokens: usage?.completion_tokens,
+      stopReason: success ? 'stop' : null,
+      error: success ? null : (error || 'unknown'),
+    })
+    this.runtimeTelemetryDirty = true
+    this.scheduleRuntimeTelemetryFlush()
   }
 
   buildModelCatalog() {
@@ -1503,6 +1555,15 @@ class RouterRuntime {
       // 📖 fetcher fallback). Stale entries (older than PASSIVE_QUOTA_STALENESS_MS)
       // 📖 are excluded so the consumer only sees fresh data.
       quota: Object.fromEntries(getAllPassiveQuotas()),
+      // 📖 Runtime telemetry (t3): aggregate counters + every model's derived
+      // 📖 snapshot (successRate, avgLatencyMs, avgTokensPerSecond, recentCalls).
+      // 📖 Surfaced via /stats/runtime (separate endpoint) and here as a digest
+      // 📖 so dashboards can show '1,420 calls tracked across 12 models' without
+      // 📖 an extra round-trip.
+      runtimeTelemetry: {
+        stats: getRuntimeCacheStats(),
+        models: getAllRuntimeTelemetry(),
+      },
     }
   }
 
@@ -2087,6 +2148,15 @@ class RouterRuntime {
         this.markSuccess(key, latencyMs)
         const usage = extractUsage(parsed.value)
         this.tokenTracker.record(candidate.provider, candidate.model, usage)
+        // 📖 Runtime telemetry (t3): track every successful routed request so the
+        // 📖 real-world score can rank models by what *actually* works.
+        this.recordRuntimeCall({
+          providerKey: candidate.provider,
+          modelId: candidate.model,
+          success: true,
+          latencyMs,
+          usage,
+        })
         this.totalRequestsRouted += 1
         // 📖 Fire app_router_use telemetry once per 10 routed requests
         if (this.totalRequestsRouted % 10 === 0) {
@@ -2122,12 +2192,20 @@ class RouterRuntime {
       if (AUTH_STATUS_CODES.has(response.status)) {
         this.markAuthError(key, `HTTP ${response.status}`)
         this.addRequestLog({ request_id: requestId, model: key, status: response.status, latency_ms: latencyMs, tokens: 0, failover: attemptIndex > 0, error: 'auth_error' })
+        this.recordRuntimeCall({
+          providerKey: candidate.provider, modelId: candidate.model,
+          success: false, latencyMs, error: `auth_${response.status}`,
+        })
         return { done: false, failoverToNext: true, reason: `auth_${response.status}`, authFailure: true }
       }
 
       if (RETRYABLE_STATUS_CODES.has(response.status)) {
         this.markFailure(key, `HTTP ${response.status}`, response.status, upstreamMeta)
         this.addRequestLog({ request_id: requestId, model: key, status: response.status, latency_ms: latencyMs, tokens: 0, failover: attemptIndex > 0, error: `http_${response.status}` })
+        this.recordRuntimeCall({
+          providerKey: candidate.provider, modelId: candidate.model,
+          success: false, latencyMs, error: `http_${response.status}`,
+        })
         return { done: false, failoverToNext: true, reason: `http_${response.status}` }
       }
 
@@ -2137,6 +2215,10 @@ class RouterRuntime {
         this.recordRouterError(`http_${response.status}`, requestId, { model: key, status: response.status, body: text })
         this.markFailure(key, `HTTP ${response.status}`)
         this.addRequestLog({ request_id: requestId, model: key, status: response.status, latency_ms: latencyMs, tokens: 0, failover: attemptIndex > 0, error: `http_${response.status}` })
+        this.recordRuntimeCall({
+          providerKey: candidate.provider, modelId: candidate.model,
+          success: false, latencyMs, error: `http_${response.status}`,
+        })
         return { done: false, failoverToNext: true, reason: `http_${response.status}` }
       }
 
@@ -2696,6 +2778,18 @@ class RouterRuntime {
         sendJson(res, 200, this.statsPayload(), { 'x-request-id': requestId })
         return
       }
+      // 📖 Runtime telemetry (t3): /stats/runtime returns every model's derived
+      // 📖 snapshot (successRate, avgLatencyMs, avgTokensPerSecond, recentCalls).
+      // 📖 Useful for the Web Dashboard's runtime cards + the upcoming Shift+W
+      // 📖 'Runtime Report' screen in the TUI.
+      if (req.method === 'GET' && url.pathname === '/stats/runtime') {
+        sendJson(res, 200, {
+          ok: true,
+          stats: getRuntimeCacheStats(),
+          models: getAllRuntimeTelemetry(),
+        }, { 'x-request-id': requestId })
+        return
+      }
       if (req.method === 'GET' && url.pathname === '/stats/tokens') {
         sendJson(res, 200, this.tokenTracker.summary(), { 'x-request-id': requestId })
         return
@@ -3177,6 +3271,7 @@ class RouterRuntime {
     if (this.configReloadTimer) clearInterval(this.configReloadTimer)
     if (this.tokenFlushTimer) clearInterval(this.tokenFlushTimer)
     if (this.probeCacheFlushTimer) clearInterval(this.probeCacheFlushTimer)
+    if (this.runtimeTelemetryFlushTimer) clearTimeout(this.runtimeTelemetryFlushTimer)
     for (const timeout of this.probeTimeouts) clearTimeout(timeout)
     const started = Date.now()
     while (this.inFlight > 0 && Date.now() - started < 30000) {
@@ -3184,6 +3279,7 @@ class RouterRuntime {
     }
     this.tokenTracker.flush({ force: true })
     flushProbeCache()  // 📖 t1: persist any pending probe-cache deltas before exit
+    if (this.runtimeTelemetryDirty) flushRuntimeTelemetryStore()  // 📖 t3
     try { this.server?.close() } catch {}
     try { unlinkSync(ROUTER_PID_PATH) } catch {}
     try { unlinkSync(ROUTER_PORT_PATH) } catch {}

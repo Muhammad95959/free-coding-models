@@ -586,6 +586,10 @@ export function parseArgs(argv) {
   // 📖 --recommend — launch directly into Smart Recommend mode (Q key equivalent)
   const recommendMode = flags.includes('--recommend')
 
+  // 📖 --clear-runtime — wipe ~/.free-coding-models/runtime-telemetry.json (t3).
+  // 📖 Useful when the user wants to reset the real-world-score baseline.
+  const clearRuntimeMode = flags.includes('--clear-runtime')
+
   // 📖 Probe-cache flags (t1): --reprobe / --no-cache force a fresh probe pass;
   // 📖 --probe-ttl overrides the 24h default; --show-broken un-hides broken models for this run.
   const reprobeMode = flags.includes('--reprobe') || flags.includes('--no-cache')
@@ -644,6 +648,8 @@ export function parseArgs(argv) {
     reprobeMode,
     probeTtlMs: Number.isFinite(probeTtlMs) && probeTtlMs > 0 ? probeTtlMs : null,
     showBrokenMode,
+    // 📖 Runtime telemetry flag (t3) — see src/core/runtime-telemetry.js
+    clearRuntimeMode,
   }
 }
 
