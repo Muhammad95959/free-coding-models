@@ -36,6 +36,8 @@ const ANALYSIS_FLAGS = [
   { flag: '--reprobe, --no-cache', description: 'Force-rebuild the persistent probe-cache this run (skip cached healthy models)' },
   { flag: '--probe-ttl <ms>', description: 'Override probe-cache TTL (default 24h); healthy models within TTL are not re-pinged' },
   { flag: '--show-broken', description: "Don't auto-hide models that the probe-cache marked broken (one-shot override)" },
+  { flag: '--check-drift', description: 'Diff sources.js against models.dev and print a drift report; exit 1 on mismatch (t5)' },
+  { flag: '--drift-threshold <N>', description: 'Only fail --check-drift when N+ mismatches are found (default: 0 = any drift)' },
 ]
 
 const CONFIG_FLAGS = [

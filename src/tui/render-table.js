@@ -155,6 +155,13 @@ export const PROVIDER_COLOR = new Proxy({}, {
  *   probeCacheMisses?: number,       // t1: number of models that needed a live probe
  *   probeCacheBrokenHidden?: number, // t1: number of broken models auto-hidden this session
  *   showBrokenMode?: boolean,        // t1: true when Shift+B has un-hidden broken models
+ *   enrichmentBenchCount?: number,   // t4: extended benchmark catalog size (committed JSON)
+ *   enrichmentBenchLastUpdated?: string, // t4: lastUpdated field from the catalog _meta
+ *   metaSourceCounts?: {             // t5: count of models per metadata source
+ *     'sources.js': number,
+ *     'models.dev': number,
+ *   },
+ *   modelsDevCacheCached?: boolean,  // t5: whether the models.dev cache is still within TTL
  *   quota?: Record<string, {         // t2: live quota from response headers
  *     remaining: number, limit: number, percent: number,
  *     source: 'header'|'endpoint', lastUpdated: number, windowType?: string,
@@ -209,6 +216,10 @@ export function renderTable({
   probeCacheMisses = 0,
   probeCacheBrokenHidden = 0,
   showBrokenMode = false,
+  enrichmentBenchCount = 0,
+  enrichmentBenchLastUpdated = null,
+  metaSourceCounts = null,
+  modelsDevCacheCached = false,
   quota = {},
 } = _) {
   // 📖 Filter out hidden models for display
@@ -1224,6 +1235,29 @@ export function renderTable({
     probeCacheLabel = chalk.bgRgb(40, 90, 140).rgb(220, 235, 255).bold(` ${cachedTxt}${brokenTxt} `)
   }
 
+  // 📖 Enrichment chips (t4 + t5):
+  // 📖 `📊 bench N (date) · 📡 live K / 📦 cached M`
+  // 📖 Always shown when any enrichment state exists.
+  let enrichmentLabel = ''
+  if ((enrichmentBenchCount && enrichmentBenchCount > 0) || metaSourceCounts) {
+    const parts = []
+    if (enrichmentBenchCount && enrichmentBenchCount > 0) {
+      const dateTxt = enrichmentBenchLastUpdated && enrichmentBenchLastUpdated !== 'unknown'
+        ? ` (${enrichmentBenchLastUpdated})`
+        : ''
+      parts.push(`📊 bench ${enrichmentBenchCount}${dateTxt}`)
+    }
+    if (metaSourceCounts && (metaSourceCounts['models.dev'] > 0 || metaSourceCounts['sources.js'] > 0)) {
+      const liveTxt = metaSourceCounts['models.dev'] ?? 0
+      const cachedTxt = metaSourceCounts['sources.js'] ?? 0
+      const liveIcon = modelsDevCacheCached ? '📡' : '📦'
+      parts.push(`${liveIcon} ${liveTxt} live · ${cachedTxt} curated`)
+    }
+    if (parts.length > 0) {
+      enrichmentLabel = chalk.bgRgb(80, 50, 110).rgb(230, 220, 245).bold(` ${parts.join(' · ')} `)
+    }
+  }
+
   // 📖 Passive quota chip (t2): `📊 groq 78% · sambanova 41%` (top-N depleted first).
   // 📖 Shows live rate-limit headers that the daemon / pings collected from upstream
   // 📖 responses. Zero extra network requests — see provider-quota-fetchers.js.
@@ -1243,8 +1277,8 @@ export function renderTable({
     }
   }
 
-  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Quota + Last release
-  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel || quotaLabel) {
+  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Enrichment + Quota + Last release
+  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel || enrichmentLabel || quotaLabel) {
     const parts = [
       { text: '  ', key: null },
       { text: speedTestLabel, key: 'a' },
@@ -1254,6 +1288,8 @@ export function renderTable({
       { text: probeLabel, key: null },
       { text: probeCacheLabel ? '  ' : '', key: null },
       { text: probeCacheLabel, key: null },
+      { text: enrichmentLabel ? '  ' : '', key: null },
+      { text: enrichmentLabel, key: null },
       { text: quotaLabel ? '  ' : '', key: null },
       { text: quotaLabel, key: null },
       { text: '  ', key: null },

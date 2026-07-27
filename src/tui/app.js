@@ -149,6 +149,69 @@ const mergedModels = buildMergedModels(MODELS)
 const mergedModelByLabel = new Map(mergedModels.map(m => [m.label, m]))
 setOpenCodeModelData(mergedModels, mergedModelByLabel)
 
+// 📖 Enrichment (t4 + t5): module-level state. The sync part (extended
+// 📖 benchmark catalog stats) is computed lazily on first read via the
+// 📖 getter, so we don't block module load. The async part (models.dev
+// 📖 fetch) runs inside runApp as a background task — never at module load,
+// 📖 never blocking the TUI from rendering.
+// 📖
+// 📖 The TUI reads from this object on every render to update the footer chips.
+const moduleEnrichmentStats = {
+  bench: { total: 0, lastUpdated: 'unknown', source: 'unknown' },
+  modelsDev: { 'sources.js': 0, 'models.dev': 0, cached: false },
+}
+let _benchStatsLoaded = false
+function ensureBenchStatsLoaded() {
+  if (_benchStatsLoaded) return
+  _benchStatsLoaded = true
+  try {
+    // 📖 require() works synchronously and is safe at module load because
+    // 📖 model-merger.js has no top-level await side effects.
+    const { getEnrichmentStats } = require('../core/model-merger.js')
+    moduleEnrichmentStats.bench = getEnrichmentStats().extendedBench
+  } catch (err) {
+    if (process.env.FCM_BENCH_DEBUG) console.warn('[t4] enrichment stats failed:', err?.message ?? err)
+  }
+}
+
+// 📖 Background enrichment: fetch models.dev and update moduleEnrichmentStats
+// 📖 when it resolves. Fully decoupled from runApp — even if the fetch hangs
+// 📖 for 30s+, the TUI keeps rendering. The chip is updated by the next render
+// 📖 after resolution.
+function runModelsDevEnrichmentInBackground(merged) {
+  // 📖 Fire-and-forget; never awaited. If it throws, the catch swallows it.
+  ;(async () => {
+    try {
+      // 📖 Bound the total wait to 12s (worst case 3×4s retries). If the
+      // 📖 network is truly down, the chip stays at "0 live" and the TUI
+      // 📖 is unaffected. Callers can still trigger a refresh via the
+      // 📖 settings panel (future work).
+      const timeout = new Promise(resolve => setTimeout(() => resolve(null), 12_000))
+      const { overlayModelsDevMetadata } = await import('../core/model-merger.js')
+      const result = await Promise.race([
+        overlayModelsDevMetadata(merged, { mutate: true }),
+        timeout,
+      ])
+      if (!result) {
+        if (process.env.FCM_BENCH_DEBUG) console.warn('[t5] models.dev fetch timed out (12s)')
+        return
+      }
+      let live = 0, curated = 0
+      for (const m of result) {
+        if (m.metaSource === 'models.dev') live++
+        else if (m.metaSource === 'sources.js') curated++
+      }
+      moduleEnrichmentStats.modelsDev = { 'sources.js': curated, 'models.dev': live, cached: true }
+      // 📖 Note: state is owned by runApp — we don't have a direct ref here.
+      // 📖 The footer reads moduleEnrichmentStats lazily on each render, so
+      // 📖 the next render will pick up the new counts. We do NOT trigger a
+      // 📖 render from here (we're not in the render context).
+    } catch (err) {
+      if (process.env.FCM_BENCH_DEBUG) console.warn('[t5] models.dev overlay failed:', err?.message ?? err)
+    }
+  })()
+}
+
 // 📖 Provider quota cache is managed by lib/provider-quota-fetchers.js (TTL + backoff).
 // 📖 Usage placeholder logic uses isKnownQuotaTelemetry() from lib/quota-capabilities.js.
 
@@ -189,6 +252,16 @@ const LOCAL_VERSION = pkg.version
 // 📖 OpenCode helpers are imported from ../src/opencode.js
 
 export async function runApp(cliArgs, config, startupOptions = {}) {
+  // 📖 t4: prime the sync extended-benchmark stats so the footer chip is
+  // 📖 accurate on the first render (no async, no network — just a sync read).
+  ensureBenchStatsLoaded()
+
+  // 📖 t5: kick off the async models.dev enrichment in the background. This
+  // 📖 does NOT block runApp — the TUI starts rendering immediately with
+  // 📖 curated values, then re-renders when the models.dev fetch resolves.
+  // 📖 If the network is unreachable, the chip just stays at "0 live" forever
+  // 📖 (no user-visible freeze). The background task is bounded to 12s.
+  runModelsDevEnrichmentInBackground(mergedModels)
 
   // 📖 Detect user active terminal theme
   detectActiveTheme(config.settings?.theme || 'auto')
@@ -505,6 +578,8 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
   }
   state.probeCacheHits = probeCacheHits
   state.probeCacheMisses = probeCacheMisses
+  // 📖 Enrichment (t4 + t5): pulled fresh on every render from moduleEnrichmentStats
+  // 📖 (see the tableOpts construction below). No need to mirror into state here.
   state.probeCacheBrokenHidden = state.results.filter(r => r.cachedBroken && r.hidden).length
 
   // 📖 Runtime telemetry (t3): load the per-model metrics file + compute the
@@ -971,6 +1046,17 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
       probeCacheMisses: state.probeCacheMisses || 0,
       probeCacheBrokenHidden: state.probeCacheBrokenHidden || 0,
       showBrokenMode: !!state.showBrokenMode,
+      // 📖 Enrichment chips (t4 + t5): benchmark catalog + models.dev provenance
+      // 📖 Read fresh from moduleEnrichmentStats on every render so the async
+      // 📖 models.dev fetch (background, never blocks the TUI) is reflected as
+      // 📖 soon as it resolves — even if the user isn't pressing keys.
+      enrichmentBenchCount: moduleEnrichmentStats.bench.total || 0,
+      enrichmentBenchLastUpdated: moduleEnrichmentStats.bench.lastUpdated || null,
+      metaSourceCounts: {
+        'sources.js': moduleEnrichmentStats.modelsDev['sources.js'] || 0,
+        'models.dev': moduleEnrichmentStats.modelsDev['models.dev'] || 0,
+      },
+      modelsDevCacheCached: moduleEnrichmentStats.modelsDev.cached === true,
       // 📖 Passive quota (t2): live snapshots from response headers, populated
       // 📖 by pings (every ping pre-warms quota for its provider). See
       // 📖 src/core/provider-quota-fetchers.js for getAllPassiveQuotas().

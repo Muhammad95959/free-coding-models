@@ -53,7 +53,11 @@
   ],
   "scripts": {
     "start": "node bin/free-coding-models.js",
-    "test": "node --test test/test.js test/fcm-agent-core.test.js test/patch-openclaw.test.js test/provider-metadata.test.js test/config-permission-hint.test.js test/probe-cache.test.js test/passive-quota.test.js test/runtime-telemetry.test.js",
+    "test": "node --test test/test.js test/fcm-agent-core.test.js test/patch-openclaw.test.js test/provider-metadata.test.js test/config-permission-hint.test.js test/probe-cache.test.js test/passive-quota.test.js test/runtime-telemetry.test.js test/extended-benchmarks.test.js test/models-dev.test.js test/model-merger.test.js",
+    "test:extended-benchmarks": "node --test test/extended-benchmarks.test.js",
+    "test:models-dev": "node --test test/models-dev.test.js",
+    "update:benchmarks": "node scripts/update-benchmarks.mjs",
+    "check:drift": "node scripts/check-drift.mjs",
     "prepack": "npm run build:web",
     "dev": "node scripts/dev-web.mjs",
     "dev:web": "node scripts/dev-web.mjs",

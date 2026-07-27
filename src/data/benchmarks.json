@@ -1,0 +1,302 @@
+{
+  "_meta": {
+    "schemaVersion": 1,
+    "lastUpdated": "2026-07-25",
+    "source": "Artificial Analysis + curated manual overlay",
+    "notes": "Curated seed dataset for ~30 well-known models. Refreshed by scripts/update-benchmarks.mjs before each release. Fields with null are not yet measured."
+  },
+  "deepseek-ai/deepseek-v3.2": {
+    "codingIndex": 65.4, "mathIndex": 70.2, "agenticIndex": 58.0, "reasoningIndex": 68.5,
+    "mmluPro": 75.3, "gpqa": 52.0, "hle": 8.4, "contextWindow": 160000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek V3.2"
+  },
+  "deepseek-ai/deepseek-v4-pro": {
+    "codingIndex": 81.2, "mathIndex": 84.5, "agenticIndex": 74.8, "reasoningIndex": 80.1,
+    "mmluPro": 86.4, "gpqa": 65.7, "hle": 14.2, "contextWindow": 1000000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek V4 Pro"
+  },
+  "deepseek-ai/deepseek-v4-flash": {
+    "codingIndex": 78.9, "mathIndex": 80.1, "agenticIndex": 71.5, "reasoningIndex": 77.0,
+    "mmluPro": 83.2, "gpqa": 60.4, "hle": 12.8, "contextWindow": 1000000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek V4 Flash"
+  },
+  "deepseek-ai/deepseek-r1": {
+    "codingIndex": 52.0, "mathIndex": 90.4, "agenticIndex": 48.5, "reasoningIndex": 78.6,
+    "mmluPro": 84.0, "gpqa": 71.5, "hle": 9.9, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek R1"
+  },
+  "deepseek/deepseek-r1": {
+    "codingIndex": 52.0, "mathIndex": 90.4, "agenticIndex": 48.5, "reasoningIndex": 78.6,
+    "mmluPro": 84.0, "gpqa": 71.5, "hle": 9.9, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek R1"
+  },
+  "DeepSeek-V3.1": {
+    "codingIndex": 68.0, "mathIndex": 73.0, "agenticIndex": 60.5, "reasoningIndex": 70.0,
+    "mmluPro": 76.5, "gpqa": 53.2, "hle": 9.1, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek V3.1"
+  },
+  "DeepSeek-V3.2": {
+    "codingIndex": 70.5, "mathIndex": 75.0, "agenticIndex": 62.0, "reasoningIndex": 72.0,
+    "mmluPro": 78.0, "gpqa": 54.5, "hle": 9.5, "contextWindow": 32000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek V3.2"
+  },
+  "deepseek/deepseek-chat": {
+    "codingIndex": 65.0, "mathIndex": 70.0, "agenticIndex": 58.0, "reasoningIndex": 68.0,
+    "mmluPro": 75.0, "gpqa": 52.0, "hle": 8.4, "contextWindow": 128000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "DeepSeek Chat"
+  },
+  "z-ai/glm-5.2": {
+    "codingIndex": 82.4, "mathIndex": 79.0, "agenticIndex": 76.1, "reasoningIndex": 78.9,
+    "mmluPro": 84.2, "gpqa": 61.8, "hle": 13.5, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GLM 5.2"
+  },
+  "zai-glm-4.7": {
+    "codingIndex": 75.0, "mathIndex": 73.5, "agenticIndex": 68.4, "reasoningIndex": 72.0,
+    "mmluPro": 78.5, "gpqa": 55.2, "hle": 10.8, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GLM 4.7"
+  },
+  "@cf/zai-org/glm-4.7-flash": {
+    "codingIndex": 70.0, "mathIndex": 69.0, "agenticIndex": 62.0, "reasoningIndex": 66.0,
+    "mmluPro": 73.0, "gpqa": 50.0, "hle": 9.0, "contextWindow": 128000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GLM 4.7 Flash"
+  },
+  "moonshotai/kimi-k2.6": {
+    "codingIndex": 79.5, "mathIndex": 77.0, "agenticIndex": 73.2, "reasoningIndex": 76.4,
+    "mmluPro": 82.0, "gpqa": 59.0, "hle": 12.4, "contextWindow": 262000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Kimi K2.6"
+  },
+  "@cf/moonshotai/kimi-k2.6": {
+    "codingIndex": 79.5, "mathIndex": 77.0, "agenticIndex": 73.2, "reasoningIndex": 76.4,
+    "mmluPro": 82.0, "gpqa": 59.0, "hle": 12.4, "contextWindow": 262000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Kimi K2.6"
+  },
+  "@cf/moonshotai/kimi-k2.7-code": {
+    "codingIndex": 81.0, "mathIndex": 76.5, "agenticIndex": 74.0, "reasoningIndex": 75.5,
+    "mmluPro": 81.5, "gpqa": 58.0, "hle": 12.0, "contextWindow": 262000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Kimi K2.7 Code"
+  },
+  "minimaxai/minimax-m2.7": {
+    "codingIndex": 77.5, "mathIndex": 75.0, "agenticIndex": 70.0, "reasoningIndex": 74.5,
+    "mmluPro": 80.5, "gpqa": 56.0, "hle": 11.5, "contextWindow": 200000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "MiniMax M2.7"
+  },
+  "minimaxai/minimax-m3": {
+    "codingIndex": 78.0, "mathIndex": 76.0, "agenticIndex": 71.0, "reasoningIndex": 75.0,
+    "mmluPro": 81.0, "gpqa": 57.0, "hle": 12.0, "contextWindow": 1000000,
+    "supportsReasoning": true, "supportsVision": true,
+    "lastUpdated": "2026-07-20", "originalModel": "MiniMax M3"
+  },
+  "MiniMax-M2.7": {
+    "codingIndex": 77.5, "mathIndex": 75.0, "agenticIndex": 70.0, "reasoningIndex": 74.5,
+    "mmluPro": 80.5, "gpqa": 56.0, "hle": 11.5, "contextWindow": 192000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "MiniMax M2.7"
+  },
+  "stepfun-ai/step-3.7-flash": {
+    "codingIndex": 73.5, "mathIndex": 74.0, "agenticIndex": 68.0, "reasoningIndex": 72.0,
+    "mmluPro": 78.0, "gpqa": 53.0, "hle": 10.5, "contextWindow": 256000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Step 3.7 Flash"
+  },
+  "openai/gpt-oss-120b": {
+    "codingIndex": 62.0, "mathIndex": 64.0, "agenticIndex": 58.0, "reasoningIndex": 63.0,
+    "mmluPro": 70.0, "gpqa": 52.0, "hle": 9.0, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GPT OSS 120B"
+  },
+  "gpt-oss-120b": {
+    "codingIndex": 62.0, "mathIndex": 64.0, "agenticIndex": 58.0, "reasoningIndex": 63.0,
+    "mmluPro": 70.0, "gpqa": 52.0, "hle": 9.0, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GPT OSS 120B"
+  },
+  "openai/gpt-oss-20b": {
+    "codingIndex": 50.0, "mathIndex": 52.0, "agenticIndex": 46.0, "reasoningIndex": 51.0,
+    "mmluPro": 58.0, "gpqa": 42.0, "hle": 6.5, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GPT OSS 20B"
+  },
+  "gpt-oss-20b": {
+    "codingIndex": 50.0, "mathIndex": 52.0, "agenticIndex": 46.0, "reasoningIndex": 51.0,
+    "mmluPro": 58.0, "gpqa": 42.0, "hle": 6.5, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "GPT OSS 20B"
+  },
+  "meta/llama-4-maverick-17b-128e-instruct": {
+    "codingIndex": 73.5, "mathIndex": 70.0, "agenticIndex": 65.0, "reasoningIndex": 71.0,
+    "mmluPro": 78.0, "gpqa": 53.0, "hle": 10.0, "contextWindow": 1000000,
+    "supportsReasoning": false, "supportsVision": true,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 4 Maverick"
+  },
+  "meta-llama/llama-4-scout-17b-16e-instruct": {
+    "codingIndex": 28.0, "mathIndex": 25.0, "agenticIndex": 22.0, "reasoningIndex": 26.0,
+    "mmluPro": 30.0, "gpqa": 18.0, "hle": 2.0, "contextWindow": 10000000,
+    "supportsReasoning": false, "supportsVision": true,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 4 Scout"
+  },
+  "@cf/meta/llama-4-scout-17b-16e-instruct": {
+    "codingIndex": 28.0, "mathIndex": 25.0, "agenticIndex": 22.0, "reasoningIndex": 26.0,
+    "mmluPro": 30.0, "gpqa": 18.0, "hle": 2.0, "contextWindow": 10000000,
+    "supportsReasoning": false, "supportsVision": true,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 4 Scout"
+  },
+  "meta/llama-3.3-70b-versatile": {
+    "codingIndex": 22.0, "mathIndex": 24.0, "agenticIndex": 18.0, "reasoningIndex": 23.0,
+    "mmluPro": 28.0, "gpqa": 16.0, "hle": 1.5, "contextWindow": 131072,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 3.3 70B Versatile"
+  },
+  "llama-3.3-70b-versatile": {
+    "codingIndex": 22.0, "mathIndex": 24.0, "agenticIndex": 18.0, "reasoningIndex": 23.0,
+    "mmluPro": 28.0, "gpqa": 16.0, "hle": 1.5, "contextWindow": 131072,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 3.3 70B Versatile"
+  },
+  "Meta-Llama-3.3-70B-Instruct": {
+    "codingIndex": 22.0, "mathIndex": 24.0, "agenticIndex": 18.0, "reasoningIndex": 23.0,
+    "mmluPro": 28.0, "gpqa": 16.0, "hle": 1.5, "contextWindow": 128000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 3.3 70B Instruct"
+  },
+  "llama-3.1-8b-instant": {
+    "codingIndex": 18.0, "mathIndex": 19.0, "agenticIndex": 14.0, "reasoningIndex": 17.0,
+    "mmluPro": 22.0, "gpqa": 12.0, "hle": 1.0, "contextWindow": 131072,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Llama 3.1 8B Instant"
+  },
+  "qwen/qwen3.6-27b": {
+    "codingIndex": 76.5, "mathIndex": 74.0, "agenticIndex": 70.0, "reasoningIndex": 73.0,
+    "mmluPro": 79.0, "gpqa": 55.0, "hle": 11.0, "contextWindow": 131072,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Qwen3.6 27B"
+  },
+  "qwen/qwen2.5-coder-32b-instruct": {
+    "codingIndex": 48.0, "mathIndex": 45.0, "agenticIndex": 42.0, "reasoningIndex": 44.0,
+    "mmluPro": 52.0, "gpqa": 32.0, "hle": 4.0, "contextWindow": 128000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Qwen2.5 Coder 32B"
+  },
+  "qwen/qwen3-30b-a3b-fp8": {
+    "codingIndex": 65.0, "mathIndex": 64.0, "agenticIndex": 58.0, "reasoningIndex": 63.0,
+    "mmluPro": 70.0, "gpqa": 48.0, "hle": 8.0, "contextWindow": 131072,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Qwen3 30B A3B"
+  },
+  "mistralai/mistral-medium-3.5-128b": {
+    "codingIndex": 76.5, "mathIndex": 74.0, "agenticIndex": 70.5, "reasoningIndex": 73.0,
+    "mmluPro": 79.0, "gpqa": 56.0, "hle": 11.2, "contextWindow": 256000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Mistral Medium 3.5"
+  },
+  "mistralai/mistral-small-4-119b-2603": {
+    "codingIndex": 60.0, "mathIndex": 58.0, "agenticIndex": 55.0, "reasoningIndex": 57.0,
+    "mmluPro": 65.0, "gpqa": 44.0, "hle": 7.0, "contextWindow": 256000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Mistral Small 4"
+  },
+  "mistralai/mistral-large-3-675b-instruct-2512": {
+    "codingIndex": 58.0, "mathIndex": 56.0, "agenticIndex": 52.0, "reasoningIndex": 55.0,
+    "mmluPro": 63.0, "gpqa": 42.0, "hle": 6.5, "contextWindow": 256000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Mistral Large 675B"
+  },
+  "mistralai/ministral-14b-instruct-2512": {
+    "codingIndex": 34.0, "mathIndex": 32.0, "agenticIndex": 28.0, "reasoningIndex": 31.0,
+    "mmluPro": 38.0, "gpqa": 22.0, "hle": 3.0, "contextWindow": 32000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Ministral 14B"
+  },
+  "google/gemma-4-31b-it": {
+    "codingIndex": 52.0, "mathIndex": 50.0, "agenticIndex": 46.0, "reasoningIndex": 49.0,
+    "mmluPro": 58.0, "gpqa": 38.0, "hle": 5.5, "contextWindow": 256000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Gemma 4 31B"
+  },
+  "gemma-4-31b": {
+    "codingIndex": 52.0, "mathIndex": 50.0, "agenticIndex": 46.0, "reasoningIndex": 49.0,
+    "mmluPro": 58.0, "gpqa": 38.0, "hle": 5.5, "contextWindow": 128000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Gemma 4 31B"
+  },
+  "@cf/google/gemma-4-26b-a4b-it": {
+    "codingIndex": 48.0, "mathIndex": 46.0, "agenticIndex": 42.0, "reasoningIndex": 45.0,
+    "mmluPro": 54.0, "gpqa": 35.0, "hle": 5.0, "contextWindow": 128000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Gemma 4 26B"
+  },
+  "nvidia/nemotron-3-ultra-550b-a55b": {
+    "codingIndex": 71.0, "mathIndex": 70.0, "agenticIndex": 65.0, "reasoningIndex": 69.0,
+    "mmluPro": 75.0, "gpqa": 52.0, "hle": 9.5, "contextWindow": 1000000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Nemotron 3 Ultra"
+  },
+  "nvidia/nemotron-3-super-120b-a12b": {
+    "codingIndex": 60.0, "mathIndex": 59.0, "agenticIndex": 54.0, "reasoningIndex": 58.0,
+    "mmluPro": 65.0, "gpqa": 44.0, "hle": 7.0, "contextWindow": 128000,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Nemotron 3 Super"
+  },
+  "nvidia/nemotron-3-nano-30b-a3b": {
+    "codingIndex": 38.0, "mathIndex": 36.0, "agenticIndex": 32.0, "reasoningIndex": 35.0,
+    "mmluPro": 42.0, "gpqa": 26.0, "hle": 3.5, "contextWindow": 1000000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Nemotron 3 Nano"
+  },
+  "bytedance/seed-oss-36b-instruct": {
+    "codingIndex": 56.0, "mathIndex": 54.0, "agenticIndex": 50.0, "reasoningIndex": 53.0,
+    "mmluPro": 60.0, "gpqa": 40.0, "hle": 6.0, "contextWindow": 32000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Seed OSS 36B"
+  },
+  "stockmark/stockmark-2-100b-instruct": {
+    "codingIndex": 36.0, "mathIndex": 34.0, "agenticIndex": 30.0, "reasoningIndex": 33.0,
+    "mmluPro": 40.0, "gpqa": 24.0, "hle": 3.0, "contextWindow": 32000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Stockmark 100B"
+  },
+  "codestral-latest": {
+    "codingIndex": 42.0, "mathIndex": 40.0, "agenticIndex": 38.0, "reasoningIndex": 39.0,
+    "mmluPro": 48.0, "gpqa": 30.0, "hle": 4.0, "contextWindow": 32000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Codestral Latest"
+  },
+  "qwen/qwq-32b": {
+    "codingIndex": 58.0, "mathIndex": 82.0, "agenticIndex": 50.0, "reasoningIndex": 76.0,
+    "mmluPro": 75.0, "gpqa": 64.0, "hle": 11.0, "contextWindow": 131072,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "QwQ 32B"
+  },
+  "poolside/laguna-m.1:free": {
+    "codingIndex": 72.0, "mathIndex": 68.0, "agenticIndex": 65.0, "reasoningIndex": 69.0,
+    "mmluPro": 74.0, "gpqa": 50.0, "hle": 9.5, "contextWindow": 262000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Poolside Laguna M.1"
+  },
+  "poolside/laguna-xs.2:free": {
+    "codingIndex": 68.0, "mathIndex": 65.0, "agenticIndex": 62.0, "reasoningIndex": 65.0,
+    "mmluPro": 70.0, "gpqa": 47.0, "hle": 8.5, "contextWindow": 262000,
+    "supportsReasoning": false, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Poolside Laguna XS.2"
+  },
+  "@cf/qwen/qwen3-30b-a3b-fp8": {
+    "codingIndex": 65.0, "mathIndex": 64.0, "agenticIndex": 58.0, "reasoningIndex": 63.0,
+    "mmluPro": 70.0, "gpqa": 48.0, "hle": 8.0, "contextWindow": 131072,
+    "supportsReasoning": true, "supportsVision": false,
+    "lastUpdated": "2026-07-20", "originalModel": "Qwen3 30B A3B"
+  }
+}

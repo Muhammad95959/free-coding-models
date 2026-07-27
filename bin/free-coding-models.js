@@ -74,6 +74,25 @@ async function main() {
     }
   }
 
+  // 📖 --check-drift (t5): diff sources.js against models.dev and print a report.
+  // 📖 Runs BEFORE the config + update check so it works on bare clones and CI.
+  if (cliArgs.checkDriftMode) {
+    const threshold = cliArgs.driftThreshold ?? 0
+    const args = ['--threshold', String(threshold)]
+    const { spawn } = await import('node:child_process')
+    const { fileURLToPath } = await import('node:url')
+    const { dirname, join } = await import('node:path')
+    const here = dirname(fileURLToPath(import.meta.url))
+    const script = join(here, '..', 'scripts', 'check-drift.mjs')
+    const child = spawn(process.execPath, [script, ...args], { stdio: 'inherit' })
+    child.on('exit', code => process.exit(code ?? 1))
+    child.on('error', err => {
+      console.error(chalk.red(`failed to spawn check-drift: ${err.message}`))
+      process.exit(3)
+    })
+    return
+  }
+
   // Load JSON config before operational modes so the mandatory update policy can
   // 📖 persist failure counters for TUI, Web Dashboard, Docker daemon, and Desktop sidecar launches.
   const config = loadConfig();

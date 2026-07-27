@@ -606,6 +606,18 @@ export function parseArgs(argv) {
   const probeTtlRaw = probeTtlValueIdx !== -1 ? args[probeTtlValueIdx] : null
   const probeTtlMs = probeTtlRaw !== null ? parseInt(probeTtlRaw, 10) : null
 
+  // 📖 Drift detection flags (t5):
+  // 📖 --check-drift (boolean) — print a drift report vs models.dev, exit non-zero on mismatch.
+  // 📖 --drift-threshold <N> (value) — only fail when N+ mismatches are found.
+  const checkDriftMode = flags.includes('--check-drift')
+  const driftThresholdIdx = args.findIndex(a => a.toLowerCase() === '--drift-threshold')
+  const driftThresholdValueIdx = (driftThresholdIdx !== -1 && args[driftThresholdIdx + 1] && !args[driftThresholdIdx + 1].startsWith('--'))
+    ? driftThresholdIdx + 1
+    : -1
+  if (driftThresholdValueIdx !== -1) skipIndices.add(driftThresholdValueIdx)
+  const driftThresholdRaw = driftThresholdValueIdx !== -1 ? args[driftThresholdValueIdx] : null
+  const driftThreshold = driftThresholdRaw !== null ? parseInt(driftThresholdRaw, 10) : null
+
   return {
     apiKey,
     bestMode,
@@ -647,6 +659,8 @@ export function parseArgs(argv) {
     daemonMode,
     daemonBackgroundMode,
     daemonStopMode,
+    checkDriftMode,
+    driftThreshold,
     daemonStatusMode,
     // 📖 Profile system removed - API keys now persist permanently across all sessions
     recommendMode,

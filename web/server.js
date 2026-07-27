@@ -313,8 +313,47 @@ function serializeModel(result) {
     benchmarkKey: key,
     isBenchmarking: benchmarkRunning.has(key),
     benchmark: benchmarkResults.get(key) || null,
+    // 📖 Enrichment overlay (t4 + t5): extended benchmark + models.dev metadata
+    // 📖 attached to the result. The web dashboard's DetailPanel renders these
+    // 📖 as a benchmark block + provenance chip. Looked up via the lazily-built
+    // 📖 webEnrichmentCache (one Map per overlay layer, primed at boot).
+    extendedBench: webEnrichmentCache.extendedById.get(result.modelId) || null,
+    metaSource: webEnrichmentCache.metaSourceByModelId.get(result.modelId) || 'sources.js',
   }
 }
+
+// 📖 webEnrichmentCache: pre-built lookup tables for the enrichments that need
+// 📖 to be served synchronously from the HTTP layer. The catalog lookup is
+// 📖 sync (extended-benchmarks.js), so we just prime the Map at boot. The
+// 📖 models.dev metadata is async — we try to prime it but fall back to
+// 📖 'sources.js' if the fetch fails.
+const webEnrichmentCache = {
+  extendedById: new Map(),
+  metaSourceByModelId: new Map(),
+}
+;(async () => {
+  // 📖 t4: prime the extended-benchmark cache (sync catalog, sync lookup)
+  try {
+    const { buildPrefixIndex, loadCatalog } = await import('../src/core/extended-benchmarks.js')
+    loadCatalog()  // 📖 ensure the lazy cache is hot
+    const index = buildPrefixIndex()
+    for (const [key, data] of Object.entries(index.exact)) {
+      webEnrichmentCache.extendedById.set(key, data)
+    }
+  } catch {}
+  // 📖 t5: prime the models.dev metadata (async fetch, sync lookup afterwards)
+  try {
+    const { overlayModelsDevMetadata, buildMergedModels } = await import('../src/core/model-merger.js')
+    const { MODELS } = await import('../sources.js')
+    const merged = buildMergedModels(MODELS)
+    const enriched = await overlayModelsDevMetadata(merged, { mutate: true })
+    for (const m of enriched) {
+      for (const p of m.providers || []) {
+        webEnrichmentCache.metaSourceByModelId.set(p.modelId, m.metaSource || 'sources.js')
+      }
+    }
+  } catch {}
+})()
 
 function getModelsPayload() {
   return {

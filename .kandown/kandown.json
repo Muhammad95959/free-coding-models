@@ -2,7 +2,7 @@
   "ui": {
     "language": "fr",
     "theme": "dark",
-    "skin": "rose",
+    "skin": "claude",
     "font": "mono"
   },
   "agent": {
@@ -18,7 +18,21 @@
       "Done"
     ],
     "defaultPriority": "P3",
-    "defaultOwnerType": "human"
+    "defaultOwnerType": "human",
+    "stackDefaultState": "collapsed"
+  },
+  "tui": {
+    "defaultView": "list",
+    "showDetailPane": true,
+    "listSort": "status",
+    "columns": {
+      "age": true,
+      "status": true,
+      "priority": true,
+      "owner": true,
+      "deps": true,
+      "tags": false
+    }
   },
   "fields": {
     "priority": false,
