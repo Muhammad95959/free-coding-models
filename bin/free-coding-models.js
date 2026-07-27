@@ -79,6 +79,11 @@ async function main() {
   if (cliArgs.checkDriftMode) {
     const threshold = cliArgs.driftThreshold ?? 0
     const args = ['--threshold', String(threshold)]
+    // 📖 Forward --no-fail so the script exits 0 even on drift (useful for the
+    // 📖 GitHub Actions job that opens an issue instead of failing the build).
+    if (process.argv.includes('--no-fail') || process.argv.includes('--report-only')) {
+      args.push('--no-fail')
+    }
     const { spawn } = await import('node:child_process')
     const { fileURLToPath } = await import('node:url')
     const { dirname, join } = await import('node:path')
