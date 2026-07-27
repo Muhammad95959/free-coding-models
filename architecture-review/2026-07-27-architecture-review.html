@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Architecture review — free-coding-models</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { stroke-dasharray: 4 4; }
+      .leak { stroke: #dc2626; stroke-width: 2.5px; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .diagram-grid { background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 24px 24px; }
+      .module-box { border: 2px solid #64748b; background: white; }
+      .deep-box { border: 3px solid #0f172a; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans">
+    <main class="max-w-6xl mx-auto px-6 py-12 space-y-12">
+      <header class="flex flex-col gap-5 border-b border-slate-300 pb-8">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="text-xs uppercase tracking-[0.25em] text-emerald-700 font-semibold">Architecture review</p>
+            <h1 class="mt-2 text-4xl font-semibold tracking-tight">free-coding-models</h1>
+          </div>
+          <p class="text-sm text-slate-500">2026-07-27 · recon scoped to tracked seams</p>
+        </div>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-xs uppercase tracking-wider text-slate-500">
+          <span><b class="inline-block h-3 w-3 border-2 border-slate-500 bg-white mr-1"></b> module</span>
+          <span><b class="inline-block w-5 border-t-2 border-dashed border-slate-500 align-middle mr-1"></b> seam</span>
+          <span><b class="inline-block w-5 border-t-2 border-red-600 align-middle mr-1"></b> leakage</span>
+          <span><b class="inline-block h-3 w-5 bg-slate-900 mr-1"></b> deep module</span>
+        </div>
+        <p class="text-sm text-slate-500">Vocabulary: <span class="font-mono">module · interface · implementation · depth · seam · adapter · leverage · locality</span>. Four backlog tasks in <span class="font-mono">.kandown/tasks/</span> already name the load-bearing seams.</p>
+      </header>
+
+      <section id="candidates" class="space-y-10">
+        <article id="candidate-verdict" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-7 space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Candidate 01</p><h2 class="mt-1 text-2xl font-semibold">Deepen the verdict brain behind a single interface</h2></div>
+              <div class="flex gap-2 text-xs font-semibold">
+                <span class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">Strong</span>
+                <span class="rounded-full bg-indigo-100 px-3 py-1 text-indigo-800">mock</span>
+              </div>
+            </div>
+            <div>
+              <p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Files</p>
+              <p class="font-mono text-sm text-slate-700">src/core/utils.js · src/tui/render-table.js · src/core/router-dashboard.js · web/src/hooks/useRouterDashboard.js · test/test.js</p>
+              <p class="mt-2 text-xs uppercase tracking-wider text-slate-400">Live backlog task</p>
+              <p class="font-mono text-sm text-slate-700">.kandown/tasks/t-dedup-getVerdict.md</p>
+            </div>
+            <div class="grid gap-5 lg:grid-cols-2">
+              <div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Before · parallel ladders in one function</p><div class="rounded-xl border border-slate-200 bg-slate-50 p-3 min-h-[320px]"><pre class="mermaid">
+flowchart TD
+  G["getVerdict(row)"] --> P["ping branch<br/>~30 lines, thresholds"]
+  G --> B["benchmark branch<br/>~30 lines, near-duplicate"]
+  G --> T["TPS upgrades<br/>unique to benchmark"]
+  P -. "verdict semantics leak" .-> B
+  B -. "thresholds leak" .-> P
+  classDef leak stroke:#dc2626,stroke-width:2px;
+  class P,B leak;
+              </pre></div></div>
+              <div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">After · one deep verdict module</p><div class="diagram-grid rounded-xl p-5 min-h-[320px] flex flex-col justify-center gap-4"><div class="grid grid-cols-2 gap-3"><div class="module-box rounded-lg p-4 text-center text-xs uppercase tracking-wider">TUI column</div><div class="module-box rounded-lg p-4 text-center text-xs uppercase tracking-wider">Web payload</div><div class="module-box rounded-lg p-4 text-center text-xs uppercase tracking-wider">Router dashboard</div><div class="module-box rounded-lg p-4 text-center text-xs uppercase tracking-wider">Smart Recommend</div></div><div class="text-center text-slate-400 text-xl">↓</div><div class="deep-box rounded-xl p-6 text-center"><p class="text-[10px] uppercase tracking-[0.25em] text-slate-300">deep module</p><p class="mt-2 text-xl font-semibold">Verdict</p><p class="mt-3 text-xs text-slate-300">(latency, p95, samples) → label · single threshold ladder · TPS upgrades isolated</p></div></div></div>
+            </div>
+            <div class="grid gap-5 md:grid-cols-3 text-sm"><div><p class="font-semibold">Problem</p><p class="mt-1 text-slate-600">getVerdict ships two near-identical ladders that disagree on what counts as "Spiky" (3000 vs 5000). Every surface consumes the same verdict names through different code, so a tweak has to be made twice and tested twice.</p></div><div><p class="font-semibold">Solution</p><p class="mt-1 text-slate-600">Extract a single threshold→verdict function. Let the TPS upgrades live as a separate wrapper around it. One interface, one place to test.</p></div><div><p class="font-semibold">Benefits</p><ul class="mt-1 list-disc pl-5 text-slate-600 space-y-1"><li>locality: threshold changes edit one place</li><li>leverage: four surfaces agree on labels</li><li>tests target the function, not the row</li><li>TPS upgrades stay unique to benchmark path</li></ul></div></div>
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">Smallest win on the list — pure logic, no behaviour change. Run the existing 521 tests against the refactor before claiming victory.</div>
+          </div>
+        </article>
+
+        <article id="candidate-runtime" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-7 space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Candidate 02</p><h2 class="mt-1 text-2xl font-semibold">Deepen RouterRuntime as its own seam</h2></div>
+              <div class="flex gap-2 text-xs font-semibold"><span class="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">Strong</span><span class="rounded-full bg-indigo-100 px-3 py-1 text-indigo-800">ports &amp; adapters</span></div>
+            </div>
+            <div>
+              <p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Files</p>
+              <p class="font-mono text-sm text-slate-700">src/core/router-daemon.js · src/core/router-dashboard.js · src/core/router-payloads (proposed) · src/core/router-logger (proposed) · src/core/token-tracker (proposed) · src/core/router-circuit (proposed) · src/core/router-server (proposed)</p>
+              <p class="mt-2 text-xs uppercase tracking-wider text-slate-400">Live backlog task</p>
+              <p class="font-mono text-sm text-slate-700">.kandown/tasks/t-split-router-daemon.md</p>
+            </div>
+            <div class="grid gap-5 lg:grid-cols-2"><div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Before · internal seams trapped in one file</p><div class="rounded-xl border border-slate-200 bg-slate-50 p-3 min-h-[320px]"><pre class="mermaid">
+flowchart LR
+  H["HTTP route handlers"] --> GOD["router-daemon.js<br/>3,834 lines"]
+  GOD --> R["RouterRuntime<br/>request · routing · probes · state"]
+  GOD --> L["RouterLogger<br/>request log · SSE"]
+  GOD --> T["TokenTracker<br/>daily aggregates"]
+  GOD --> W["web payload builders<br/>(inside same file)"]
+  GOD --> S["static + security checks"]
+  R -. "policy leakage" .-> W
+  R -. "state leakage" .-> L
+  classDef leak stroke:#dc2626,stroke-width:2px;
+  class GOD,R,L,T,W,S leak;
+              </pre></div></div><div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">After · external seam + adapters</p><div class="diagram-grid rounded-xl p-5 min-h-[320px] flex flex-col justify-center gap-4"><div class="grid grid-cols-3 gap-2 text-center text-[10px] uppercase tracking-wider text-slate-500"><div class="module-box rounded-lg p-3">HTTP adapter</div><div class="module-box rounded-lg p-3">Web adapter</div><div class="module-box rounded-lg p-3">TUI adapter</div></div><div class="text-center text-slate-400 text-xl">↓</div><div class="deep-box rounded-xl p-6 text-center"><p class="text-[10px] uppercase tracking-[0.25em] text-slate-300">deep module</p><p class="mt-2 text-xl font-semibold">RouterRuntime</p><p class="mt-3 text-xs text-slate-300">active set · routing order · failover · circuit state · operational records</p></div><div class="text-center text-xs uppercase tracking-wider text-slate-500">constructor + public methods · pure policy, no I/O</div></div></div></div>
+            <div class="grid gap-5 md:grid-cols-3 text-sm"><div><p class="font-semibold">Problem</p><p class="mt-1 text-slate-600">The runtime, the logger, the token tracker, the web payload builders, the static server, and the security checks all live in one file and share one closure. Adding routing policy or changing payload shape means navigating 3,834 lines.</p></div><div><p class="font-semibold">Solution</p><p class="mt-1 text-slate-600">Follow the tracked split plan: extract payload builders, logger, token tracker, server, and circuit into focused modules. Promote RouterRuntime into its own deep seam.</p></div><div><p class="font-semibold">Benefits</p><ul class="mt-1 list-disc pl-5 text-slate-600 space-y-1"><li>locality: routing policy has one home</li><li>leverage: all surfaces share failover rules</li><li>tests avoid booting the HTTP server</li><li>static delivery stops touching policy</li></ul></div></div>
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">Tracked as <span class="font-mono">t-split-router-daemon.md</span>. Align this candidate with that plan; do not invent a parallel split.</div>
+          </div>
+        </article>
+
+        <article id="candidate-keyhandler" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-7 space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-4"><div><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Candidate 03</p><h2 class="mt-1 text-2xl font-semibold">Deepen the TUI session around small command modules</h2></div><div class="flex gap-2 text-xs font-semibold"><span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">Worth exploring</span><span class="rounded-full bg-indigo-100 px-3 py-1 text-indigo-800">in-process</span></div></div>
+            <div>
+              <p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Files</p>
+              <p class="font-mono text-sm text-slate-700">src/tui/key-handler.js · src/tui/overlays.js · src/tui/app.js · src/tui/tui-state.js · test/tui-hotkeys.test.js</p>
+              <p class="mt-2 text-xs uppercase tracking-wider text-slate-400">Live backlog task</p>
+              <p class="font-mono text-sm text-slate-700">.kandown/tasks/t-split-key-handler.md</p>
+            </div>
+            <div class="grid gap-5 lg:grid-cols-2"><div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Before · one wide context per key</p><div class="rounded-xl border border-slate-200 bg-slate-50 p-3 min-h-[320px]"><pre class="mermaid">
+flowchart TD
+  KH["key-handler.js<br/>3,594 lines"] --> CTX["very wide ctx object"]
+  CTX --> S["settings overlay keys"]
+  CTX --> I["install endpoints keys"]
+  CTX --> R["recommend flow keys"]
+  CTX --> P["playground keys"]
+  CTX --> D["dashboard keys"]
+  CTX --> L["launch dispatch keys"]
+  CTX --> N["table navigation keys"]
+  S -. "context mutation leak" .-> I
+  L -. "side effect leak" .-> N
+  classDef leak stroke:#dc2626,stroke-width:2px;
+  class KH,CTX,S,I,R,P,D,L,N leak;
+              </pre></div></div><div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">After · mirror the overlay split for keys</p><div class="diagram-grid rounded-xl p-5 min-h-[320px] flex flex-col justify-center gap-4"><div class="module-box rounded-lg p-3 text-center text-xs uppercase tracking-wider">input adapter (raw stdin + mouse)</div><div class="text-center text-slate-400 text-xl">↓</div><div class="grid grid-cols-2 gap-2"><div class="module-box rounded-lg p-3 text-center text-[10px] uppercase tracking-wider">key-settings</div><div class="module-box rounded-lg p-3 text-center text-[10px] uppercase tracking-wider">key-install</div><div class="module-box rounded-lg p-3 text-center text-[10px] uppercase tracking-wider">key-recommend</div><div class="module-box rounded-lg p-3 text-center text-[10px] uppercase tracking-wider">key-playground</div><div class="module-box rounded-lg p-3 text-center text-[10px] uppercase tracking-wider">key-dashboard</div><div class="module-box rounded-lg p-3 text-center text-[10px] uppercase tracking-wider">key-table + launch</div></div><div class="text-center text-xs uppercase tracking-wider text-slate-500">each module exports a small handler keyed on (state, ctx)</div></div></div></div>
+            <div class="grid gap-5 md:grid-cols-3 text-sm"><div><p class="font-semibold">Problem</p><p class="mt-1 text-slate-600">createKeyHandler receives a wide context object and one switch handles every overlay. Adding a key requires reading the whole file to avoid shadowing existing bindings.</p></div><div><p class="font-semibold">Solution</p><p class="mt-1 text-slate-600">Mirror the existing overlay split in overlays.js: one file per concern. The top-level handler delegates to focused modules keyed on (state, ctx).</p></div><div><p class="font-semibold">Benefits</p><ul class="mt-1 list-disc pl-5 text-slate-600 space-y-1"><li>locality: each overlay's key rules live together</li><li>leverage: new overlays add one file, not 200 lines</li><li>tests target the module, not the whole switch</li><li>table navigation stays small + predictable</li></ul></div></div>
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">Tracked as <span class="font-mono">t-split-key-handler.md</span>. This candidate is the shape of that split, not a competing one.</div>
+          </div>
+        </article>
+
+        <article id="candidate-routing" class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-7 space-y-6">
+            <div class="flex flex-wrap items-start justify-between gap-4"><div><p class="text-xs uppercase tracking-[0.2em] text-slate-400">Candidate 04</p><h2 class="mt-1 text-2xl font-semibold">Deepen route selection as a pure function</h2></div><div class="flex gap-2 text-xs font-semibold"><span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800">Worth exploring</span><span class="rounded-full bg-indigo-100 px-3 py-1 text-indigo-800">mock</span></div></div>
+            <div>
+              <p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Files</p>
+              <p class="font-mono text-sm text-slate-700">src/core/router-daemon.js · packages/fcm-agent-core/src/scan-orchestrator.js · packages/fcm-agent-core/src/ranker.js · test/test.js</p>
+            </div>
+            <div class="grid gap-5 lg:grid-cols-2"><div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">Before · route logic buried in HTTP handler</p><div class="rounded-xl border border-slate-200 bg-slate-50 p-3 min-h-[320px]"><pre class="mermaid">
+flowchart LR
+  H["handleChatCompletion"] --> S["scoreCandidates + getRoutingCandidates"]
+  H --> IO["fetch + stream + write"]
+  H --> T["record probe · record telemetry · mark circuit"]
+  S -. "pure logic trapped inside I/O" .-> IO
+  IO -. "side effects leak" .-> S
+  classDef leak stroke:#dc2626,stroke-width:2px;
+  class H,S,IO,T leak;
+              </pre></div></div><div><p class="mb-2 text-xs uppercase tracking-wider text-slate-400">After · pure selection module</p><div class="diagram-grid rounded-xl p-5 min-h-[320px] flex flex-col justify-center gap-4"><div class="deep-box rounded-xl p-6 text-center"><p class="text-[10px] uppercase tracking-[0.25em] text-slate-300">deep module</p><p class="mt-2 text-xl font-semibold">selectRoute(request, runtime)</p><p class="mt-3 text-xs text-slate-300">→ { provider, model, reason } · priority · circuit · score · no I/O</p></div><div class="grid grid-cols-2 gap-3 text-center text-[10px] uppercase tracking-wider text-slate-500"><div class="module-box rounded-lg p-3">HTTP handler</div><div class="module-box rounded-lg p-3">Playground</div><div class="module-box rounded-lg p-3">Dashboard preview</div><div class="module-box rounded-lg p-3">Test harness</div></div></div></div></div>
+            <div class="grid gap-5 md:grid-cols-3 text-sm"><div><p class="font-semibold">Problem</p><p class="mt-1 text-slate-600">Routing policy is interleaved with HTTP streaming and side effects inside the daemon handler. Hard to test, hard to reuse from the playground or the future "what-if" UI.</p></div><div><p class="font-semibold">Solution</p><p class="mt-1 text-slate-600">Pull route selection out into a pure function that takes a runtime snapshot and returns a chosen candidate with a reason. Keep all I/O in adapters.</p></div><div><p class="font-semibold">Benefits</p><ul class="mt-1 list-disc pl-5 text-slate-600 space-y-1"><li>locality: selection rules concentrate in one function</li><li>leverage: daemon, playground, and tests share one selection</li><li>tests use mock runtimes, no network</li><li>replays become deterministic</li></ul></div></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="top-recommendation" class="rounded-2xl bg-slate-900 text-white p-8 shadow-xl">
+        <p class="text-xs uppercase tracking-[0.25em] text-emerald-300">Top recommendation</p>
+        <h2 class="mt-2 text-3xl font-semibold">Candidate 01 · Deepen the verdict brain</h2>
+        <p class="mt-4 max-w-3xl text-slate-300">Start with the smallest, most leveraged seam: a single <span class="font-mono">verdict(latency, p95, samples) → label</span> module that replaces both parallel ladders in <span class="font-mono">getVerdict</span>. Pure logic, no behaviour change, and four surfaces benefit immediately. The two god-module candidates become safer to tackle once the verdict semantics are stable in one place.</p>
+        <a href="#candidate-verdict" class="mt-6 inline-block rounded-lg bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300">Jump to candidate 01 ↑</a>
+      </section>
+    </main>
+  </body>
+</html>
