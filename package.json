@@ -1,6 +1,6 @@
 {
   "name": "free-coding-models",
-  "version": "0.5.62",
+  "version": "0.5.63",
   "description": "Find the fastest coding LLM models in seconds \u2014 ping free models from multiple providers, pick the best one for OpenCode, Cursor, or any AI coding assistant.",
   "keywords": [
     "nvidia",
