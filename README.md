@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Find the fastest free coding model in seconds</strong><br>
-  Track ~191 models across 20 trusted free or free-limited AI providers in real time<br><br>
+  Track ~222 models across 20 trusted free or free-limited AI providers in real time<br><br>
   <strong>Install Free API endpoints to your favorite AI coding tools:</strong><br>
   OpenCode CLI / Desktop / WebUI, OpenClaw, Crush, Goose, Aider, Kilo CLI, Qwen Code, OpenHands, Amp, Hermes, Continue, Cline, Xcode, Pi, ZCode and more...<br><br>
   <strong>Use Kimi K2, DeepSeek V3, GPT-OSS, Qwen3, MiniMax M3, GLM, Llama 4, Gemma 4, Devstral and more — for free</strong>
@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/npm/v/free-coding-models?color=3d6b00&label=npm&logo=npm" alt="npm version" width="200"><br>
   <img src="https://img.shields.io/node/v/free-coding-models?color=3d6b00&logo=node.js" alt="node version" width="200"><br>
   <img src="https://img.shields.io/npm/l/free-coding-models?color=3d6b00" alt="license" width="200"><br>
-  <img src="https://img.shields.io/badge/models-191-3d6b00?logo=nvidia" alt="models count" width="200"><br>
+  <img src="https://img.shields.io/badge/models-222-3d6b00?logo=nvidia" alt="models count" width="200"><br>
   <img src="https://img.shields.io/badge/providers-20-1a56db" alt="providers count" width="200">
 </p>
 
@@ -59,7 +59,7 @@ free-coding-models
 
 ## 💡 Why this tool?
 
-There are **~191 cataloged free or free-limited coding models** across 20 vetted providers. Which one is fastest right now? Which one is actually stable versus just lucky on the last ping?
+There are **~222 cataloged free or free-limited coding models** across 20 vetted providers. Which one is fastest right now? Which one is actually stable versus just lucky on the last ping?
 
 This CLI pings them all in parallel, shows live latency, and calculates a **live Stability Score (0-100)**. Average latency alone is misleading if a model randomly spikes to 6 seconds; the stability score measures true reliability by combining **p95 latency** (30%), **jitter/variance** (30%), **spike rate** (20%), and **uptime** (20%). 
 
@@ -73,7 +73,7 @@ It then writes the model you pick directly into your coding tool's config — so
 
 Create a free account on one provider below to get started. A few providers (`Kilo`, `LLM7`, OVHcloud sandbox) can also answer without a key, with tighter shared limits.
 
-**~191 coding models** across 20 active providers, ranked by practical free-tier usefulness.
+**~222 coding models** across 20 active providers, ranked by practical free-tier usefulness.
 
 | # | Provider | Models | Tier range | Free tier | Env var |
 |---|----------|--------|-----------|-----------|--------|
@@ -503,7 +503,7 @@ Inspect or wipe it manually any time — it's plain JSON with `0600` perms.
 ```json
 {
   "probeCache": {
-    "total": 191,
+    "total": 222,
     "ok": 178,
     "broken": 13,
     "freshCount": 165,
@@ -764,7 +764,7 @@ See [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md) f
 
 ## ✨ Features
 
-- **Parallel pings** — all ~191 API/Zen-callable models tested simultaneously via native `fetch`
+- **Parallel pings** — all ~222 API/Zen-callable models tested simultaneously via native `fetch`
 - **AI benchmark columns** — `Ctrl+A` benchmarks the selected model, `Ctrl+U` benchmarks visible models, and results split cleanly into **AI Latency** plus **TPS**. Settings includes an opt-in **Startup AI Speed Scan** toggle to run the global benchmark automatically after launch.
 - **Tiny verdict indicator** — the first `❔` column mirrors the full Verdict as a compact emoji (`🟩`, `🟢`, `🟡`, `🟠`, etc.) and sorts by the same verdict order.
 - **Adaptive monitoring** — 2s burst for 60s → 10s normal → 30s idle
