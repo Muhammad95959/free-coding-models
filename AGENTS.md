@@ -10,6 +10,13 @@
 >
 > If you add or modify logic in the shared core (`src/` or `sources.js`), you must ensure it does not break any surface, and that it is fully utilized by all three versions. Building a feature that only works on one surface while ignoring or breaking the others is strictly prohibited.
 
+## Website Development & Testing (MANDATORY)
+
+> [!IMPORTANT]
+> Every time work is performed on the marketing site / documentation (`website/` directory):
+> 1. Launch the dev server (`pnpm dev` inside `website/`) in a dedicated **herdr tab** labelled `vite 4328` or `website 4328`.
+> 2. Open `http://localhost:4328` in Chrome (or via `chrome-devtools new_page` / `open http://localhost:4328`) so vava can view and test the website in real time.
+
 ## Post-Feature Testing
 
 After completing any feature or fix, the agent MUST:

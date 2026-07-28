@@ -1,0 +1,19 @@
+---
+title: OpenCode CLI Plugin Integration
+description: Use free-coding-models as the backend provider for OpenCode CLI.
+section: Integrations
+---
+
+# OpenCode CLI Plugin Integration
+
+`free-coding-models` includes a dedicated plugin for OpenCode CLI (`opencode-plugin/`), allowing OpenCode sessions to consume free models automatically.
+
+## Activation
+
+Pass the `--opencode` flag when running `free-coding-models`:
+
+```bash
+free-coding-models --opencode
+```
+
+This injects selected models into your `~/.opencode/config.json` configuration automatically.

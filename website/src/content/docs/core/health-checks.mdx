@@ -1,0 +1,20 @@
+---
+title: Health Checks & Failover
+description: Real-time latency tracking, health verdicts, and automatic failover logic.
+section: Core concepts
+---
+
+# Real-time Health Checks & Auto-Failover
+
+Free API tiers can experience occasional rate limits, quota exhausts, or temporary latency spikes. `free-coding-models` continuously pings endpoints in the background to ensure zero-downtime execution.
+
+## Health Verdicts
+
+Each model is evaluated continuously with a condition verdict:
+- **OPERATIONAL**: Low latency (under 1200ms), active free tier quota.
+- **DEGRADED**: Elevated latency or occasional 429 response.
+- **UNAVAILABLE**: Exhausted quota or offline endpoint.
+
+## Automatic Failover Engine
+
+When configured as a proxy or in OpenCode/OpenClaw modes, `free-coding-models` catches HTTP 429 / 5xx errors transparently and redirects requests to the next highest-ranked available model in the same tier seamlessly.

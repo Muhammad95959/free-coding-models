@@ -1,0 +1,39 @@
+---
+title: Installation
+description: Install free-coding-models globally via npm, pnpm, Docker, or desktop utility.
+section: Getting started
+---
+
+# Installation Guide
+
+You can install `free-coding-models` using npm, pnpm, Docker, or directly run the Desktop tray application.
+
+## NPM Global Installation (Recommended)
+
+```bash
+npm install -g free-coding-models
+```
+
+Or with `pnpm`:
+
+```bash
+pnpm add -g free-coding-models
+```
+
+Verify installation:
+
+```bash
+free-coding-models --help
+```
+
+## Running via Docker
+
+```bash
+docker run -d -p 19280:19280 ghcr.io/vava-nessa/free-coding-models:latest
+```
+
+Access the local web dashboard at `http://localhost:19280`.
+
+## Desktop Utility (Tauri)
+
+Download the latest desktop release for macOS, Windows, or Linux from the GitHub Releases page to run the background system tray daemon.

@@ -1,0 +1,31 @@
+---
+title: Configuration File Reference
+description: Structure of ~/.free-coding-models/config.json.
+section: Reference
+---
+
+# Configuration File Reference
+
+Global settings and provider API keys are saved locally in `~/.free-coding-models/config.json`.
+
+## Example Schema
+
+```json
+{
+  "activeModel": "gemini-2.5-flash",
+  "providers": {
+    "gemini": {
+      "apiKey": "AIzaSy..."
+    },
+    "groq": {
+      "apiKey": "gsk_..."
+    }
+  },
+  "customSources": [
+    {
+      "name": "Local Ollama",
+      "url": "http://localhost:11434/v1"
+    }
+  ]
+}
+```

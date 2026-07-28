@@ -3,7 +3,8 @@
     "language": "fr",
     "theme": "dark",
     "skin": "claude",
-    "font": "mono"
+    "font": "mono",
+    "onboardingCompleted": true
   },
   "agent": {
     "suggestFollowUp": false,

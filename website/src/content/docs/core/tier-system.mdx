@@ -1,0 +1,24 @@
+---
+title: Tier System & SWE Scores
+description: How models are categorized into performance tiers S+, S, A+, A, B+, B, C.
+section: Core concepts
+---
+
+# Tier System & SWE Bench Scores
+
+To help developers instantly identify high-performance models for complex coding tasks, `free-coding-models` categorizes all catalog entries into standardized tiers based on real-world coding benchmarks (SWE-bench, HumanEval) and context window capabilities.
+
+## Tier Breakdown
+
+- **S+ Tier**: SOTA frontier coding models (e.g. DeepSeek-V3/R1, Gemini 2.5 Pro). Capable of multi-file refactoring and complex reasoning.
+- **S Tier**: Highly dependable coding models (e.g. Gemini 2.5 Flash, Qwen 2.5 Coder 32B).
+- **A+ Tier**: Excellent fast completion models for everyday inline completion and quick fixes.
+- **A Tier**: Solid utility models with generous rate limits.
+- **B+ / B / C Tier**: Legacy or specialized small parameter models.
+
+## Sorting Controls
+
+In the TUI or via flags:
+- `S` key: Sort by SWE Score
+- `Y` key: Sort by Tier
+- `N` key: Sort by Context Window Size
