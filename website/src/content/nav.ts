@@ -17,33 +17,38 @@ export const docsNav: DocGroup[] = [
   {
     title: 'Getting started',
     items: [
-      { slug: 'introduction', title: 'Introduction' },
-      { slug: 'installation', title: 'Installation' },
-      { slug: 'quick-start', title: 'Quick start' },
+      { slug: 'introduction', title: 'Introduction & Architecture' },
+      { slug: 'installation', title: 'Installation Guide' },
+      { slug: 'quick-start', title: 'Quick Start (API Keys & 60s Setup)' },
     ],
   },
   {
     title: 'Core concepts',
     items: [
-      { slug: 'core/tier-system', title: 'Tier system & SWE scores' },
-      { slug: 'core/health-checks', title: 'Health checks & failover' },
-      { slug: 'core/providers', title: 'Free provider ecosystem' },
+      { slug: 'core/router-daemon', title: 'FCM Smart Router & Auto-Failover' },
+      { slug: 'core/tier-system', title: 'Tier System & Benchmarks' },
+      { slug: 'core/health-checks', title: 'Health Checks & Circuit Breaker' },
+      { slug: 'core/providers', title: 'Provider Ecosystem & Keys' },
+      { slug: 'core/quotas-telemetry', title: 'Passive Quotas & Telemetry' },
     ],
   },
   {
-    title: 'Integrations',
+    title: 'Surfaces & Integrations',
     items: [
-      { slug: 'integrations/cli-tui', title: 'CLI & Terminal UI' },
-      { slug: 'integrations/desktop-app', title: 'Desktop tray utility' },
-      { slug: 'integrations/opencode', title: 'OpenCode CLI plugin' },
-      { slug: 'integrations/openclaw', title: 'OpenClaw integration' },
+      { slug: 'integrations/cli-tui', title: 'CLI Dashboard & Keybindings' },
+      { slug: 'integrations/web-dashboard', title: 'Web Dashboard & Server' },
+      { slug: 'integrations/opencode', title: 'OpenCode Plugin Integration' },
+      { slug: 'integrations/pi-extension', title: 'Pi Agent Extension' },
+      { slug: 'integrations/openclaw', title: 'OpenClaw Integration' },
     ],
   },
   {
-    title: 'Reference',
+    title: 'Reference & Support',
     items: [
-      { slug: 'reference/cli-flags', title: 'CLI flags & commands' },
-      { slug: 'reference/config-file', title: 'Configuration & keys' },
+      { slug: 'reference/cli-flags', title: 'CLI Flags & Commands' },
+      { slug: 'reference/config-file', title: 'Configuration File Schema' },
+      { slug: 'reference/rest-api', title: 'REST API Specification' },
+      { slug: 'reference/troubleshooting', title: 'Troubleshooting & FAQ' },
     ],
   },
 ]

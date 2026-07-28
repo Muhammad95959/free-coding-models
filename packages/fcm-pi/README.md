@@ -1,63 +1,60 @@
-# fcm-pi
+# fcm-pi — Pi Agent Extension for free-coding-models
 
-Pi coding-agent extension for **free-coding-models**.
+> Native extension for the **[Pi coding agent](https://pi.dev)** powering Pi sessions with 100+ free AI coding models, composite SWE-bench ranking, and local router daemon connectivity.
 
-> ⚠️ **BETA** — Consumed via local path inside the `free-coding-models` repo for now.
+---
 
-A native extension for the **[Pi coding agent](https://pi.dev)** that wires **free-coding-models** into your Pi session. It stays silent by default, then `/fcm` scans ~30 candidate models in parallel, benchmarks the top survivors, and lets you explicitly pick the model to use.
+## Features
 
-## ✨ Features
+- **Silent by default**: Zero startup lag, no footer spam, no forced model switches on Pi boot or `/resume`.
+- **Manual parallel scan (`/fcm`)**: Probes ~30 candidate models in parallel on demand, evaluating SWE-bench score (60%), latency (20%), TPS throughput (10%), and jitter stability (10%).
+- **Branded progress footer**: Live scan progress displays the `> free-coding-models` badge with percentage completion in the terminal.
+- **Error-triggered picker**: On 4xx/5xx API errors during a session, FCM re-opens the selection menu and marks the failed model `🔴 BUGGED`.
+- **Context window safety filter**: Automatically hides models with insufficient context windows (< 16k) that fail multi-file Pi agent prompts.
+- **Shared core architecture**: Uses `fcm-agent-core` for unified scanning, ranking, caching, and key resolution.
 
-| Feature | Description |
-|---------|-------------|
-| **Silent by default** | No startup scan, no footer noise, no automatic model switch on Pi boot or `/resume` |
-| **Manual scan with `/fcm`** | Pings ~30 models in parallel only when you ask, then waits for your explicit selection |
-| **Branded progress footer** | Live scan progress shows the `> free-coding-models` badge (exact TUI header colours) with a `%` counter, only while scanning |
-| **Smart composite ranking** | SWE-bench (60%), latency (20%), TPS (10%), stability (10%) |
-| **10-minute disk cache** | `~/.pi/agent/fcm-cache.json` for faster diagnostics and repeated scans |
-| **Error-triggered picker** | On 4xx/5xx, FCM reopens the menu and marks the failed model `🔴 BUGGED` instead of auto-switching |
-| **Pi context safety filter** | Tiny-context models (e.g. 8k Cerebras) pass probes but fail Pi agent prompts; FCM hides them |
-| **Shared core** | Scan/rank/cache/daemon/key logic is shared with `fcm-opencode` via `fcm-agent-core` |
+---
 
-## Install (local path)
+## Installation
 
-This package is the canonical home of the Pi adapter. For backwards compatibility, the legacy `pi-extension/` folder is kept as a thin re-export wrapper, so existing `~/.pi/agent/settings.json` paths keep working:
+Add the absolute path of `packages/fcm-pi` to your `~/.pi/agent/settings.json`:
 
-```jsonc
-// ~/.pi/agent/settings.json
+```json
 {
   "packages": [
-    "/Users/<you>/Documents/GitHub/free-coding-models/pi-extension"
-    // or point directly here:
-    // "/Users/<you>/Documents/GitHub/free-coding-models/packages/fcm-pi"
+    "/Users/<your-username>/Documents/GitHub/free-coding-models/packages/fcm-pi"
   ]
 }
 ```
 
-> The `packages/` tree needs a one-time self-link so `free-coding-models` resolves by name. See [`fcm-agent-core/README.md`](../fcm-agent-core/README.md#local-setup-why-a-self-link-is-needed).
+*Note*: The legacy `pi-extension/` directory is kept as a thin re-export wrapper for backwards compatibility with existing settings paths.
 
-## Commands
+---
 
-| Command | Description |
-|---------|-------------|
-| `/fcm` | Re-scan and pick a model interactively from the top 10 ranked |
-| `/fcm-list` | Ranked table of top 20 models (SWE / Latency / TPS / Provider) |
-| `/fcm-router` | Explicitly connect Pi to the local FCM Smart Router daemon |
-| `/fcm-status` | Diagnostics: best model, last scan source, daemon state |
+## Slash Commands
 
-## Architecture
+| Command | Action | Description |
+|---|---|---|
+| `/fcm` | Interactive Scan & Picker | Runs parallel probe scan and opens interactive model picker |
+| `/fcm-list` | Ranked Model Table | Prints top 20 models ranked by composite score |
+| `/fcm-router` | Connect Router | Points Pi session to local FCM Smart Router daemon (`localhost:19280`) |
+| `/fcm-status` | Diagnostics | Prints current model, cache source, and daemon connection status |
+
+---
+
+## Package Structure
 
 ```
 packages/fcm-pi/
-├── extensions/index.js        ← Pi extension factory (hooks + commands)
+├── extensions/index.js        ← Extension entry point (commands & hooks)
 └── lib/
-    ├── pi-config-writer.js    ← ~/.pi/agent/{models,settings,auth}.json writer
-    └── pi-progress-renderer.js ← structured events → Pi footer (badge + spinner)
+    ├── pi-config-writer.js    ← Writes ~/.pi/agent/ model & setting configs
+    └── pi-progress-renderer.js ← Formats scan progress footer & status badge
 ```
 
-All shared logic (scan orchestrator, direct scanner, daemon client, ranker, model-config, cache, API keys, provider descriptors) lives in [`fcm-agent-core`](../fcm-agent-core).
+---
 
-## Provider notes
+## Provider Notes
 
-- **Cerebras** free-tier has a strict ~8k total token limit and 5 RPM. FCM hides 8k Cerebras models from the picker and disables Pi reasoning flags for FCM-managed OpenAI-compatible providers.
-- **NVIDIA NIM** has ~40 RPM on the no-card tier; the first parallel scan may exhaust it temporarily — subsequent scans use the cache.
+- **Cerebras**: Strict token limits (~8k) on free tier; small context models are auto-filtered out from Pi agent prompts.
+- **NVIDIA NIM**: ~40 RPM rate limit on no-card tier; initial parallel scan caches metrics to `~/.pi/agent/fcm-cache.json` for 10 minutes.

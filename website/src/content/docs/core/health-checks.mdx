@@ -1,20 +1,82 @@
 ---
-title: Health Checks & Failover
-description: Real-time latency tracking, health verdicts, and automatic failover logic.
+title: Health Checks & Circuit Breaker
+description: Real-time latency tracking, health verdicts, persistent probe caching, and automatic failover engine.
 section: Core concepts
 ---
 
-# Real-time Health Checks & Auto-Failover
+# Health Checks & Circuit Breaker Engine
 
-Free API tiers can experience occasional rate limits, quota exhausts, or temporary latency spikes. `free-coding-models` continuously pings endpoints in the background to ensure zero-downtime execution.
+`free-coding-models` runs a background health probing engine and circuit breaker to track endpoint availability and perform zero-downtime failover.
 
-## Health Verdicts
+---
 
-Each model is evaluated continuously with a condition verdict:
-- **OPERATIONAL**: Low latency (under 1200ms), active free tier quota.
-- **DEGRADED**: Elevated latency or occasional 429 response.
-- **UNAVAILABLE**: Exhausted quota or offline endpoint.
+## Ping Engine & Probe Intervals
 
-## Automatic Failover Engine
+The ping loop sends 1-token chat-completion probes to catalog models to measure end-to-end API latency and status codes.
 
-When configured as a proxy or in OpenCode/OpenClaw modes, `free-coding-models` catches HTTP 429 / 5xx errors transparently and redirects requests to the next highest-ranked available model in the same tier seamlessly.
+Probe intervals can be set in settings or via CLI:
+
+```bash
+# Override ping interval to 15 seconds (in ms)
+free-coding-models --ping-interval 15000
+```
+
+---
+
+## Live Verdict States
+
+Model health condition state is tracked via `getVerdict()`:
+
+| State | Badge | Description |
+|---|---|---|
+| **Perfect** | <Badge variant="success">PERFECT</Badge> | Ping latency under 400ms |
+| **Normal** | <Badge variant="success">NORMAL</Badge> | Ping latency between 400ms and 999ms |
+| **Slow** | <Badge variant="warning">SLOW</Badge> | Ping latency between 1000ms and 2999ms |
+| **Very Slow** | <Badge variant="warning">VERY SLOW</Badge> | Ping latency between 3000ms and 4999ms |
+| **Overloaded** | <Badge variant="danger">OVERLOADED</Badge> | Last ping returned HTTP 429 Rate Limit |
+| **Unstable** | <Badge variant="danger">UNSTABLE</Badge> | Latency timeout with prior successful pings |
+| **Spiky** | <Badge variant="warning">SPIKY</Badge> | Normal average latency but high P95 latency spikes |
+
+---
+
+## Persistent Probe-Cache with TTL
+
+Healthy probe states are cached locally in `~/.free-coding-models/probe-cache.json`.
+
+- **Cache TTL**: Default 24 hours (`86400000ms`). Healthy models within TTL skip initial startup pings.
+- **Auto-Hide Broken**: Models with persistent authentication errors (401/403) or offline endpoints are hidden from selector views.
+
+### Probe Cache CLI Flags
+
+```bash
+# Re-probe all models (skip cached healthy models)
+free-coding-models --reprobe
+
+# Override probe TTL (e.g. 1 hour in ms)
+free-coding-models --probe-ttl 3600000
+
+# Show models marked broken by the probe cache
+free-coding-models --show-broken
+```
+
+---
+
+## Circuit Breaker State Machine
+
+The router circuit breaker tracks 5 internal model states:
+
+- **CLOSED (Healthy)**: 2xx response, requests pass freely.
+- **OPEN (Down)**: 3 consecutive failures, requests skipped during cooldown.
+- **HALF_OPEN (Recovering)**: Cooldown expired, retrying with 1 request.
+- **AUTH_ERROR**: HTTP 401/403 response, invalid API key.
+- **STALE**: Deprecated or removed from catalog.
+
+---
+
+## Auto-Failover Logic
+
+When using the local proxy (`http://localhost:19280/v1` with model `"fcm"`):
+
+1. Proxy targets the top healthy model in your active set.
+2. If the provider returns HTTP 429 or 5xx, the proxy catches the error and retries with the next healthy model in the set.
+3. If all models in the active set fail, the proxy returns an HTTP 503 error listing `models_tried` in the JSON body.

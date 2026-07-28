@@ -1,25 +1,72 @@
 ---
-title: CLI & Terminal UI Guide
-description: Keyboard shortcuts, navigation, tmux integration, and sorting controls.
+title: CLI Dashboard & Keybindings
+description: Full reference for the ANSI interactive terminal UI (TUI), keybindings, sorting options, and command palette.
 section: Integrations
 ---
 
-# CLI & Terminal UI Guide
+# CLI Dashboard & Keybindings Guide
 
-The interactive terminal interface is engineered with raw ANSI escape codes for instant performance and zero-lag rendering.
+The interactive terminal UI (TUI) of `free-coding-models` provides real-time model catalog browsing, sorting, and key configuration.
 
-## Keybindings Reference
+---
 
-| Key | Action |
-|---|---|
-| `↑` / `↓` | Navigate catalog rows |
-| `Enter` | Select active model |
-| `T` | Cycle tier filter (`All` → `S+` → `S` → `A+` → `A` → `B+` → `C`) |
-| `P` | Open Provider Settings modal |
-| `S` | Sort by SWE Bench score |
-| `Y` | Sort by Tier |
-| `A` | Sort by Average Ping |
-| `R` | Sort by Rank |
-| `Ctrl+P` | Open Command Palette |
-| `Esc` | Close modal / palette |
-| `Ctrl+C` | Quit TUI |
+## Launch Command
+
+```bash
+free-coding-models
+```
+
+---
+
+## Complete Keybindings Matrix
+
+| Key | Action | Description |
+|---|---|---|
+| **`↑` / `↓`** | Row Navigation | Move row cursor selection up/down |
+| **`Enter`** | Select Model | Select active model string |
+| **`T`** | Cycle Tier Filter | Cycle filter (`All` → `S+` → `S` → `A+` → `A` → `A-` → `B+` → `B` → `C`) |
+| **`P`** | Provider Settings | Open API key configuration modal |
+| **`Z`** | Cycle Tool Mode | Switch mode (`OpenCode CLI`, `Desktop`, `OpenClaw`, `Pi`, `Aider`, etc.) |
+| **`S`** | Sort by SWE | Sort catalog by SWE-bench score |
+| **`Y`** | Sort by Tier | Sort catalog by Tier |
+| **`R`** | Sort by Rank | Sort catalog by default overall rank |
+| **`O`** | Sort by Origin | Sort catalog alphabetically by provider origin |
+| **`M`** | Sort by Model | Sort catalog by model ID name |
+| **`L`** | Sort by Latest Ping | Sort catalog by latest latency ping (ms) |
+| **`A`** | Sort by Avg Ping | Sort catalog by average latency ping (ms) |
+| **`N`** | Sort by Context | Sort catalog by context window size (tokens) |
+| **`H`** | Sort by Condition | Sort catalog by health condition |
+| **`V`** | Sort by Verdict | Sort catalog by health verdict |
+| **`U`** | Sort by Uptime | Sort catalog by uptime percentage |
+| **`Ctrl+P`** | Command Palette | Open fuzzy command palette |
+| **`Esc`** | Close Overlay | Close active modal, overlay, or command palette |
+| **`Ctrl+C`** | Quit TUI | Exit terminal interface |
+
+---
+
+## Command Palette (`Ctrl+P`)
+
+Press **`Ctrl+P`** in the TUI to open the fuzzy command palette overlay to search models, filter tiers, sort columns, or launch daemon actions.
+
+---
+
+## Automated Terminal Testing (`tmux`)
+
+To test TUI rendering headlessly:
+
+```bash
+# 1. Spawn TUI in detached session
+tmux new-session -d -s fcm-test "free-coding-models"
+
+# 2. Wait for initial render
+sleep 2
+
+# 3. Capture screen text
+tmux capture-pane -p -t fcm-test
+
+# 4. Send keypress ('T' to cycle tier)
+tmux send-keys -t fcm-test "T"
+
+# 5. Terminate session
+tmux kill-session -t fcm-test
+```

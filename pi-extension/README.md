@@ -1,23 +1,28 @@
-# fcm-pi (legacy compat wrapper)
+# pi-extension — Legacy Compatibility Wrapper
 
-> ⚠️ This folder is a **thin re-export wrapper** kept so existing `~/.pi/agent/settings.json` local-path installs keep loading after the shared-core extraction.
+> ⚠️ This directory is a **thin re-export wrapper** maintained for backwards compatibility with existing `~/.pi/agent/settings.json` local-path configurations.
 
-The real Pi adapter now lives in **[`packages/fcm-pi`](../packages/fcm-pi)**, and all shared scan/rank/cache/provider logic lives in **[`packages/fcm-agent-core`](../packages/fcm-agent-core)**.
+The primary canonical Pi adapter lives in **[`packages/fcm-pi`](../packages/fcm-pi)**, and all shared core scanning/ranking logic lives in **[`packages/fcm-agent-core`](../packages/fcm-agent-core)**.
 
-## What's here
+---
 
-- `extensions/index.js` — re-exports the canonical adapter from `packages/fcm-pi`.
-- `test-cerebras-error.js` + `request-params.json` — standalone dev artifacts (a captured Cerebras error payload), unrelated to the adapter runtime.
+## Directory Contents
 
-## New installs
+- `extensions/index.js` — Re-exports the canonical adapter from `packages/fcm-pi`.
+- `request-params.json` — Capture artifact for testing provider error payloads.
 
-Point Pi directly at the canonical package:
+---
 
-```jsonc
-// ~/.pi/agent/settings.json
+## Recommended Config
+
+Point Pi directly at the canonical package path:
+
+```json
 {
-  "packages": ["/Users/<you>/Documents/GitHub/free-coding-models/packages/fcm-pi"]
+  "packages": [
+    "/Users/<your-username>/Documents/GitHub/free-coding-models/packages/fcm-pi"
+  ]
 }
 ```
 
-See [`packages/fcm-pi/README.md`](../packages/fcm-pi/README.md) for features, commands, and the one-time `packages/` self-link setup.
+See [`packages/fcm-pi/README.md`](../packages/fcm-pi/README.md) for full features and `/fcm` slash commands.

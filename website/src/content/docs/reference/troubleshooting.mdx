@@ -1,0 +1,76 @@
+---
+title: Troubleshooting & FAQ
+description: Diagnostics for PATH issues, HTTP 429 rate limits, HTTP 401 auth errors, port conflicts, and OpenCode sync.
+section: Reference & Support
+---
+
+# Troubleshooting & FAQ
+
+---
+
+## Common Issues & Diagnostics
+
+### 1. `command not found: free-coding-models`
+
+**Cause**: Global npm bin directory is missing from shell `$PATH`.
+
+**Fix**:
+Add npm global prefix to `$PATH` in `~/.zshrc` or `~/.bashrc`:
+
+```bash
+export PATH="$PATH:$(npm config get prefix)/bin"
+source ~/.zshrc
+```
+
+---
+
+### 2. HTTP 429 (Rate Limit Exceeded)
+
+**Cause**: Provider rate limit window exhausted (e.g. Groq 30 RPM limit).
+
+**Fix**:
+1. Run background daemon (`free-coding-models --daemon-bg`). The router fails over to an alternative provider in the active set.
+2. Add keys for additional active providers (Google AI, Cerebras, DashScope, NVIDIA) in Settings (**`P`** in TUI).
+
+---
+
+### 3. HTTP 401 / 403 (Auth Error)
+
+**Cause**: Invalid or expired API key.
+
+**Fix**:
+1. Check keys in TUI Settings (**`P`**).
+2. Force-rebuild probe cache:
+   ```bash
+   free-coding-models --reprobe
+   ```
+
+---
+
+### 4. `Port 19280 in use`
+
+**Cause**: Another daemon process is already running.
+
+**Fix**:
+Stop running daemon:
+
+```bash
+free-coding-models --daemon-stop
+```
+
+Or check port listener:
+
+```bash
+lsof -i :19280
+```
+
+---
+
+### 5. OpenCode CLI Model List Not Updating
+
+**Fix**:
+Re-run injection:
+
+```bash
+free-coding-models --opencode
+```

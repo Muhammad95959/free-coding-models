@@ -1,5 +1,18 @@
 # Agent Instructions
 
+## STRICT VERIFICATION MANDATE (ALWAYS VERIFY BEFORE SHIPPING)
+
+> [!CAUTION]
+> NEVER deliver work, submit a feature, or claim a task is completed without explicitly checking and verifying it beforehand!
+>
+> 1. **Check existing reference implementations first**: Before designing UI or features, search for and inspect reference code in existing projects (e.g., Kandown or past clean implementations) to avoid guessing or inventing broken/flawed designs.
+> 2. **Visual & Browser Verification**:
+>    - For web pages: ALWAYS run `pnpm dev` inside `website/`, open the URL in Chrome (`open http://localhost:4328`), and visually inspect layout, sidebar, navigation, links, and rendered Markdown styling.
+> 3. **Run Unit Tests & Build**:
+>    - Always execute `pnpm test` and `pnpm --prefix website typecheck` (or `pnpm build`) to confirm zero regressions before marking a task complete.
+> 4. **Zero AI Slop**:
+>    - Never generate generic placeholder chips, artificial summary cards, or fake quote boxes when raw Markdown source content is available. Render real source data cleanly and accurately.
+
 ## Cross-Surface Compatibility Mandate
 
 > [!IMPORTANT]

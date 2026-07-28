@@ -1,22 +1,84 @@
 ---
-title: Free Provider Ecosystem
-description: Overview of supported free providers and API key configuration.
+title: Provider Ecosystem & Keys
+description: Complete breakdown of active providers in sources.js, API endpoints, environment variables, and TUI key management.
 section: Core concepts
 ---
 
-# Supported Free AI Providers
+# Provider Ecosystem & API Keys
 
-`free-coding-models` aggregates endpoints across top free AI model providers:
+`free-coding-models` aggregates free API endpoints across 20 active provider sources defined in `sources.js`.
 
-- **Google AI Studio**: Gemini 2.5 Flash, Gemini 2.5 Pro (Generous free tier RPM).
-- **Groq**: Llama 3.3 70B, DeepSeek R1 Distill (Ultra-high speed inference).
-- **Cerebras**: Llama 3.3 70B (Fastest token output).
-- **HuggingFace Inference API**: Open-source model repository endpoints.
-- **Together AI**: Free trial and community tier models.
-- **Sambanova Systems**: Llama 3.3 & Qwen 2.5 endpoints.
-- **Mistral AI**: Codestral free developer tier.
-- **Ollama / Local**: Connect your own local GGUF models running on your machine.
+---
 
-## Managing API Keys
+## Active Providers List (`sources.js`)
 
-Press `P` in the TUI to open the Settings screen, or update keys directly in `~/.free-coding-models/config.json`.
+| Key | Provider Name | Base Endpoint | Key Env Variable |
+|---|---|---|---|
+| `nvidia` | NVIDIA NIM | `https://integrate.api.nvidia.com/v1` | `NVIDIA_API_KEY` |
+| `groq` | Groq | `https://api.groq.com/openai/v1` | `GROQ_API_KEY` |
+| `cerebras` | Cerebras | `https://api.cerebras.ai/v1` | `CEREBRAS_API_KEY` |
+| `googleai` | Google AI | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
+| `github-models` | GitHub Models | `https://models.github.ai/inference` | `GITHUB_TOKEN` |
+| `mistral` | Mistral LP | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` |
+| `cloudflare` | Cloudflare AI | `https://api.cloudflare.com/client/v4` | `CLOUDFLARE_API_KEY` |
+| `openrouter` | OpenRouter | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+| `sambanova` | SambaNova | `https://api.sambanova.ai/v1` | `SAMBANOVA_API_KEY` |
+| `ovhcloud` | OVHcloud AI | `https://oai.endpoints.kepler.ai.cloud.ovh.net/v1` | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
+| `codestral` | Codestral | `https://api.mistral.ai/v1` | `CODESTRAL_API_KEY` |
+| `zai` | ZAI | `https://api.z.ai/api/coding/paas/v4` | `ZAI_API_KEY` |
+| `scaleway` | Scaleway | `https://api.scaleway.ai/v1` | `SCALEWAY_API_KEY` |
+| `qwen` | Alibaba DashScope | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
+| `opencode-zen` | OpenCode Zen | `https://opencode.ai/zen/v1` | OpenCode Zen Key |
+| `kilo` | Kilo | `https://api.kilo.ai/api/gateway` | No key required |
+| `llm7` | LLM7 | `https://api.llm7.io/v1` | No key required |
+| `routeway` | Routeway | `https://api.routeway.ai/v1` | `ROUTEWAY_API_KEY` |
+| `novita` | Novita AI | `https://api.novita.ai/openai/v1` | `NOVITA_API_KEY` |
+| `ollama-cloud` | Ollama Cloud | `https://ollama.com/v1` | `OLLAMA_CLOUD_API_KEY` |
+
+---
+
+## Configuring API Keys
+
+### Option 1: Interactive TUI Settings
+
+Press **`P`** in the terminal UI to open the Provider API Key Settings screen. Keys are stored locally in `~/.free-coding-models/config.json`.
+
+### Option 2: Environment Variables
+
+Export keys in your shell (`~/.zshrc` / `~/.bashrc`):
+
+```bash
+export GROQ_API_KEY="gsk_..."
+export GEMINI_API_KEY="AIzaSy..."
+export CEREBRAS_API_KEY="csk-..."
+export DASHSCOPE_API_KEY="sk-..."
+```
+
+---
+
+## Filtering Catalog by Origin
+
+Filter models by specific provider origin:
+
+```bash
+# Filter models provided by Groq
+free-coding-models --origin groq
+
+# Filter models provided by NVIDIA NIM
+free-coding-models --origin nvidia
+
+# Filter models provided by Alibaba DashScope (Qwen)
+free-coding-models --origin qwen
+```
+
+---
+
+## Unconfigured Models Display
+
+```bash
+# Hide models without configured API keys
+free-coding-models --hide-unconfigured
+
+# Show all catalog models
+free-coding-models --show-unconfigured
+```

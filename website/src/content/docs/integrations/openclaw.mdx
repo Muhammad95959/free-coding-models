@@ -1,17 +1,33 @@
 ---
 title: OpenClaw Integration
-description: Plug free models directly into OpenClaw coding workflows.
+description: Patch OpenClaw model registry with free AI models and automatic failover chains.
 section: Integrations
 ---
 
 # OpenClaw Integration
 
-Use `free-coding-models` with OpenClaw agents.
+Inject free model provider configurations into **OpenClaw** agents.
 
-## Usage
+---
+
+## 1. Automatic Patching
+
+Patch OpenClaw model configuration (`~/.openclaw/config.json`):
 
 ```bash
 free-coding-models --openclaw
 ```
 
-This patches your OpenClaw model registry and maps provider fallbacks dynamically.
+---
+
+## 2. Combined Filtering Flags
+
+Inject specific tiers or high-uptime models into OpenClaw:
+
+```bash
+# Inject S-tier models only
+free-coding-models --openclaw --tier S
+
+# Inject models with >98% uptime
+free-coding-models --openclaw --fiable
+```

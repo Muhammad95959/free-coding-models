@@ -1,23 +1,79 @@
 ---
-title: Introduction to free-coding-models
-description: Aggregate, score, and switch between 100+ free AI coding models automatically.
+title: Introduction & Architecture
+description: Technical overview of free-coding-models — local gateway, ping engine, and auto-failover proxy for free AI coding models.
 section: Getting started
 ---
 
-# Introduction to free-coding-models
+# Introduction & Architecture
 
-**free-coding-models** is a zero-cost, open-source model gateway and model management ecosystem. It provides continuous real-time latency pinging, condition tracking, SWE bench ranking, and auto-failover across 100+ free AI coding models from Google Gemini, DeepSeek, Groq, Cerebras, HuggingFace, Together, Sambanova, and local Ollama instances.
+`free-coding-models` is an open-source local gateway, health monitoring engine, and model router for free AI coding model endpoints.
 
-## Why free-coding-models?
+It aggregates models from providers including Google AI, Groq, Cerebras, NVIDIA NIM, GitHub Models, Mistral AI, Scaleway, Alibaba DashScope, Cloudflare AI, OVHcloud, OpenRouter, SambaNova, OpenCode Zen, Kilo, LLM7, Routeway, Novita, and Ollama Cloud.
 
-- **100% Free Coding Tier**: Access state-of-the-art coding LLMs without paying monthly subscriptions.
-- **Auto-Failover & High Availability**: Automatically switch providers when rate limits or quotas are reached.
-- **SWE Score Ranking**: Filter models by benchmark quality (`--best`, `--fiable`, `--tier S+`).
-- **Multi-Surface Compatibility**: Seamlessly use the CLI/TUI, Desktop System Tray app, OpenCode CLI plugin, OpenClaw integration, or Docker API.
+---
 
-## Core Features
+## Core Capabilities
 
-- Real-time latency & health checks (`getUptime`, `getAvg`, `getVerdict`).
-- Standardized Tier System (`S+`, `S`, `A+`, `A`, `B+`, `B`, `C`).
-- Key management for all major free AI API providers.
-- Custom local model source support (`Ollama`, `LM Studio`, custom endpoints).
+1. **Local OpenAI-Compatible Proxy**: Exposes `http://localhost:19280/v1` with model `"fcm"`.
+2. **Transparent Auto-Failover**: Automatically shifts requests to an alternative model in the active set when HTTP 429 (rate limit) or 5xx errors occur.
+3. **SWE-Bench Tiering**: Categorizes catalog entries into performance tiers (`S+`, `S`, `A+`, `A`, `A-`, `B+`, `B`, `C`) based on SWE-bench Verified scores.
+4. **Passive Quota Header Parsing**: Inspects `x-ratelimit-remaining` and reset headers on live responses to detect rate limits before requests fail.
+5. **Multi-Surface Interfaces**: Includes interactive terminal UI (ANSI), Tauri desktop tray utility, Web Dashboard, Docker image, and OpenCode/OpenClaw configuration tools.
+
+---
+
+## System Architecture
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        USER SURFACES & PLUGINS                         │
+│   CLI/TUI  │  Desktop Tray  │  Web UI  │  OpenCode  │  OpenClaw  │  IDE  │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+┌──────────────────────────────────▼─────────────────────────────────────┐
+│                      FCM SMART ROUTER DAEMON                           │
+│               http://localhost:19280/v1 (model: "fcm")                 │
+│                                                                        │
+│  ┌────────────────────┐  ┌───────────────────┐  ┌───────────────────┐  │
+│  │   Circuit Breaker  │  │  Passive Quota    │  │  System Pre-Prompt│  │
+│  │   Healthy/Down/   │  │  Header Tracker   │  │    Injection      │  │
+│  │   Auth Error      │  │ (x-ratelimit-rem) │  │                   │  │
+│  └─────────┬──────────┘  └─────────┬─────────┘  └─────────┬─────────┘  │
+└────────────┼───────────────────────┼──────────────────────┼────────────┘
+             │                       │                      │
+┌────────────▼───────────────────────▼──────────────────────▼────────────┐
+│                       PROVIDER AGGREGATION CORE                        │
+│   Google AI  │  Groq  │  NVIDIA NIM  │  Alibaba DashScope  │  Ollama  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Key Modules
+
+<CardGrid>
+  <Card
+    icon="terminal"
+    title="Terminal Dashboard"
+    description="ANSI escape TUI with real-time ping tracking, custom sorting, and keybindings."
+    href="/docs/integrations/cli-tui"
+  />
+  <Card
+    icon="server"
+    title="Router Daemon & Proxy"
+    description="OpenAI-compatible server on port 19280 with circuit breaker state tracking."
+    href="/docs/integrations/docker-web"
+  />
+  <Card
+    icon="zap"
+    title="OpenCode & OpenClaw"
+    description="Direct configuration injection for OpenCode CLI and OpenClaw agents."
+    href="/docs/integrations/opencode"
+  />
+  <Card
+    icon="cpu"
+    title="Local & Cloud Models"
+    description="Support for local GGUF instances (Ollama / LM Studio) and cloud free endpoints."
+    href="/docs/integrations/local-ollama"
+  />
+</CardGrid>

@@ -1,39 +1,158 @@
 ---
-title: Installation
-description: Install free-coding-models globally via npm, pnpm, Docker, or desktop utility.
+title: Installation Guide
+description: Step-by-step installation options for free-coding-models via npm, pnpm, Docker, Desktop App, or source.
 section: Getting started
 ---
 
 # Installation Guide
 
-You can install `free-coding-models` using npm, pnpm, Docker, or directly run the Desktop tray application.
+`free-coding-models` can be installed on **macOS**, **Linux**, and **Windows**. Choose your preferred installation method below.
 
-## NPM Global Installation (Recommended)
+---
+
+## Method 1: NPM / PNPM Global Install (Recommended)
+
+The easiest way to get `free-coding-models` is installing the global CLI package via your favorite Node package manager.
+
+<Callout type="note" title="Prerequisite">
+Requires Node.js version **18.0.0** or higher (`node -v`).
+</Callout>
+
+### Using npm
 
 ```bash
 npm install -g free-coding-models
 ```
 
-Or with `pnpm`:
+### Using pnpm
 
 ```bash
 pnpm add -g free-coding-models
 ```
 
-Verify installation:
+### Using yarn
 
 ```bash
+yarn global add free-coding-models
+```
+
+### Using bun
+
+```bash
+bun install -g free-coding-models
+```
+
+### Verify Global Installation
+
+Once installed, verify that the `free-coding-models` command is accessible in your system PATH:
+
+```bash
+free-coding-models --version
+```
+
+If successful, this outputs the currently installed version (e.g. `v0.5.61`).
+
+---
+
+## Method 2: Docker Container (Background Server & API)
+
+Run the full web dashboard and FCM router inside an isolated Docker container on port `19280`.
+
+### Quick Run
+
+```bash
+docker run -d \
+  --name free-coding-models \
+  -p 19280:19280 \
+  -v ~/.free-coding-models:/root/.free-coding-models \
+  --restart unless-stopped \
+  ghcr.io/vava-nessa/free-coding-models:latest
+```
+
+### Docker Compose (`docker-compose.yml`)
+
+```yaml
+version: '3.8'
+
+services:
+  fcm-router:
+    image: ghcr.io/vava-nessa/free-coding-models:latest
+    container_name: free-coding-models
+    ports:
+      - "19280:19280"
+    volumes:
+      - ~/.free-coding-models:/root/.free-coding-models
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+```
+
+Run Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+Access the Web Dashboard at `http://localhost:19280`.
+
+---
+
+## Method 3: Desktop System Tray Application (Tauri)
+
+For desktop users who prefer a native menu bar icon with background service management:
+
+<Steps>
+  <Step number={1} title="Download the Release">
+    Go to the [GitHub Releases](https://github.com/vava-nessa/free-coding-models/releases) page.
+  </Step>
+  <Step number={2} title="Choose your platform bundle">
+    - **macOS**: Download `.dmg` (Universal, Apple Silicon M1/M2/M3/M4 & Intel)
+    - **Windows**: Download `.msi` or `.exe` installer
+    - **Linux**: Download `.AppImage` or `.deb`
+  </Step>
+  <Step number={3} title="Launch System Tray Utility">
+    Run the application. A status icon will appear in your top menu bar / system tray.
+  </Step>
+</Steps>
+
+---
+
+## Method 4: Build from Source
+
+If you want to contribute or test bleeding-edge features:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/vava-nessa/free-coding-models.git
+cd free-coding-models
+
+# 2. Install dependencies
+pnpm install
+
+# 3. Test unit test suite
+pnpm test
+
+# 4. Launch local CLI
+pnpm start
+```
+
+---
+
+## Post-Installation Checklist
+
+To ensure your environment is fully ready:
+
+```bash
+# 1. Check CLI help output
 free-coding-models --help
+
+# 2. Run initial model health scan
+free-coding-models --best
+
+# 3. Test local daemon background mode
+free-coding-models --daemon-bg
 ```
 
-## Running via Docker
-
-```bash
-docker run -d -p 19280:19280 ghcr.io/vava-nessa/free-coding-models:latest
-```
-
-Access the local web dashboard at `http://localhost:19280`.
-
-## Desktop Utility (Tauri)
-
-Download the latest desktop release for macOS, Windows, or Linux from the GitHub Releases page to run the background system tray daemon.
+<Callout type="tip" title="PATH Troubleshooting">
+If `command not found: free-coding-models` occurs after npm global install, ensure npm's global bin folder is included in your shell PATH (e.g. `export PATH="$PATH:$(npm config get prefix)/bin"` in `~/.zshrc` or `~/.bashrc`).
+</Callout>

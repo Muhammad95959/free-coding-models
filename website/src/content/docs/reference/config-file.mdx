@@ -1,31 +1,61 @@
 ---
-title: Configuration File Reference
-description: Structure of ~/.free-coding-models/config.json.
-section: Reference
+title: Configuration File Schema
+description: Field reference for ~/.free-coding-models/config.json and environment variable overrides.
+section: Reference & Support
 ---
 
-# Configuration File Reference
+# Configuration File Schema Reference
 
-Global settings and provider API keys are saved locally in `~/.free-coding-models/config.json`.
+Settings and API keys are persisted in `~/.free-coding-models/config.json`.
 
-## Example Schema
+---
+
+## File Location
+
+- **macOS / Linux**: `~/.free-coding-models/config.json`
+- **Windows**: `%USERPROFILE%\.free-coding-models\config.json`
+
+---
+
+## Schema Structure Example
 
 ```json
 {
   "activeModel": "gemini-2.5-flash",
+  "pingIntervalMs": 30000,
+  "probeMode": "balanced",
+  "hideUnconfigured": false,
+  "telemetryEnabled": true,
+  "systemPrePrompt": "You are an AI coding assistant routed by FCM Router.",
   "providers": {
     "gemini": {
       "apiKey": "AIzaSy..."
     },
     "groq": {
       "apiKey": "gsk_..."
+    },
+    "nvidia": {
+      "apiKey": "nvapi-..."
+    },
+    "qwen": {
+      "apiKey": "sk-..."
     }
   },
   "customSources": [
     {
       "name": "Local Ollama",
-      "url": "http://localhost:11434/v1"
+      "baseUrl": "http://localhost:11434/v1"
     }
   ]
 }
 ```
+
+---
+
+## Environment Variable Precedence
+
+Environment variables override `config.json` keys:
+
+1. `GROQ_API_KEY`, `GEMINI_API_KEY`, `NVIDIA_API_KEY`, `DASHSCOPE_API_KEY`, `CEREBRAS_API_KEY`, `MISTRAL_API_KEY`, `CODESTRAL_API_KEY`, `OPENROUTER_API_KEY`, `SAMBANOVA_API_KEY`, `SCALEWAY_API_KEY`, `ZAI_API_KEY`, `CLOUDFLARE_API_KEY`, `OVH_AI_ENDPOINTS_ACCESS_TOKEN`, `NOVITA_API_KEY`, `ROUTEWAY_API_KEY`, `GITHUB_TOKEN`.
+2. Provider key in `~/.free-coding-models/config.json`.
+3. Default fallback free community keys.

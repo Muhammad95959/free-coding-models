@@ -1,19 +1,56 @@
 ---
-title: OpenCode CLI Plugin Integration
-description: Use free-coding-models as the backend provider for OpenCode CLI.
+title: OpenCode Plugin Integration
+description: Complete documentation for the OpenCode CLI plugin (packages/fcm-opencode) with /fcm commands, reasoning handling, and symlink setup.
 section: Integrations
 ---
 
-# OpenCode CLI Plugin Integration
+# OpenCode Plugin Integration (`packages/fcm-opencode`)
 
-`free-coding-models` includes a dedicated plugin for OpenCode CLI (`opencode-plugin/`), allowing OpenCode sessions to consume free models automatically.
+`free-coding-models` includes an OpenCode plugin located at [`packages/fcm-opencode`](file:///Users/vava/Documents/GitHub/free-coding-models/packages/fcm-opencode).
 
-## Activation
+---
 
-Pass the `--opencode` flag when running `free-coding-models`:
+## Repository Section
+
+- **Plugin Code**: [`packages/fcm-opencode`](file:///Users/vava/Documents/GitHub/free-coding-models/packages/fcm-opencode)
+- **Shared Core**: [`packages/fcm-agent-core`](file:///Users/vava/Documents/GitHub/free-coding-models/packages/fcm-agent-core)
+
+---
+
+## Key Features
+
+- **Light Startup**: Uses 10-minute cross-tool disk cache (`~/.pi/agent/fcm-cache.json`) to prevent boot freezes.
+- **Provider Prefixing**: Injects providers with `fcm-*` IDs into `~/.config/opencode/config.json`.
+- **Reasoning Format Compatibility**: Normalizes `<think>...</think>` tags for reasoning LLMs (DeepSeek-R1, Moonshot Kimi, MiMo) into native OpenCode reasoning blocks.
+- **Env Variable Security**: References API keys via `{env:FCM_<PROVIDER>_API_KEY}` without inlining raw key strings.
+
+---
+
+## Installation (Symlink)
+
+Symlink the plugin entry file into OpenCode's plugins folder:
+
+```bash
+mkdir -p ~/.config/opencode/plugins
+ln -sf /Users/<your-username>/Documents/GitHub/free-coding-models/packages/fcm-opencode/index.js \
+  ~/.config/opencode/plugins/fcm-opencode.js
+```
+
+Or run the CLI auto-injection:
 
 ```bash
 free-coding-models --opencode
 ```
 
-This injects selected models into your `~/.opencode/config.json` configuration automatically.
+---
+
+## OpenCode Plugin Commands
+
+| Command | Action | Description |
+|---|---|---|
+| `/fcm` | Scan Models | Scans candidate models and lists choices without changing current model |
+| `/fcm 1` / `/fcm 2` | Select Model #N | Switches OpenCode active model to ranked choice #N |
+| `/fcm best` | Select Best | Switches OpenCode to the top-ranked healthy model |
+| `/fcm rescan` | Force Rescan | Forces a fresh latency and health probe scan |
+| `/fcm status` (or `/fcm-status`) | Diagnostics | Shows active model, cache state, and daemon status |
+| `/fcm router` (or `/fcm-router`) | Connect Router | Switches OpenCode session to local FCM Smart Router daemon |

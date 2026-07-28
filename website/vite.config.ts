@@ -30,6 +30,7 @@ export default defineConfig({
     {
       enforce: 'pre',
       ...mdx({
+        include: /\.mdx$/,
         providerImportSource: '@mdx-js/react',
         remarkPlugins: [
           remarkGfm,

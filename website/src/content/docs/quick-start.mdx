@@ -1,43 +1,106 @@
 ---
-title: Quick Start Guide
-description: Get up and running with free-coding-models in 60 seconds.
+title: Quick Start (API Keys & 60s Setup)
+description: Links to create free provider API keys, 60-second CLI setup, interactive TUI, background daemon, and agent extensions.
 section: Getting started
 ---
 
 # Quick Start Guide
 
-Start querying free models in seconds from your command line.
+---
 
-## 1. Launch the interactive TUI
+## 1. Create Free Provider Accounts & Get API Keys
 
-Run the binary without parameters to enter the interactive terminal UI:
+Before querying cloud endpoints, obtain free API keys from developer portals:
+
+| Provider | Portal Account Creation Link | Key Environment Variable |
+|---|---|---|
+| **Google AI Studio** | [aistudio.google.com](https://aistudio.google.com/) | `GEMINI_API_KEY` |
+| **Groq Console** | [console.groq.com/keys](https://console.groq.com/keys) | `GROQ_API_KEY` |
+| **Cerebras Cloud** | [cloud.cerebras.ai](https://cloud.cerebras.ai) | `CEREBRAS_API_KEY` |
+| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com) | `NVIDIA_API_KEY` |
+| **Alibaba DashScope** | [modelstudio.console.alibabacloud.com](https://modelstudio.console.alibabacloud.com) | `DASHSCOPE_API_KEY` |
+| **GitHub Models** | [models.github.ai](https://models.github.ai) | `GITHUB_TOKEN` |
+| **Mistral AI** | [console.mistral.ai](https://console.mistral.ai) | `MISTRAL_API_KEY` |
+| **Cloudflare AI** | [dash.cloudflare.com](https://dash.cloudflare.com) | `CLOUDFLARE_API_KEY` |
+| **OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) | `OPENROUTER_API_KEY` |
+| **SambaNova Cloud** | [cloud.sambanova.ai](https://cloud.sambanova.ai) | `SAMBANOVA_API_KEY` |
+| **Scaleway** | [console.scaleway.com/iam/api-keys](https://console.scaleway.com/iam/api-keys) | `SCALEWAY_API_KEY` |
+
+Export keys in your shell (`~/.zshrc` or `~/.bashrc`):
+
+```bash
+export GROQ_API_KEY="gsk_..."
+export GEMINI_API_KEY="AIzaSy..."
+export CEREBRAS_API_KEY="csk-..."
+```
+
+---
+
+## 2. Interactive Terminal UI
+
+Run `free-coding-models` without arguments to launch the ANSI terminal UI:
 
 ```bash
 free-coding-models
 ```
 
-Navigate with Arrow Keys `↑`/`↓`, sort by SWE score with `S`, filter by tier with `T`, and select a model with `Enter`.
+- **`↑` / `↓`**: Navigate catalog rows.
+- **`S`**: Sort models by SWE-bench score.
+- **`T`**: Cycle tier filter (`All` → `S+` → `S` → `A+` → `A` → `A-` → `B+` → `B` → `C`).
+- **`P`**: Open Provider API Key Settings overlay.
+- **`Enter`**: Select active model.
 
-## 2. Pick the Best Model directly
+---
 
-To output the current top-rated model for immediate use:
+## 3. One-Liner CLI Queries
 
 ```bash
+# Print top-performing model string
 free-coding-models --best
-```
 
-## 3. Filter by Tier
-
-Filter models in Tier S+ or S:
-
-```bash
+# Filter S+ Tier models
 free-coding-models --tier S+
+
+# Filter high reliability models (>98% uptime)
+free-coding-models --fiable
+
+# Output catalog as JSON
+free-coding-models --json | jq '.[0]'
 ```
 
-## 4. OpenCode CLI Integration
+---
 
-Launch directly with OpenCode CLI integration:
+## 4. Background Proxy Daemon & Web Server
+
+Start the local proxy daemon at `http://localhost:19280/v1`:
 
 ```bash
-free-coding-models --opencode
+free-coding-models --daemon-bg
 ```
+
+Check status:
+
+```bash
+free-coding-models --daemon-status
+```
+
+Test cURL query:
+
+```bash
+curl http://localhost:19280/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "fcm",
+    "messages": [
+      {"role": "user", "content": "Write a Python string reverse function."}
+    ]
+  }'
+```
+
+---
+
+## 5. Extensions & Coding Tools
+
+- **OpenCode CLI Plugin**: Run `free-coding-models --opencode` or see [`packages/fcm-opencode`](/docs/integrations/opencode).
+- **Pi Agent Extension**: Install [`packages/fcm-pi`](/docs/integrations/pi-extension).
+- **OpenClaw Integration**: Run `free-coding-models --openclaw` or see [`OpenClaw Guide`](/docs/integrations/openclaw).

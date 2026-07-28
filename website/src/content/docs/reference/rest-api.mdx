@@ -1,0 +1,79 @@
+---
+title: REST API Specification
+description: API specification for the FCM Router proxy and daemon management server on localhost:19280.
+section: Reference & Support
+---
+
+# FCM Router REST API Specification
+
+The `free-coding-models` daemon (`localhost:19280`) provides OpenAI-compatible proxy endpoints and catalog management APIs.
+
+---
+
+## Base Endpoint
+
+```
+http://localhost:19280
+```
+
+---
+
+## Endpoints
+
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/v1/chat/completions` | OpenAI-compatible chat completion with auto-failover |
+| `GET` | `/v1/models` | List active models in OpenAI API format |
+| `GET` | `/api/health` | Daemon status and health metric summary |
+| `GET` | `/api/models` | Full catalog model metrics and live ping conditions |
+| `GET` | `/api/best` | Returns current top-ranked healthy model string |
+| `POST` | `/api/probe` | Trigger manual health probe scan across catalog |
+
+---
+
+## 1. Chat Completion (`POST /v1/chat/completions`)
+
+```bash
+curl http://localhost:19280/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "fcm",
+    "messages": [
+      {"role": "user", "content": "Write a quick Python hello world."}
+    ]
+  }'
+```
+
+---
+
+## 2. Health Status (`GET /api/health`)
+
+```bash
+curl http://localhost:19280/api/health
+```
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "version": "0.5.61",
+  "daemon": "running",
+  "healthyModels": 48,
+  "totalModels": 104
+}
+```
+
+---
+
+## 3. Top Model String (`GET /api/best`)
+
+```bash
+curl http://localhost:19280/api/best
+```
+
+### Response
+
+```text
+gemini-2.5-flash
+```

@@ -1,17 +1,77 @@
 ---
 title: CLI Flags & Commands Reference
-description: Complete reference of command-line arguments and flags.
-section: Reference
+description: Reference matrix of tool flags, analysis flags, sorting flags, and server maintenance options.
+section: Reference & Support
 ---
 
-# CLI Flags & Commands
+# CLI Flags & Commands Reference
 
-| Flag | Short | Description |
+Complete command-line interface specification for `free-coding-models`.
+
+---
+
+## Tool Integration Flags
+
+| Flag | Mode / Tool | Action |
 |---|---|---|
-| `--best` | `-b` | Select and print the top-performing model instantly |
-| `--fiable` | `-f` | Filter models with high uptime reliability (>98%) |
-| `--tier [T]` | `-t` | Filter catalog by tier (`S+`, `S`, `A+`, `A`, `B+`, `C`) |
-| `--opencode` | | Export configuration to OpenCode CLI |
-| `--openclaw` | | Patch models into OpenClaw configuration |
-| `--help` | `-h` | Print help manual |
-| `--version` | `-v` | Output installed package version |
+| `--opencode` | OpenCode CLI | Export configuration to `~/.opencode/config.json` |
+| `--openclaw` | OpenClaw | Patch OpenClaw model registry |
+| `--pi` | Pi | Format configuration for Pi agent |
+| `--jcode` | jcode | Format configuration for jcode |
+| `--opencode-desktop` | OpenCode Desktop | Format config for OpenCode Desktop |
+| `--opencode-web` | OpenCode Web | Format config for OpenCode Web |
+| `--crush` | Crush | Format config for Crush |
+| `--goose` | Goose | Format config for Goose CLI |
+| `--aider` | Aider | Format config for Aider |
+| `--kilo` | Kilo CLI | Format config for Kilo CLI |
+| `--qwen` | Qwen Code | Format config for Qwen Code |
+| `--openhands` | OpenHands | Format config for OpenHands |
+| `--amp` | Amp | Format config for Amp |
+| `--hermes` | Hermes | Format config for Hermes |
+| `--continue` | Continue | Format config for Continue.dev |
+| `--cline` | Cline | Format config for Cline |
+| `--xcode` | Xcode Intelligence | Format config for Xcode Intelligence |
+| `--fcm-router` | FCM Router | Start FCM Router proxy |
+| `--caveman` | Caveman Code | Format config for Caveman Code |
+| `--copilot` | Copilot CLI | Format config for Copilot CLI |
+| `--forgecode` | ForgeCode | Format config for ForgeCode |
+| `--zcode` | ZCode | Format config for ZCode |
+
+---
+
+## Analysis & Filtering Flags
+
+| Flag | Short | Description | Example |
+|---|---|---|---|
+| `--best` | `-b` | Select and print top-performing model string | `free-coding-models -b` |
+| `--fiable` | `-f` | Filter models with high uptime (>98%) | `free-coding-models -f` |
+| `--json` | | Output catalog results as JSON | `free-coding-models --json` |
+| `--tier [T]` | `-t` | Filter catalog by tier (`S+`, `S`, `A+`, `A`, `A-`, `B+`, `B`, `C`) | `free-coding-models --tier S+` |
+| `--sort [col]` | | Sort by column (`rank`, `tier`, `origin`, `model`, `ping`, `avg`, `swe`, `ctx`, `condition`, `verdict`, `uptime`) | `free-coding-models --sort swe --desc` |
+| `--desc` / `--asc` | | Set sort direction (descending / ascending) | `free-coding-models --sort ping --asc` |
+| `--origin [p]` | | Filter by provider (`groq`, `nvidia`, `googleai`, `qwen`, `cerebras`) | `free-coding-models --origin groq` |
+| `--ping-interval [ms]` | | Override health probe interval in ms | `free-coding-models --ping-interval 15000` |
+| `--hide-unconfigured` | | Hide models without configured API keys | `free-coding-models --hide-unconfigured` |
+| `--show-unconfigured` | | Show all catalog models | `free-coding-models --show-unconfigured` |
+| `--reprobe` / `--no-cache` | | Force-rebuild persistent probe-cache | `free-coding-models --reprobe` |
+| `--probe-ttl [ms]` | | Override probe-cache TTL (default: 24h) | `free-coding-models --probe-ttl 3600000` |
+| `--show-broken` | | Show models marked broken by probe-cache | `free-coding-models --show-broken` |
+| `--check-drift` | | Diff `sources.js` against `models.dev` | `free-coding-models --check-drift` |
+| `--drift-threshold [N]` | | Fail `--check-drift` only when N+ mismatches found | `free-coding-models --drift-threshold 2` |
+
+---
+
+## Config & Server Maintenance Commands
+
+| Command / Flag | Description |
+|---|---|
+| `web` / `--web` / `--gui` | Start Web Dashboard (`http://localhost:19280`) |
+| `playground` / `--playground` | Open terminal Playground chat overlay |
+| `--daemon` | Start FCM Router daemon in foreground |
+| `--daemon-bg` | Start FCM Router daemon in background |
+| `--daemon-status` | Print FCM Router daemon status JSON |
+| `--daemon-stop` | Gracefully stop FCM Router daemon |
+| `--sync-set [name]` | Auto-discover and live-probe models into active router set |
+| `--no-telemetry` | Disable local performance telemetry collection |
+| `--help` / `-h` | Print CLI help manual |
+| `--version` / `-v` | Print package version |

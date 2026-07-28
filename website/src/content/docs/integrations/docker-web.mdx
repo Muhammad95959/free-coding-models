@@ -1,0 +1,90 @@
+---
+title: Web Dashboard & Docker Server
+description: Web Dashboard interface and OpenAI-compatible background proxy server running on localhost:19280.
+section: Integrations
+---
+
+# Web Dashboard & Docker Server
+
+`free-coding-models` includes a Web Dashboard interface and background proxy server served on port `19280`.
+
+---
+
+## 1. Running the Web Dashboard
+
+Launch the Web Dashboard in your browser:
+
+```bash
+free-coding-models web
+```
+
+Or start the daemon:
+
+```bash
+free-coding-models --daemon
+```
+
+Navigate to `http://localhost:19280`.
+
+---
+
+## 2. Running via Docker
+
+Run the Web Dashboard and API server inside a Docker container:
+
+```bash
+docker run -d \
+  --name free-coding-models \
+  -p 19280:19280 \
+  -v ~/.free-coding-models:/root/.free-coding-models \
+  --restart unless-stopped \
+  ghcr.io/vava-nessa/free-coding-models:latest
+```
+
+### Docker Compose (`docker-compose.yml`)
+
+```yaml
+version: '3.8'
+
+services:
+  free-coding-models:
+    image: ghcr.io/vava-nessa/free-coding-models:latest
+    container_name: free-coding-models
+    ports:
+      - "19280:19280"
+    volumes:
+      - ~/.free-coding-models:/root/.free-coding-models
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+```
+
+---
+
+## 3. Daemon Control CLI Flags
+
+```bash
+# Start daemon in background
+free-coding-models --daemon-bg
+
+# Check daemon status
+free-coding-models --daemon-status
+
+# Stop daemon
+free-coding-models --daemon-stop
+```
+
+---
+
+## 4. OpenAI API Proxy (`localhost:19280/v1`)
+
+```bash
+curl http://localhost:19280/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "fcm",
+    "messages": [
+      {"role": "user", "content": "Write a TypeScript function to sort numbers."}
+    ]
+  }'
+```

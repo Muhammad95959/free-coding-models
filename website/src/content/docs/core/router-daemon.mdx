@@ -1,0 +1,82 @@
+---
+title: FCM Smart Router & Auto-Failover
+description: In-depth technical documentation for the FCM Smart Router daemon, circuit breaker, failover logic, and system pre-prompts.
+section: Core concepts
+---
+
+# FCM Smart Router & Auto-Failover Engine
+
+The **FCM Smart Router** is a background daemon that exposes an OpenAI-compatible proxy server at `http://localhost:19280/v1`.
+
+---
+
+## 1. How the Router Works
+
+When an AI coding client sends a request to `http://localhost:19280/v1/chat/completions` with `"model": "fcm"`:
+
+1. **Model Selection**: The router evaluates your active model set and selects the highest-ranked model in **CLOSED (Healthy)** state.
+2. **Pre-Prompt Injection**: Prepends a system message introducing the assistant as routed by FCM (editable via Settings).
+3. **Request Proxying**: Forwards the request payload to the target provider endpoint with proper authorization headers.
+4. **Transparent Failover**: If the target provider returns **HTTP 429** (Rate Limit) or **5xx** (Server Error), the router catches the failure in under 50ms and retries with the next healthy model in the set.
+5. **Circuit Breaker Update**: Updates the circuit breaker state machine for the failing model.
+
+---
+
+## 2. Circuit Breaker State Machine
+
+Each catalog model maintains an individual circuit breaker state:
+
+| State | Color Code | Trigger Condition | Router Behavior |
+|---|---|---|---|
+| **CLOSED** | 🟢 Healthy | Last 1-token probe returned HTTP 200/2xx | Preferred for active routing |
+| **OPEN** | 🔴 Down | 3 consecutive probes or live requests failed | Skipped during failover; 60s cooldown |
+| **HALF_OPEN** | 🟡 Recovering | Cooldown timer expired | Retries with 1 test request |
+| **AUTH_ERROR** | 🟠 Auth Error | HTTP 401/403 Invalid or missing API key | Skipped; auto-heal swaps model on start |
+| **STALE** | ⚪ Deprecated | Decommissioned by provider | Filtered out of active set |
+
+---
+
+## 3. Background Probe Mechanism
+
+The daemon runs background 1-token chat-completion pings to measure actual API availability and latency rather than simple DNS reachability:
+
+- **Aggressive (`10s`)**: Rapid rate-limit detection.
+- **Balanced (`30s`)**: Default setting for high availability.
+- **Eco (`120s`)**: Low overhead mode to conserve quota.
+
+---
+
+## 4. Auto-Heal Mechanism
+
+On daemon startup:
+- The active model set is scanned.
+- Any model in **AUTH_ERROR** or **STALE** condition is automatically swapped for a healthy working alternative from the same provider or tier.
+- Manual reordering or model additions disable auto-heal for custom user sets.
+
+---
+
+## 5. System Pre-Prompt Injection
+
+Every request proxied through `http://localhost:19280/v1` has a system message prepended.
+
+- **Default Pre-Prompt**: Introduces the FCM routing persona and dashboard URL.
+- **Customization**: Editable via Web Dashboard or TUI Settings (**`P`**). Max length: 4000 characters.
+- **Disabling**: Can be toggled off in settings if your client requires strict un-modified prompt payloads.
+
+---
+
+## 6. Daemon Control Commands
+
+```bash
+# Start daemon in background
+free-coding-models --daemon-bg
+
+# Check daemon status JSON
+free-coding-models --daemon-status
+
+# Stop daemon
+free-coding-models --daemon-stop
+
+# Discover & sync active router set
+free-coding-models --sync-set
+```

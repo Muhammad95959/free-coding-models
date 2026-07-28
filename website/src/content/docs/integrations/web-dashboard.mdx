@@ -1,0 +1,90 @@
+---
+title: Web Dashboard & Server
+description: Extensive documentation for the free-coding-models Web Dashboard, realtime model metrics, router controls, and analytics.
+section: Integrations
+---
+
+# Web Dashboard & Server (`localhost:19280`)
+
+`free-coding-models` includes a full-featured real-time Web Dashboard served at `http://localhost:19280`.
+
+---
+
+## 1. Launching the Web Dashboard
+
+Launch the Web Dashboard from your terminal:
+
+```bash
+free-coding-models web
+```
+
+Or start the daemon mode:
+
+```bash
+free-coding-models --daemon
+```
+
+Open your browser to `http://localhost:19280`.
+
+---
+
+## 2. Web Dashboard Interface & Views
+
+The Web Dashboard features 5 core views:
+
+### View 1: Real-Time Model Table
+- **Live Latency & Health**: Displays live latency ping gauges, stability scores, and condition badges for all catalog entries.
+- **Filtering Controls**: Filter catalog by Tier (`S+` to `C`), Provider Origin, or Health status.
+- **Sorting Columns**: Interactive sorting by Rank, Tier, Model Name, Ping (ms), SWE Score, and Context Window.
+- **One-Click Install**: Quick action buttons to copy model endpoints for OpenCode, Pi, Aider, Goose, or Continue.
+
+### View 2: Router Dashboard (`/router`)
+- **Daemon Process Status**: Visual indicator of daemon uptime, PID, active port (19280), and healthy model count.
+- **Active Model Set Manager**: Add, remove, or reorder models in your active failover queue.
+- **Circuit Breaker Monitor**: View live states (`CLOSED`, `OPEN`, `HALF_OPEN`, `AUTH_ERROR`, `STALE`) for queued models.
+- **Pre-Prompt Editor**: Customize or toggle the system pre-prompt message injected on proxied calls.
+
+### View 3: Token Usage & Analytics (`/analytics`)
+- **Throughput Gauge**: Real-time output generation speed in tokens per second (`tok/s`).
+- **Success Rate % Meter**: 24-hour success rate percentage across proxied API requests.
+- **Provider Quota Gauge**: Visual meters of remaining requests and tokens extracted from HTTP headers.
+- **Recent Call Logs**: Chronological log of recent completion requests, latencies, status codes, and models used.
+
+### View 4: Installed Models & Keys (`/models`)
+- **API Key Management**: Test and update API keys for NVIDIA NIM, Groq, Cerebras, Google AI, GitHub Models, DashScope, Mistral, etc.
+- **Soft-Delete & Hide**: Soft-delete broken or unwanted models from your personal catalog view.
+- **Endpoint Key Discovery**: Auto-discover available models returned by provider `/models` endpoints.
+
+### View 5: Endpoint Installation Wizard (`/install-endpoints`)
+- 4-step interactive wizard to export model endpoints directly into your coding tools (OpenCode CLI, Pi Agent, Aider, Goose, Cline, etc.).
+
+---
+
+## 3. Running Web Dashboard in Docker
+
+To run the Web Dashboard and API server inside a Docker container:
+
+```bash
+docker run -d \
+  --name free-coding-models \
+  -p 19280:19280 \
+  -v ~/.free-coding-models:/root/.free-coding-models \
+  --restart unless-stopped \
+  ghcr.io/vava-nessa/free-coding-models:latest
+```
+
+### Docker Compose
+
+```yaml
+version: '3.8'
+
+services:
+  free-coding-models:
+    image: ghcr.io/vava-nessa/free-coding-models:latest
+    container_name: free-coding-models
+    ports:
+      - "19280:19280"
+    volumes:
+      - ~/.free-coding-models:/root/.free-coding-models
+    restart: unless-stopped
+```

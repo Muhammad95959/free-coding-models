@@ -1,0 +1,48 @@
+---
+title: Passive Quotas & Telemetry
+description: Passive HTTP response header parsing and local runtime performance telemetry tracking.
+section: Core concepts
+---
+
+# Passive Quotas & Runtime Telemetry
+
+`free-coding-models` includes passive rate limit tracking and local runtime telemetry.
+
+---
+
+## 1. Passive Quota Header Monitoring
+
+To monitor rate limit quotas without consuming API calls, `free-coding-models` parses standard HTTP response headers returned by providers on proxied completion calls.
+
+### Parsed Headers
+
+- **`x-ratelimit-remaining-requests`**: Remaining request budget.
+- **`x-ratelimit-remaining-tokens`**: Remaining token budget.
+- **`x-ratelimit-reset-requests`**: Timestamp for request quota reset.
+- **`x-ratelimit-reset-tokens`**: Timestamp for token quota reset.
+- **`retry-after`**: Retry delay specified on HTTP 429 responses.
+
+When remaining requests reach zero, the router preemptively skips the model before an HTTP 429 error occurs.
+
+---
+
+## 2. Local Telemetry Metrics
+
+Local telemetry tracks runtime performance parameters:
+
+- **Tokens Per Second (tok/s)**: Average output token generation speed.
+- **Success Rate (%)**: Percentage of successful 2xx calls.
+- **P95 Latency**: 95th percentile completion latency.
+- **Jitter & Stability Score**: Standard deviation of latency across consecutive pings.
+
+Telemetry data is saved locally to `~/.free-coding-models/telemetry.json`.
+
+---
+
+## Disabling Telemetry
+
+Disable local telemetry collection:
+
+```bash
+free-coding-models --no-telemetry
+```
