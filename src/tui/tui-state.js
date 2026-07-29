@@ -297,6 +297,13 @@ export function createTuiState({
     probeCacheTtlMs: null,        // 📖 Set in app.js from cliArgs.probeTtlMs || DEFAULT
     showBrokenMode: false,
 
+    // 📖 Per-provider quota circuit-breaker (issue #146): snapshot of providers
+    // 📖 currently paused because they returned 429 during a health-probe.
+    // 📖 Format: { [providerKey]: remainingMs } — refreshed each ping cycle
+    // 📖 so the TUI footer can show a live "⏸ openrouter (14h)" chip.
+    // 📖 Empty when no provider is in pause.
+    pausedProviders: {},
+
     // 📖 Runtime telemetry overlay state (t3): Shift+W opens the Runtime Report
     // 📖 overlay. Data is loaded fresh from ~/.free-coding-models/runtime-telemetry.json
     // 📖 when the overlay opens — no polling, no daemon dependency.

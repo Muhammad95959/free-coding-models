@@ -12,7 +12,9 @@
  *   📖 Freshness rules (in order):
  *   📖   1. No entry              → due for probe
  *   📖   2. probeVersion mismatch  → due for probe (silently re-probed, entry overwritten)
- *   📖   3. status === 'broken'    → always due (allows recovery detection)
+ *   📖   3. status === 'broken'    → only due AFTER `brokenCooldownMs(consecutiveFailures)`
+ *   📖                            ✅ (issue #146: was always-due → caused quota burn on
+ *   📖                            rate-limited providers like openrouter)
  *   📖   4. now - lastProbedAt >= ttlMs → due for probe
  *   📖   5. otherwise              → fresh, skip
  *
@@ -34,11 +36,13 @@
  *   → recordProbeResults(providerKey, results, opts?) → mutates in-memory cache
  *   → getCacheStats(opts?) → { total, ok, broken, freshCount, staleCount, ... }
  *   → getCachedResultsForProvider(providerKey, opts?) → array of synthesized results
+ *   → brokenCooldownMs(failureCount)            — Backoff ladder for broken models (issue #146)
  *
  * @exports getProbeCachePath, loadCache, flushCache, clearCache,
  *          getModelsDueForProbe, isCacheFresh, recordProbeResults,
  *          getCacheStats, getCachedResultsForProvider,
- *          DEFAULT_PROBE_TTL_MS, CURRENT_PROBE_VERSION
+ *          DEFAULT_PROBE_TTL_MS, BROKEN_COOLDOWN_STEPS_MS,
+ *          brokenCooldownMs, CURRENT_PROBE_VERSION
  *
  * @see src/core/ping-loop.js — the integration point (skips fresh entries)
  * @see src/core/cache.js     — older per-session ping cache (5 min TTL, distinct concern)
@@ -54,6 +58,30 @@ import { atomicWriteJson } from './shared-helpers.js'
 
 /** 📖 Default probe-result freshness window — 24h. Override via opts.ttlMs. */
 export const DEFAULT_PROBE_TTL_MS = 24 * 60 * 60 * 1000
+
+/**
+ * 📖 Cooldown ladder for broken models (issue #146). After a consecutive failure,
+ * 📖 the model is treated as fresh for the duration returned by `brokenCooldownMs()`,
+ * 📖 so the ping loop skips it instead of hammering it every 2–30s.
+ * 📖 The ladder grows exponentially then plateaus: 30s → 1m → 2m → 5m.
+ * 📖 Reaching the plateau (5min) caps the probe pressure on a permanently-broken
+ * 📖 model at ~0.2 req/min instead of the previous ~30 req/min.
+ */
+export const BROKEN_COOLDOWN_STEPS_MS = [30_000, 60_000, 120_000, 300_000]
+
+/**
+ * 📖 brokenCooldownMs: Cooldown duration for a model that has failed N consecutive times.
+ * 📖 Failure count is 1-indexed (1 = first failure, 2 = second, ...).
+ * 📖 Saturates at the last entry of BROKEN_COOLDOWN_STEPS_MS.
+ *
+ * @param {number} failureCount
+ * @returns {number} milliseconds (always >= 0)
+ */
+export function brokenCooldownMs(failureCount) {
+  const n = Math.max(1, Math.floor(Number(failureCount) || 1))
+  const idx = Math.min(n - 1, BROKEN_COOLDOWN_STEPS_MS.length - 1)
+  return BROKEN_COOLDOWN_STEPS_MS[idx]
+}
 
 /**
  * 📖 Bump this number whenever ping behaviour changes (new endpoint, different prompt,
@@ -270,8 +298,16 @@ export function getModelsDueForProbe(providerKey, modelIds, opts = {}) {
     if (typeof entry.probeVersion !== 'number' || entry.probeVersion !== probeVersion) {
       due.push(id); continue
     }
-    // Rule 3: broken → always due (recovery detection)
-    if (entry.status === 'broken') { due.push(id); continue }
+    // Rule 3: broken → due only AFTER brokenCooldownMs elapsed (issue #146)
+    // 📖 Previous behaviour re-pinged broken models every cycle, which burned
+    // 📖 rate-limited providers' quota (openrouter: ~1000 req/day cap).
+    // 📖 Now we honour an exponential backoff: 30s → 1m → 2m → 5m (plateau).
+    if (entry.status === 'broken') {
+      const cooldown = brokenCooldownMs(entry.consecutiveFailures ?? 1)
+      if (now - entry.lastProbedAt < cooldown) continue
+      due.push(id)
+      continue
+    }
     // Rule 4: TTL expired → due
     if (typeof entry.lastProbedAt !== 'number' || now - entry.lastProbedAt >= ttlMs) {
       due.push(id); continue
@@ -301,7 +337,13 @@ export function isCacheFresh(providerKey, modelId, opts = {}) {
   const entry = cache?.providers?.[providerKey]?.models?.[modelId]
   if (!entry) return false
   if (typeof entry.probeVersion !== 'number' || entry.probeVersion !== probeVersion) return false
-  if (entry.status === 'broken') return false
+  if (entry.status === 'broken') {
+    // 📖 Issue #146 — broken models are now FRESH for `brokenCooldownMs` after their
+    // 📖 last failure, instead of always being due. This caps the probe pressure
+    // 📖 on permanently-broken models at ~0.2 req/min instead of ~30 req/min.
+    const cooldown = brokenCooldownMs(entry.consecutiveFailures ?? 1)
+    return now - entry.lastProbedAt < cooldown
+  }
   if (typeof entry.lastProbedAt !== 'number') return false
   return now - entry.lastProbedAt < ttlMs
 }
@@ -350,12 +392,19 @@ export function recordProbeResults(providerKey, results, opts = {}) {
   for (const raw of results || []) {
     try {
       const r = normaliseResult(raw)
+      // 📖 Consecutive failure tracker (issue #146): drives the broken-cooldown ladder.
+      // 📖 `ok` resets to 0; `broken` increments from the previous value (or 1 if absent).
+      const prev = bucket[r.modelId]
+      const consecutiveFailures = r.status === 'broken'
+        ? ((prev && Number.isInteger(prev.consecutiveFailures)) ? prev.consecutiveFailures + 1 : 1)
+        : 0
       bucket[r.modelId] = {
         status: r.status,
         lastProbedAt: now,
         latencyMs: r.latencyMs,
         lastError: r.lastError,
         probeVersion: CURRENT_PROBE_VERSION,
+        consecutiveFailures,
       }
       written++
     } catch {

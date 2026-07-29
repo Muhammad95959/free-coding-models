@@ -102,6 +102,17 @@ Create a free account on one provider below to get started. A few providers (`Ki
 
 > 🧹 Audit cleanup: `iFlow` was removed because it shut down on April 17, 2026. `Together AI`, `Perplexity API`, `DeepInfra`, `Replicate`, `Fireworks`, `Hyperbolic`, `Hugging Face`, `SiliconFlow`, `Chutes AI` were removed from the active free catalog because they are paid, trial-credit only, too tiny to be useful, unclear as a stable free API, or tool-specific rather than a generally usable free provider. `Rovo` and `Gemini CLI` were also wiped out as tool integrations (CLI-only, not generally usable free providers).
 
+### ⚠️ Health checks consume provider quota
+
+> FCM continuously health-probes every model in the catalog so you see live latency, status, and verdict. When you've configured a provider's API key (e.g. `OPENROUTER_API_KEY`), **those probes are authenticated and count against that provider's daily quota**. Rate-limited providers like **OpenRouter** (50 req/day free, 1000 req/day at $10 spend) are particularly sensitive: a single overloaded model can burn your quota in minutes if it's re-pinged every second.
+
+> As of v0.3.83 (issue #146), FCM now:
+> - **Auto-pauses** a provider when its probe gets a `429` response (respects `Retry-After` header + the "try again N seconds later" message body).
+> - **Backs off exponentially** on per-model failures (30s → 1m → 2m → 5m) instead of re-pinging a broken model every cycle.
+> - **Surfaces a footer chip** like `⏸ openrouter 14h` so you can see which providers are resting.
+
+> **If you don't need authenticated probes for a provider**, just leave its key empty — anonymous probes still work for liveness checks on most providers, and they won't burn your personal quota.
+
 ---
 
 ### Tier scale

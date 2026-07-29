@@ -165,14 +165,22 @@ describe('getModelsDueForProbe — freshness rules', () => {
     assert.deepStrictEqual(due, ['m1'])
   })
 
-  it('rule 3: status broken → always due (recovery detection)', () => {
+  it('rule 3 (issue #146): status broken → due only AFTER brokenCooldownMs', () => {
+    // 📖 A broken model probed 1ms ago is still inside its 30s cooldown → must be skipped,
+    // 📖 otherwise the ping loop would re-ping it every cycle and burn rate-limited quota.
     const cache = makeCache({
       [providerKey]: { models: {
         m1: makeEntry({ status: 'broken', lastProbedAt: now - 1 }), // just probed
       } },
     })
-    const due = getModelsDueForProbe(providerKey, ['m1'], opts(cache))
-    assert.deepStrictEqual(due, ['m1'])
+    assert.deepStrictEqual(getModelsDueForProbe(providerKey, ['m1'], opts(cache)), [])
+    // 📖 Past the cooldown → recovered and due again for a fresh probe.
+    const cache2 = makeCache({
+      [providerKey]: { models: {
+        m1: makeEntry({ status: 'broken', lastProbedAt: now - 60_000 }),
+      } },
+    })
+    assert.deepStrictEqual(getModelsDueForProbe(providerKey, ['m1'], opts(cache2)), ['m1'])
   })
 
   it('rule 4: TTL expired → due', () => {
@@ -202,7 +210,7 @@ describe('getModelsDueForProbe — freshness rules', () => {
         fresh_ok: makeEntry({ lastProbedAt: now - HOUR }),
         // TTL expired → due
         stale_ok: makeEntry({ lastProbedAt: now - DEFAULT_PROBE_TTL_MS - 1 }),
-        // broken → due
+        // broken BUT within 30s cooldown → skip (issue #146 backoff)
         broken_recent: makeEntry({ status: 'broken', lastProbedAt: now - 5 }),
         // version mismatch → due
         old_version: makeEntry({ probeVersion: 0 }),
@@ -211,7 +219,8 @@ describe('getModelsDueForProbe — freshness rules', () => {
     })
     const ids = ['fresh_ok', 'stale_ok', 'broken_recent', 'old_version', 'never_seen']
     const due = getModelsDueForProbe(providerKey, ids, opts(cache)).sort()
-    assert.deepStrictEqual(due, ['broken_recent', 'never_seen', 'old_version', 'stale_ok'])
+    // 📖 Note: broken_recent is INTENTIONALLY excluded now — it must wait out its cooldown
+    assert.deepStrictEqual(due, ['never_seen', 'old_version', 'stale_ok'])
   })
 
   it('returns empty array when cache has no entry for the provider', () => {
@@ -232,9 +241,14 @@ describe('isCacheFresh', () => {
     assert.strictEqual(isCacheFresh('p', 'missing', opts(cache)), false)
   })
 
-  it('returns false when broken', () => {
+  it('returns TRUE for broken model within its cooldown (issue #146)', () => {
+    // 📖 makeEntry defaults lastProbedAt to `now`, so a freshly-broken entry sits inside
+    // 📖 the 30s cooldown window and must be considered fresh (skipped by the ping loop).
     const cache = makeCache({ p: { models: { m: makeEntry({ status: 'broken' }) } } })
-    assert.strictEqual(isCacheFresh('p', 'm', opts(cache)), false)
+    assert.strictEqual(isCacheFresh('p', 'm', opts(cache)), true)
+    // 📖 Past the cooldown → no longer fresh, eligible for a recovery probe.
+    const cache2 = makeCache({ p: { models: { m: makeEntry({ status: 'broken', lastProbedAt: now - 60_000 }) } } })
+    assert.strictEqual(isCacheFresh('p', 'm', opts(cache2)), false)
   })
 
   it('returns false when version mismatch', () => {

@@ -216,6 +216,7 @@ export function renderTable({
   probeCacheMisses = 0,
   probeCacheBrokenHidden = 0,
   showBrokenMode = false,
+  pausedProviders = {},          // 📖 issue #146: { openrouter: 50680000 } while a provider is paused
   enrichmentBenchCount = 0,
   enrichmentBenchLastUpdated = null,
   metaSourceCounts = null,
@@ -1235,6 +1236,36 @@ export function renderTable({
     probeCacheLabel = chalk.bgRgb(40, 90, 140).rgb(220, 235, 255).bold(` ${cachedTxt}${brokenTxt} `)
   }
 
+  // 📖 Provider circuit-breaker chip (issue #146): surfaces any provider that the
+  // 📖 health-ping loop has paused because it returned a 429 quota response.
+  // 📖 Format: `⏸ openrouter 14h · ⏸ mistral 5m`. The live duration auto-rolls
+  // 📖 to s/m/h/d so users see a real countdown and don't get surprised later
+  // 📖 when their requests stop working ("wait, why is everything 429-ing?").
+  let pausedProvidersLabel = ''
+  if (pausedProviders && typeof pausedProviders === 'object') {
+    const fmtRemaining = (ms) => {
+      if (!Number.isFinite(ms) || ms <= 0) return '0s'
+      const totalSec = Math.round(ms / 1000)
+      const day = Math.floor(totalSec / 86400)
+      const hr = Math.floor((totalSec % 86400) / 3600)
+      const min = Math.floor((totalSec % 3600) / 60)
+      const sec = totalSec % 60
+      if (day > 0) return `${day}d${hr}h`
+      if (hr > 0) return `${hr}h${min}m`
+      if (min > 0) return `${min}m${sec}s`
+      return `${sec}s`
+    }
+    const entries = Object.entries(pausedProviders)
+      .filter(([, ms]) => Number.isFinite(ms) && ms > 0)
+      .sort(([a], [b]) => a.localeCompare(b))
+    if (entries.length > 0) {
+      const txt = entries.map(([k, ms]) => `⏸ ${k} ${fmtRemaining(ms)}`).join(' \u00b7 ')
+      // 📖 Warm amber background — distinct from the blue probe-cache chip so the
+      // 📖 user can spot it at a glance and understand "these providers are resting".
+      pausedProvidersLabel = chalk.bgRgb(140, 80, 30).rgb(255, 230, 200).bold(` ${txt} `)
+    }
+  }
+
   // 📖 Enrichment chips (t4 + t5):
   // 📖 `📊 bench N (date) · 📡 live K / 📦 cached M`
   // 📖 Always shown when any enrichment state exists.
@@ -1277,8 +1308,8 @@ export function renderTable({
     }
   }
 
-  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Enrichment + Quota + Last release
-  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel || enrichmentLabel || quotaLabel) {
+  // 📖 Line 3: Speed Test + Global Benchmark + Probe + Probe-cache + Paused-providers + Enrichment + Quota + Last release
+  if (releaseLabel || speedTestLabel || globalBenchmarkLabel || probeLabel || probeCacheLabel || pausedProvidersLabel || enrichmentLabel || quotaLabel) {
     const parts = [
       { text: '  ', key: null },
       { text: speedTestLabel, key: 'a' },
@@ -1288,6 +1319,8 @@ export function renderTable({
       { text: probeLabel, key: null },
       { text: probeCacheLabel ? '  ' : '', key: null },
       { text: probeCacheLabel, key: null },
+      { text: pausedProvidersLabel ? '  ' : '', key: null },
+      { text: pausedProvidersLabel, key: null },
       { text: enrichmentLabel ? '  ' : '', key: null },
       { text: enrichmentLabel, key: null },
       { text: quotaLabel ? '  ' : '', key: null },

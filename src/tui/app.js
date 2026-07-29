@@ -139,6 +139,10 @@ import {
   pruneStaleEntries as pruneProbeCacheStaleEntries,
   DEFAULT_PROBE_TTL_MS,
 } from '../core/probe-cache.js'
+import {
+  isProviderQuotaPaused,
+  listPausedProviders,
+} from '../core/provider-cooldown.js'
 import { checkConfigSecurity } from '../core/security.js'
 import { buildCliHelpText } from './cli-help.js'
 import { detectActiveTheme, THEME_BG_RGB, getTheme, patchThemeBg } from './theme.js'
@@ -1046,6 +1050,8 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
       probeCacheMisses: state.probeCacheMisses || 0,
       probeCacheBrokenHidden: state.probeCacheBrokenHidden || 0,
       showBrokenMode: !!state.showBrokenMode,
+      // 📖 Provider circuit-breaker (issue #146): footer chip for paused providers
+      pausedProviders: state.pausedProviders || {},
       // 📖 Enrichment chips (t4 + t5): benchmark catalog + models.dev provenance
       // 📖 Read fresh from moduleEnrichmentStats on every render so the async
       // 📖 models.dev fetch (background, never blocks the TUI) is reflected as
@@ -1229,6 +1235,13 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
         if (!state.config.favorites.includes(favKey)) return
       }
 
+      // 📖 Per-provider circuit-breaker (issue #146): if the provider's quota is
+      // 📖 paused (e.g. openrouter returned 429 "try again 50680s later"), skip
+      // 📖 every model of that provider until the Retry-After window expires.
+      // 📖 Without this, broken/overloaded models are re-pinged every cycle,
+      // 📖 burning the user's daily quota in minutes.
+      if (isProviderQuotaPaused(r.providerKey)) return
+
       // 📖 Probe-cache (t1): skip models that are still fresh + ok in the cache.
       // 📖 Broken models always pass through isCacheFresh() (it returns false for them),
       // 📖 which gives us automatic recovery detection for free.
@@ -1240,6 +1253,11 @@ export async function runApp(cliArgs, config, startupOptions = {}) {
         // Individual ping failures don't crash the loop
       })
     })
+
+    // 📖 Take a snapshot of currently paused providers so the TUI footer can
+    // 📖 surface a "⏸ openrouter (14h)" chip while we wait out a Retry-After.
+    // 📖 Updates every cycle so the remaining-time ticks down live.
+    state.pausedProviders = listPausedProviders()
 
     refreshAutoPingMode()
     scheduleNextPing()

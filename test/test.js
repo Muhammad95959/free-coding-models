@@ -19,7 +19,7 @@
  * @see sources.js — model data validated here
  */
 
-import { describe, it } from 'node:test'
+import { describe, it, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, existsSync, accessSync, constants, chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer as createHttpServer } from 'node:http'
@@ -56,6 +56,22 @@ import { buildProviderModelsUrl, parseProviderModelIds, listProviderTestModels, 
 import { buildCliHelpText, buildHowTheRouterWorksLines } from '../src/tui/cli-help.js'
 import { buildSyncCandidates } from '../src/core/sync-set.js'
 import { detectPackageManager, resolveCurrentNpmInstallTarget, getInstallArgs, getManualInstallCmd, buildOutdatedWarningMessage } from '../src/core/updater.js'
+import {
+  parseRetryAfterMs,
+  extractRetryAfterFromResponse,
+  pauseProviderQuota,
+  isProviderQuotaPaused,
+  providerQuotaPauseRemaining,
+  listPausedProviders,
+  clearProviderQuotaPause,
+} from '../src/core/provider-cooldown.js'
+import {
+  isCacheFresh as isProbeCacheFresh,
+  recordProbeResults as recordProbeResult,
+  BROKEN_COOLDOWN_STEPS_MS,
+  brokenCooldownMs,
+  DEFAULT_PROBE_TTL_MS,
+} from '../src/core/probe-cache.js'
 import {
   buildToolEnv,
   prepareExternalToolLaunch,
@@ -6689,5 +6705,180 @@ describe('M2: React hook modules import cleanly', () => {
     const mod = await import('../web/src/hooks/useUrlState.js')
     assert.equal(typeof mod.useUrlState, 'function')
     assert.equal(typeof mod.buildUrlParams, 'function')
+  })
+})
+
+// ─── Issue #146: provider circuit-breaker + per-model broken cooldown ─────
+// 📖 Regression coverage for the fix that stops FCM from burning rate-limited
+// 📖 providers' daily quota by re-pinging overloaded models every 2-30s.
+
+describe('Issue #146: provider quota circuit-breaker (provider-cooldown)', () => {
+  beforeEach(() => clearProviderQuotaPause())
+  afterEach(() => clearProviderQuotaPause())
+
+  it('parseRetryAfterMs: seconds-integer header', () => {
+    assert.equal(parseRetryAfterMs('120'), 120_000)
+    assert.equal(parseRetryAfterMs('0'), 0)
+    assert.equal(parseRetryAfterMs(''), null)
+    assert.equal(parseRetryAfterMs(null), null)
+  })
+
+  it('parseRetryAfterMs: HTTP-date header returns delta-to-now (>=0 or null)', () => {
+    const farFuture = new Date(Date.now() + 600_000).toUTCString()
+    const out = parseRetryAfterMs(farFuture)
+    assert.ok(out === null || (typeof out === 'number' && out > 0))
+  })
+
+  it('parseRetryAfterMs: malformed value -> null', () => {
+    assert.equal(parseRetryAfterMs('not-a-date-and-not-a-number'), null)
+  })
+
+  it('extractRetryAfterFromResponse: prefers Retry-After header', async () => {
+    const resp = new Response('{"error":"ignored"}', { status: 429, headers: { 'retry-after': '60' } })
+    assert.equal(await extractRetryAfterFromResponse(resp), 60_000)
+  })
+
+  it('extractRetryAfterFromResponse: falls back to OpenRouter-style body', async () => {
+    const body = JSON.stringify({ error: { message: 'Rate limit exceeded, please try again 50680 seconds later.' } })
+    const resp = new Response(body, { status: 429, headers: { 'content-type': 'application/json' } })
+    const ms = await extractRetryAfterFromResponse(resp)
+    assert.equal(ms, 50_680_000)
+  })
+
+  it('extractRetryAfterFromResponse: returns 0 when nothing usable', async () => {
+    const resp = new Response('"plain string body"', { status: 429 })
+    assert.equal(await extractRetryAfterFromResponse(resp), 0)
+  })
+
+  it('pauseProviderQuota: marks provider paused, isProviderQuotaPaused reflects state', () => {
+    const now = 1_700_000_000_000
+    assert.equal(isProviderQuotaPaused('openrouter', now), false)
+    pauseProviderQuota('openrouter', 60_000, { now })
+    assert.equal(isProviderQuotaPaused('openrouter', now + 5_000), true)
+    assert.equal(isProviderQuotaPaused('openrouter', now + 65_000), false, 'expired pauses purge lazily')
+  })
+
+  it('pauseProviderQuota: never shortens an existing longer pause', () => {
+    const now = 1_700_000_000_000
+    pauseProviderQuota('mistral', 600_000, { now })    // 10 min
+    pauseProviderQuota('mistral', 5_000, { now })      // 5 s — should NOT shorten
+    assert.ok(providerQuotaPauseRemaining('mistral', now) >= 595_000)
+  })
+
+  it('pauseProviderQuota: ignores non-positive durations', () => {
+    pauseProviderQuota('cerebras', 0)
+    pauseProviderQuota('cerebras', -1)
+    pauseProviderQuota('cerebras', NaN)
+    assert.equal(isProviderQuotaPaused('cerebras'), false)
+  })
+
+  it('listPausedProviders: returns only providers still in the window', () => {
+    const now = 1_700_000_000_000
+    pauseProviderQuota('openrouter', 60_000, { now })
+    pauseProviderQuota('nvidia', 30_000, { now: now - 120_000 })  // already expired long ago
+    const list = listPausedProviders(now)
+    assert.ok('openrouter' in list)
+    assert.equal('nvidia' in list, false, 'expired entries are excluded')
+  })
+
+  it('clearProviderQuotaPause: single + bulk cleanup', () => {
+    pauseProviderQuota('openrouter', 60_000)
+    pauseProviderQuota('mistral', 60_000)
+    assert.equal(isProviderQuotaPaused('openrouter'), true)
+    clearProviderQuotaPause('openrouter')
+    assert.equal(isProviderQuotaPaused('openrouter'), false)
+    assert.equal(isProviderQuotaPaused('mistral'), true)
+    clearProviderQuotaPause()
+    assert.equal(isProviderQuotaPaused('mistral'), false)
+  })
+})
+
+describe('Issue #146: per-model broken-cooldown backoff (probe-cache)', () => {
+  const TTL = DEFAULT_PROBE_TTL_MS
+
+  function buildCache(probes) {
+    // 📖 `probes` is a map of { provider: { model: { status, lastProbedAt, consecutiveFailures } } }
+    const cache = { version: 2, providers: {} }
+    for (const [providerKey, models] of Object.entries(probes || {})) {
+      cache.providers[providerKey] = { models: {} }
+      for (const [modelId, entry] of Object.entries(models)) {
+        cache.providers[providerKey].models[modelId] = { probeVersion: 2, ...entry }
+      }
+    }
+    return cache
+  }
+
+  it('brokenCooldownMs: ladder sequence (30s, 1m, 2m, 5m plateau)', () => {
+    assert.deepEqual(BROKEN_COOLDOWN_STEPS_MS, [30_000, 60_000, 120_000, 300_000])
+    assert.equal(brokenCooldownMs(1), 30_000)
+    assert.equal(brokenCooldownMs(2), 60_000)
+    assert.equal(brokenCooldownMs(3), 120_000)
+    assert.equal(brokenCooldownMs(4), 300_000)
+    assert.equal(brokenCooldownMs(99), 300_000, 'plateau past step count')
+    assert.equal(brokenCooldownMs(0), 30_000, 'clamped to >=1')
+    assert.equal(brokenCooldownMs(NaN), 30_000, 'NaN safely defaults')
+  })
+
+  it('isCacheFresh: broken model inside its cooldown is FRESH (skipped)', () => {
+    const now = 1_700_000_000_000
+    const cache = buildCache({ openrouter: { 'm:free': { status: 'broken', lastProbedAt: now - 5_000, consecutiveFailures: 1 } } })
+    // 📖 Cooldown for failures=1 is 30s, only 5s elapsed → still in cooldown → fresh
+    assert.equal(isProbeCacheFresh('openrouter', 'm:free', { cache, now }), true)
+  })
+
+  it('isCacheFresh: broken model past its cooldown is DUE (not fresh)', () => {
+    const now = 1_700_000_000_000
+    const cache = buildCache({ openrouter: { 'm:free': { status: 'broken', lastProbedAt: now - 60_000, consecutiveFailures: 1 } } })
+    // 📖 60s elapsed >> 30s cooldown → due for re-probe
+    assert.equal(isProbeCacheFresh('openrouter', 'm:free', { cache, now }), false)
+  })
+
+  it('isCacheFresh: broken model with many failures honours the longer cooldown', () => {
+    const now = 1_700_000_000_000
+    // failures=4 → cooldown=5min, only 1min elapsed → still fresh
+    const cache = buildCache({ openrouter: { 'm:free': { status: 'broken', lastProbedAt: now - 60_000, consecutiveFailures: 4 } } })
+    assert.equal(isProbeCacheFresh('openrouter', 'm:free', { cache, now }), true)
+    // 6 minutes elapsed past 5min cooldown → due
+    const cache2 = buildCache({ openrouter: { 'm:free': { status: 'broken', lastProbedAt: now - 360_000, consecutiveFailures: 4 } } })
+    assert.equal(isProbeCacheFresh('openrouter', 'm:free', { cache: cache2, now }), false)
+  })
+
+  it('isCacheFresh: healthy ok models still use the 24h TTL (unaffected by the fix)', () => {
+    const now = 1_700_000_000_000
+    const cache = buildCache({ nvidia: { 'n1': { status: 'ok', lastProbedAt: now - 60_000 } } })
+    assert.equal(isProbeCacheFresh('nvidia', 'n1', { ttlMs: TTL, cache, now }), true)
+    const cache2 = buildCache({ nvidia: { 'n1': { status: 'ok', lastProbedAt: now - (TTL + 1) } } })
+    assert.equal(isProbeCacheFresh('nvidia', 'n1', { ttlMs: TTL, cache: cache2, now }), false)
+  })
+
+  it('recordProbeResults: broken increments consecutiveFailures, ok resets to 0', () => {
+    const cache = buildCache({})
+    recordProbeResult('openrouter', [{ modelId: 'm1', status: 'broken', latencyMs: 42, lastError: '503' }], { cache, now: 1 })
+    assert.equal(cache.providers.openrouter.models.m1.consecutiveFailures, 1)
+
+    recordProbeResult('openrouter', [{ modelId: 'm1', status: 'broken', latencyMs: 42, lastError: '503' }], { cache, now: 2 })
+    assert.equal(cache.providers.openrouter.models.m1.consecutiveFailures, 2)
+
+    recordProbeResult('openrouter', [{ modelId: 'm1', status: 'ok', latencyMs: 100 }], { cache, now: 3 })
+    assert.equal(cache.providers.openrouter.models.m1.consecutiveFailures, 0, 'ok resets the counter')
+    assert.equal(cache.providers.openrouter.models.m1.status, 'ok')
+  })
+
+  it('Death-spiral fix: broken model with growing failures caps ping pressure', () => {
+    // 📖 Before the fix, this loop would have re-pinged the broken model EVERY cycle
+    // 📖 (rule 3 was always-due). With the fix, the cooldown grows so eventually the
+    // 📖 entry is fresh for ~5min at a time — exactly the behaviour the user asked for.
+    const cache = buildCache({})
+    const now = 1_700_000_000_000
+    recordProbeResult('openrouter', [{ modelId: 'm:free', status: 'broken', lastError: '503' }], { cache, now })
+    for (let n = 1; n <= 6; n++) {
+      recordProbeResult('openrouter', [{ modelId: 'm:free', status: 'broken', lastError: '503' }], { cache, now: now + n * 1000 })
+      const entry = cache.providers.openrouter.models['m:free']
+      assert.equal(entry.consecutiveFailures, n + 1)
+      const cooldown = brokenCooldownMs(entry.consecutiveFailures)
+      // 📖 Mid-cooldown check (5s since the last write): should always be fresh
+      assert.equal(isProbeCacheFresh('openrouter', 'm:free', { cache, now: now + n * 1000 + 5_000 }), true, `after ${n + 1} failures, 5s later must be fresh`)
+      assert.ok(cooldown <= 300_000, 'cooldown always within the 5min plateau')
+    }
   })
 })

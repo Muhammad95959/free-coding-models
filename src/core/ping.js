@@ -13,6 +13,9 @@
  *   - Quota extraction from rate limit headers (multiple variants supported)
  *   - Cached provider quota polling with TTL and error backoff
  *   - Cloudflare account ID resolution from environment
+ *   - Per-provider circuit-breaker on 429 (issue #146): pauses ALL models of a provider
+ *     when the provider returns a quota-exhausted response, so the ping loop stops
+ *     hammering the user's daily quota while the provider's retry window is active.
  *
  *   → Functions:
  *   - `resolveCloudflareUrl`: Resolve {account_id} placeholder from CLOUDFLARE_ACCOUNT_ID env var
@@ -31,6 +34,7 @@
  *   - ../src/constants.js: PING_TIMEOUT
  *   - ../src/provider-quota-fetchers.js: _fetchProviderQuotaFromModule (quota fetching with cache)
  *   - ../src/quota-capabilities.js: supportsUsagePercent
+ *   - ./provider-cooldown.js: pauseProviderQuota, extractRetryAfterFromResponse (issue #146)
  *
  *   ⚙️ Configuration:
  *   - PING_TIMEOUT: Timeout in ms for ping requests (default: 15000)
@@ -43,6 +47,10 @@
 import { PING_TIMEOUT } from './constants.js'
 import { fetchProviderQuota as _fetchProviderQuotaFromModule, extractQuota as _extractQuotaFromModule, processResponseHeaders as _processResponseHeadersFromModule } from './provider-quota-fetchers.js'
 import { supportsUsagePercent } from './quota-capabilities.js'
+import {
+  extractRetryAfterFromResponse,
+  pauseProviderQuota,
+} from './provider-cooldown.js'
 
 const DISABLED_THINKING_RETRY_STATUSES = new Set([400, 422])
 const disabledThinkingUnsupportedProviders = new Set()
@@ -170,6 +178,14 @@ export async function ping(apiKey, modelId, providerKey, url) {
       markDisabledThinkingUnsupported(providerKey)
       req = buildPingRequest(apiKey, modelId, providerKey, url, { disableThinking: false })
       resp = await sendPingFetch(req, ctrl.signal)
+    }
+    // 📖 Provider circuit-breaker (issue #146): openrouter + similar gateways rate-limit
+    // 📖 at the provider/key level, not per-model. A 429 means the WHOLE key is paused,
+    // 📖 often for hours — re-pinging every model every 2-30s would burn the quota in minutes.
+    // 📖 Honour Retry-After header + the OpenRouter body "try again N seconds later".
+    if (resp.status === 429) {
+      const retryMs = await extractRetryAfterFromResponse(resp)
+      if (retryMs > 0) pauseProviderQuota(providerKey, retryMs)
     }
     // 📖 Normalize all HTTP 2xx statuses to "200" so existing verdict/avg logic still works.
     const code = resp.status >= 200 && resp.status < 300 ? '200' : String(resp.status)
