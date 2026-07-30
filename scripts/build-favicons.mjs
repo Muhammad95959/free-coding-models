@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * @file scripts/build-favicons.mjs
- * @description Generate the full favicon asset set for the /web dashboard
- *              from the project root `/icon.png` (1254×1254 PNG).
+ * @description Generate the full favicon asset sets for the embedded /web
+ * dashboard and the marketing /website from the project root `/icon.png`.
  *
  * @details
  *   📖 Single source of truth: the top-level `icon.png` in this repo.
@@ -24,9 +24,9 @@
  *     - site.webmanifest             (PWA manifest)
  *     - browserconfig.xml            (Microsoft tile schema)
  *
- *   Output goes to `web/public/favicons/` so Vite copies it verbatim to
- *   `web/dist/favicons/` on `vite build`. We also drop a top-level
- *   `web/public/favicon.ico` for legacy browsers that probe `/favicon.ico`.
+ *   Outputs go to `web/public/favicons/` and `website/public/`. Both Vite
+ *   builds copy their public directory verbatim, so every surface is derived
+ *   from the same committed source image without hand-maintained variants.
  *
  *   Zero npm dependencies — uses ImageMagick through `magick` (v7) or
  *   `convert` (v6). GitHub's Ubuntu package currently exposes `convert`, so
@@ -54,6 +54,7 @@ const ROOT = resolve(__dirname, '..')
 const SOURCE_PNG = resolve(ROOT, 'icon.png')
 const OUT_DIR = resolve(ROOT, 'web/public/favicons')
 const LEGACY_ICO = resolve(ROOT, 'web/public/favicon.ico')
+const WEBSITE_OUT_DIR = resolve(ROOT, 'website/public')
 
 // 📖 All sizes that ship. The order matters: ico first (multi-image), then
 // 📖 individual PNGs, then Microsoft tiles, then manifest/xml.
@@ -80,6 +81,22 @@ const MANIFEST = {
   ],
 }
 
+const WEBSITE_MANIFEST = {
+  name: 'free-coding-models',
+  short_name: 'FCM',
+  description: 'Find, benchmark, and install the fastest free coding models.',
+  start_url: '/',
+  scope: '/',
+  display: 'standalone',
+  orientation: 'any',
+  background_color: '#09090b',
+  theme_color: '#09090b',
+  icons: [
+    { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+    { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+  ],
+}
+
 // 📖 Microsoft tile schema. References the mstile-* PNGs we generate.
 const BROWSERCONFIG_XML = `<?xml version="1.0" encoding="utf-8"?>
 <browserconfig>
@@ -90,6 +107,20 @@ const BROWSERCONFIG_XML = `<?xml version="1.0" encoding="utf-8"?>
       <wide310x150logo src="/favicons/mstile-310x150.png"/>
       <square310x310logo src="/favicons/mstile-310x310.png"/>
       <TileColor>#0a0a0a</TileColor>
+    </tile>
+  </msapplication>
+</browserconfig>
+`
+
+const WEBSITE_BROWSERCONFIG_XML = `<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <square70x70logo src="/mstile-70x70.png"/>
+      <square150x150logo src="/mstile-150x150.png"/>
+      <wide310x150logo src="/mstile-310x150.png"/>
+      <square310x310logo src="/mstile-310x310.png"/>
+      <TileColor>#09090b</TileColor>
     </tile>
   </msapplication>
 </browserconfig>
@@ -168,7 +199,7 @@ async function magickIco({ src, dst, sizes }) {
 }
 
 async function main() {
-  console.log('\n  🖼  build-favicons — generating web favicon set\n')
+  console.log('\n  🖼  build-favicons — generating shared favicon sets\n')
 
   const version = await ensureImageMagick()
   console.log(`     • ImageMagick: ${version}`)
@@ -230,6 +261,68 @@ async function main() {
   // 6) Microsoft browser config
   await writeFile(join(OUT_DIR, 'browserconfig.xml'), BROWSERCONFIG_XML, 'utf8')
   console.log('     ✓ browserconfig.xml')
+
+  // 7) Marketing website — conventional root-level browser, Apple, Android,
+  //    PWA, and Windows names. Compatibility aliases replace the old TanStack
+  //    starter assets so no stale icon survives in cached manifests.
+  await mkdir(WEBSITE_OUT_DIR, { recursive: true })
+  console.log(`\n     • website:     ${WEBSITE_OUT_DIR}`)
+
+  for (const size of [16, 32, 48, 96]) {
+    await magickConvert({
+      src: SOURCE_PNG,
+      dst: join(WEBSITE_OUT_DIR, `favicon-${size}x${size}.png`),
+      size,
+    })
+    console.log(`     ✓ website/favicon-${size}x${size}.png`)
+  }
+
+  await magickConvert({ src: SOURCE_PNG, dst: join(WEBSITE_OUT_DIR, 'apple-touch-icon.png'), size: 180 })
+  await magickConvert({ src: SOURCE_PNG, dst: join(WEBSITE_OUT_DIR, 'android-chrome-192x192.png'), size: 192 })
+  await magickConvert({ src: SOURCE_PNG, dst: join(WEBSITE_OUT_DIR, 'android-chrome-512x512.png'), size: 512 })
+  await magickConvert({ src: SOURCE_PNG, dst: join(WEBSITE_OUT_DIR, 'logo192.png'), size: 192 })
+  await magickConvert({ src: SOURCE_PNG, dst: join(WEBSITE_OUT_DIR, 'logo512.png'), size: 512 })
+  await magickConvert({ src: SOURCE_PNG, dst: join(WEBSITE_OUT_DIR, 'logo.webp'), size: 512 })
+
+  for (const size of MSTILE_SIZES) {
+    await magickConvert({
+      src: SOURCE_PNG,
+      dst: join(WEBSITE_OUT_DIR, `mstile-${size}x${size}.png`),
+      size,
+    })
+  }
+  await runImageMagick([
+    SOURCE_PNG,
+    '-background', 'none',
+    '-resize', '310x150',
+    '-gravity', 'center',
+    '-extent', '310x150',
+    '-strip',
+    '-quality', '95',
+    join(WEBSITE_OUT_DIR, 'mstile-310x150.png'),
+  ])
+
+  await magickIco({
+    src: SOURCE_PNG,
+    dst: join(WEBSITE_OUT_DIR, 'favicon.ico'),
+    sizes: ICO_SIZES,
+  })
+  await writeFile(
+    join(WEBSITE_OUT_DIR, 'site.webmanifest'),
+    JSON.stringify(WEBSITE_MANIFEST, null, 2) + '\n',
+    'utf8',
+  )
+  await writeFile(
+    join(WEBSITE_OUT_DIR, 'manifest.json'),
+    JSON.stringify(WEBSITE_MANIFEST, null, 2) + '\n',
+    'utf8',
+  )
+  await writeFile(
+    join(WEBSITE_OUT_DIR, 'browserconfig.xml'),
+    WEBSITE_BROWSERCONFIG_XML,
+    'utf8',
+  )
+  console.log('     ✓ website Apple, Android, PWA, ICO, and Windows variants')
 
   console.log('\n  ✅ favicon set generated\n')
 }

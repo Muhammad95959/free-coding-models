@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.webp" alt="free-coding-models logo" width="328">
+  <img src="icon.png" alt="free-coding-models logo" width="328" height="328">
 </p>
 
 <h1 align="center">free-coding-models</h1>

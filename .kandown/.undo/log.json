@@ -1,6 +1,14 @@
 [
   {
     "type": "move",
+    "taskId": "t11",
+    "path": "/Users/vava/Documents/GitHub/free-coding-models/tasks/t11.md",
+    "previousContent": "---\nid: t11\ntitle: Unify project icons from icon.png\nstatus: Backlog\ncreated: 2026-07-30\nupdated: 2026-07-30T15:53:03Z\npriority: P2\nassignee: codex\n---\n\n\n",
+    "newContent": "---\nid: t11\ntitle: Unify project icons from icon.png\nstatus: In Progress\ncreated: 2026-07-30\nupdated: 2026-07-30T15:53:03Z\npriority: P2\nassignee: codex\n---\n\n\n",
+    "timestamp": 1785426783900
+  },
+  {
+    "type": "move",
     "taskId": "t10",
     "path": "/Users/vava/Documents/GitHub/free-coding-models/tasks/t10.md",
     "previousContent": "---\nid: t10\ntitle: Add concise creator SEO page\nstatus: Backlog\ncreated: 2026-07-30\nupdated: 2026-07-30T14:07:23Z\npriority: P2\nassignee: codex\n---\n\n\n",
