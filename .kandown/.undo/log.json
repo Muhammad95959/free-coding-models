@@ -1,6 +1,14 @@
 [
   {
     "type": "move",
+    "taskId": "t10",
+    "path": "/Users/vava/Documents/GitHub/free-coding-models/tasks/t10.md",
+    "previousContent": "---\nid: t10\ntitle: Add concise creator SEO page\nstatus: Backlog\ncreated: 2026-07-30\nupdated: 2026-07-30T14:07:23Z\npriority: P2\nassignee: codex\n---\n\n\n",
+    "newContent": "---\nid: t10\ntitle: Add concise creator SEO page\nstatus: In Progress\ncreated: 2026-07-30\nupdated: 2026-07-30T14:07:32Z\npriority: P2\nassignee: codex\n---\n\n\n",
+    "timestamp": 1785420452821
+  },
+  {
+    "type": "move",
     "taskId": "t9",
     "path": "/Users/vava/Documents/GitHub/free-coding-models/tasks/t9.md",
     "previousContent": "---\nid: t9\ntitle: Revamp website documentation to be user-friendly, clear, and comprehensive\nstatus: Backlog\ncreated: 2026-07-28\nupdated: 2026-07-28T11:57:04Z\npriority: P1\nassignee: agy\n---\n\n\n",

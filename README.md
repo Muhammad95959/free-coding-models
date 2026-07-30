@@ -871,6 +871,14 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
 
 ---
 
+## About the creator
+
+`free-coding-models` was created and is maintained by [Vanessa Depraute](https://vanessadepraute.dev), a Paris-based Senior Full-Stack JavaScript Developer with almost 20 years of experience building web and mobile products. She specializes in React, TypeScript, AI developer tooling, and turning complex product ideas into production-ready applications.
+
+[Portfolio](https://vanessadepraute.dev) · [GitHub](https://github.com/vava-nessa) · [LinkedIn](https://www.linkedin.com/in/vanessa-depraute-310b801ba/) · [X / @vavanessadev](https://x.com/vavanessadev)
+
+---
+
 ## Special thanks to contributors
 
 <table align="center">

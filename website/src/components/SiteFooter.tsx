@@ -75,13 +75,35 @@ export function SiteFooter() {
                   Changelogs
                 </Link>
               </li>
+              <li>
+                <Link to="/creator" className="transition-colors hover:text-fg">
+                  Creator
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 font-mono text-[11px] text-fg-faint sm:flex-row">
           <p>© {new Date().getFullYear()} free-coding-models contributors.</p>
-          <p>Created by {site.author}</p>
+          <p>
+            Created by{' '}
+            <Link
+              to="/creator"
+              className="transition-colors hover:text-fg"
+            >
+              Vanessa Depraute
+            </Link>
+            {' · '}
+            <a
+              href={site.twitter}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-fg"
+            >
+              @vavanessadev
+            </a>
+          </p>
         </div>
       </div>
     </footer>

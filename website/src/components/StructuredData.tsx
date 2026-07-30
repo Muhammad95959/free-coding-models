@@ -4,6 +4,16 @@
  */
 import { site } from '~/lib/site'
 
+const personSchema = {
+  '@type': 'Person',
+  '@id': `${site.authorUrl}/#person`,
+  name: site.author,
+  alternateName: ['Vava-Nessa', 'vava-nessa', '@vavanessadev'],
+  url: site.authorUrl,
+  jobTitle: 'Senior Full-Stack JavaScript Developer',
+  sameAs: [site.github, site.linkedin, site.twitter],
+}
+
 export function HomeStructuredData() {
   const schema = {
     '@context': 'https://schema.org',
@@ -18,11 +28,24 @@ export function HomeStructuredData() {
       price: '0',
       priceCurrency: 'USD',
     },
-    author: {
-      '@type': 'Person',
-      name: site.author,
-      url: site.authorUrl,
-    },
+    author: personSchema,
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}
+
+export function CreatorStructuredData() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    name: `${site.author} — Creator of ${site.name}`,
+    url: site.authorProfileUrl,
+    mainEntity: personSchema,
   }
 
   return (

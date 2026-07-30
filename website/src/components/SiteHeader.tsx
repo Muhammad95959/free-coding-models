@@ -59,8 +59,12 @@ export function SiteHeader() {
             <SearchTrigger />
           </div>
 
-          <GitHubStars href={site.repo} />
-          <NpmDownloads href={site.npm} />
+          {/* 📖 The metric pills need more horizontal room than mobile and tablet
+              headers provide; the menu keeps those destinations reachable. */}
+          <div className="hidden items-center gap-4 lg:flex">
+            <GitHubStars href={site.repo} />
+            <NpmDownloads href={site.npm} />
+          </div>
 
           <button
             type="button"
