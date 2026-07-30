@@ -1,0 +1,31 @@
+---
+title: Copilot CLI
+description: Launch GitHub Copilot CLI with a free model from FCM — FCM sets COPILOT_* BYOK env vars so Copilot uses the selected provider/model.
+section: Agent Integrations
+---
+
+[GitHub Copilot CLI](https://github.com/features/copilot/cli) supports **Bring Your Own Key** (BYOK): you point Copilot at any OpenAI-compatible provider via environment variables, and it routes requests through that provider instead of GitHub's hosted models.
+
+FCM launches Copilot with the BYOK env vars pre-set so the selected free model is used immediately.
+
+## Launch from FCM
+
+```bash
+free-coding-models --copilot
+free-coding-models --copilot --origin groq
+```
+
+## What FCM sets
+
+| Env var | Value |
+|---------|-------|
+| `COPILOT_PROVIDER_BASE_URL` | The selected provider's OpenAI-compatible endpoint |
+| `COPILOT_MODEL` | The selected model ID |
+| `COPILOT_PROVIDER_API_KEY` | The provider's API key (when configured) |
+| `COPILOT_PROVIDER_MAX_OUTPUT_TOKENS` | `16384` (supports 16-32k output) |
+
+If Copilot doesn't recognise the provider/model pair, it falls back to its built-in model — so make sure the selected model is one Copilot accepts.
+
+## Install
+
+If the `copilot` CLI isn't installed, FCM detects it, offers a one-line install (`gh extension install github/gh-copilot`), then resumes the same launch.

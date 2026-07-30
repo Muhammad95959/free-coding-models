@@ -1,0 +1,38 @@
+---
+title: jcode
+description: Launch jcode with a free model from FCM — FCM picks jcode's native provider when possible, falls back to openai-compatible with a credentials bypass for non-native providers.
+section: Agent Integrations
+---
+
+[jcode](https://github.com/johnyburdette/jcode) is a CLI coding REPL. FCM launches it with `jcode repl --provider <provider> --model <model>` and sets the matching API-key env var.
+
+## Launch from FCM
+
+```bash
+free-coding-models --jcode
+free-coding-models --jcode --tier S
+```
+
+## What FCM sets
+
+jcode has a hardcoded model whitelist — bare names like `gpt-oss-120b` are rejected. FCM handles this two ways:
+
+**Native provider (preferred)** — when the selected model belongs to one of jcode's native providers (OpenAI, Anthropic, Groq, Cerebras, Google, Mistral, Cohere, …), FCM uses jcode's native provider with the correct env-key:
+
+```bash
+jcode repl --provider groq --model openai/gpt-oss-120b
+GROQ_API_KEY=<your-key>
+```
+
+**OpenAI-compatible fallback** — for providers without a native jcode match (NVIDIA NIM, SambaNova, …), FCM falls back to `openai-compatible` with a placeholder `OPENROUTER_API_KEY` to satisfy jcode's validation:
+
+```bash
+jcode repl --provider openai-compatible --model openai/gpt-oss-120b
+OPENAI_BASE_URL=https://integrate.api.nvidia.com/v1
+OPENAI_API_KEY=<your-key>
+OPENROUTER_API_KEY=fcm-bypass
+```
+
+## Install
+
+If the `jcode` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

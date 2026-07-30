@@ -1,82 +1,80 @@
 ---
 title: Health Checks & Circuit Breaker
-description: Real-time latency tracking, health verdicts, persistent probe caching, and automatic failover engine.
-section: Core concepts
+description: How FCM probes every model — adaptive ping cadence, live verdicts, the 24h persistent probe cache, and the per-model circuit breaker.
+section: Core concepts & advanced
 ---
 
-# Health Checks & Circuit Breaker Engine
+FCM continuously health-probes every model so you see live latency, status, and verdict. The same probe data powers the TUI, the Web Dashboard, the router's circuit breaker, and the persistent 24h cache shared across all surfaces.
 
-`free-coding-models` runs a background health probing engine and circuit breaker to track endpoint availability and perform zero-downtime failover.
+## Adaptive ping cadence
 
----
+The ping loop sends 1-token chat-completion probes to measure end-to-end API latency **and status code**, not just DNS reachability — so a wrong API key is caught immediately. The cadence adapts to how busy the catalog is:
 
-## Ping Engine & Probe Intervals
+- **2s burst** for the first 60s after launch
+- **10s normal** once most models have responded
+- **30s idle** slowdown after inactivity
 
-The ping loop sends 1-token chat-completion probes to catalog models to measure end-to-end API latency and status codes.
-
-Probe intervals can be set in settings or via CLI:
+Override the interval if you need to:
 
 ```bash
-# Override ping interval to 15 seconds (in ms)
-free-coding-models --ping-interval 15000
+free-coding-models --ping-interval 5000   # ping every 5s
 ```
 
 ---
 
-## Live Verdict States
+## Live verdicts
 
-Model health condition state is tracked via `getVerdict()`:
+Model health is summarized as a human-readable verdict. The **Stability** column is the composite 0–100 score; the verdict is a quick label.
 
-| State | Badge | Description |
-|---|---|---|
-| **Perfect** | <Badge variant="success">PERFECT</Badge> | Ping latency under 400ms |
-| **Normal** | <Badge variant="success">NORMAL</Badge> | Ping latency between 400ms and 999ms |
-| **Slow** | <Badge variant="warning">SLOW</Badge> | Ping latency between 1000ms and 2999ms |
-| **Very Slow** | <Badge variant="warning">VERY SLOW</Badge> | Ping latency between 3000ms and 4999ms |
-| **Overloaded** | <Badge variant="danger">OVERLOADED</Badge> | Last ping returned HTTP 429 Rate Limit |
-| **Unstable** | <Badge variant="danger">UNSTABLE</Badge> | Latency timeout with prior successful pings |
-| **Spiky** | <Badge variant="warning">SPIKY</Badge> | Normal average latency but high P95 latency spikes |
+| Verdict | Meaning |
+|---------|---------|
+| 🟩 **Perfect** | Avg under 400ms with stable p95/jitter |
+| 🟢 **Normal** | Avg under 1000ms, consistent responses |
+| 🟡 **Spiky** | Good avg but erratic tail latency (p95 >> avg) |
+| 🟠 **Slow** | Avg 1000–2999ms |
+| 🔴 **Very Slow** | Avg 3000–4999ms |
+| 🔥 **Overloaded** | Server returned 429/503 (rate limited or capacity hit) |
+| 🟥 **Unstable** | Was previously up but now timing out, or avg > 5000ms |
+| ⚫ **Not Active** | No successful pings yet and the model is currently down |
+| ⏳ **Pending** | First usable latency sample is still missing |
 
----
+The top-3 models by the current sort get 🥇🥈🥉 medal borders. Press **`B`** to sort by Stability, or **`V`** to sort by verdict.
 
-## Persistent Probe-Cache with TTL
-
-Healthy probe states are cached locally in `~/.free-coding-models/probe-cache.json`.
-
-- **Cache TTL**: Default 24 hours (`86400000ms`). Healthy models within TTL skip initial startup pings.
-- **Auto-Hide Broken**: Models with persistent authentication errors (401/403) or offline endpoints are hidden from selector views.
-
-### Probe Cache CLI Flags
-
-```bash
-# Re-probe all models (skip cached healthy models)
-free-coding-models --reprobe
-
-# Override probe TTL (e.g. 1 hour in ms)
-free-coding-models --probe-ttl 3600000
-
-# Show models marked broken by the probe cache
-free-coding-models --show-broken
-```
+→ **Stability formula & full column reference:** [`docs/stability.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/stability.md)
 
 ---
 
-## Circuit Breaker State Machine
+## Persistent probe cache
 
-The router circuit breaker tracks 5 internal model states:
+Every health-probe result is cached to `~/.free-coding-models/probe-cache.json` for **24 hours** and **shared across all surfaces** (CLI TUI, Web Dashboard / daemon, Tauri Desktop).
 
-- **CLOSED (Healthy)**: 2xx response, requests pass freely.
-- **OPEN (Down)**: 3 consecutive failures, requests skipped during cooldown.
-- **HALF_OPEN (Recovering)**: Cooldown expired, retrying with 1 request.
-- **AUTH_ERROR**: HTTP 401/403 response, invalid API key.
-- **STALE**: Deprecated or removed from catalog.
+- **Warm start** renders the full ranking in under 500ms using cached results, then re-pings only models that are due (broken or past TTL).
+- **Broken models** are auto-hidden across sessions — a model that 401s today stays out of tomorrow's default view, and recovers automatically when it returns `ok`.
+- **Cross-process safe** — debounced flush + atomic rename + read-merge-write, so the CLI and the daemon share the file without clobbering each other.
+
+| Flag / key | Effect |
+|------------|--------|
+| `--reprobe` / `--no-cache` | Nuke the cache; ping everything fresh |
+| `--probe-ttl <ms>` | Override the 24h TTL (e.g. `--probe-ttl 3600000` for 1h) |
+| `--show-broken` | Don't auto-hide broken models this run |
+| `Shift+B` (TUI) | Toggle broken-model visibility (footer: `⚡ N cached · 🔴 M broken`) |
 
 ---
 
-## Auto-Failover Logic
+## Circuit breaker (router)
 
-When using the local proxy (`http://localhost:19280/v1` with model `"fcm"`):
+The Smart Model Router's circuit breaker tracks each model in your active set. This is the same probe data, expressed as routing state:
 
-1. Proxy targets the top healthy model in your active set.
-2. If the provider returns HTTP 429 or 5xx, the proxy catches the error and retries with the next healthy model in the set.
-3. If all models in the active set fail, the proxy returns an HTTP 503 error listing `models_tried` in the JSON body.
+| State | Meaning |
+|-------|---------|
+| 🟢 **Healthy** | Last probe returned 2xx — route here freely |
+| 🔴 **Down** | Last 3 probes failed — skip until cooldown |
+| 🟡 **Recovering** | Cooldown expired — retrying with 1 request |
+| 🟠 **Auth error** | 401/403 — your API key is wrong for this model |
+| ⚪ **Deprecated** | Removed from the catalog — will be replaced |
+
+### Auto-failover
+
+When a request to `http://localhost:19280/v1` (model `fcm`) hits a transient failure (`429`, `5xx`, timeout), the router fails over to the next healthy model in the active set. If *all* models fail, it returns a `503` with a `models_tried` list in the body for debugging. Auth problems are tracked separately so bad credentials never poison the circuit breaker.
+
+→ **Routing behavior & auto-heal:** [Smart Model Router](/docs/core/router-daemon)

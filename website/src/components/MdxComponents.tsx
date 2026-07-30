@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   Server
 } from 'lucide-react'
+import { Video } from './Video'
 
 // --- Custom Copy Button for Code Blocks ---
 function CopyButton({ text }: { text: string }) {
@@ -266,6 +267,16 @@ export const mdxComponents = {
     <code className="font-mono text-xs bg-bg-subtle border border-border px-1.5 py-0.5 rounded text-accent-fg font-semibold" {...props} />
   ),
   pre: PreBlock,
+  // 📖 Wrap every MDX table in a horizontal-scroll box so a genuinely wide table
+  // scrolls *inside* the page instead of stretching the viewport. Cell content
+  // still wraps (see `.prose table` in styles.css), so most tables just fit.
+  table: (props: ComponentPropsWithoutRef<'table'>) => (
+    <div className="table-scroll">
+      <table {...props} />
+    </div>
+  ),
+  // 📖 Video: see src/components/Video.tsx. Videos live in website/public/videos/.
+  Video,
   Callout,
   Badge,
   CardGrid,

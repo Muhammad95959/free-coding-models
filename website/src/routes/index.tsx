@@ -9,8 +9,7 @@ import { CodeWindow } from '~/components/CodeWindow'
 import { CopyCommand } from '~/components/CopyCommand'
 import { INSTALL_COMMAND, site } from '~/lib/site'
 import HeroGeometric from '~/components/HeroGeometric'
-import { LogoMark } from '~/components/Logo'
-import { MorphingText } from '~/components/MorphingText'
+import { Video } from '~/components/Video'
 import { HomeStructuredData } from '~/components/StructuredData'
 import { CometCard } from '~/components/ui/comet-card'
 
@@ -130,19 +129,7 @@ function Hero() {
           <div className="animate-rise w-full max-w-[26rem] shrink-0 self-center lg:self-auto">
             <CometCard className="w-full">
               <div className="hero-card-surface rounded-2xl border border-border/80 p-8 backdrop-blur-md">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <LogoMark size={160} />
-                  <div className="mt-6 w-full">
-                    <MorphingText
-                      items={[
-                        { text: '100+ Free Models', className: 'font-mono text-base font-semibold text-fg' },
-                        { text: 'Auto Health Failover', className: 'font-mono text-base font-semibold text-accent-fg' },
-                        { text: 'SWE-Bench Ranked', className: 'font-mono text-base font-semibold text-fg' },
-                        { text: 'CLI · Desktop · Docker', className: 'font-mono text-base font-semibold text-accent-fg' },
-                      ]}
-                    />
-                  </div>
-                </div>
+                <Video name="tui-first-launch" caption="First launch — ~222 models ping in parallel." />
                 <CopyCommand command={INSTALL_COMMAND} className="mt-6 w-full" />
               </div>
             </CometCard>
@@ -249,6 +236,9 @@ function FailoverSection() {
           },
         ]}
       />
+      <div className="mt-8">
+        <Video name="router-playground" caption="Playground — chat with the router and see the routed provider/model on the reply." />
+      </div>
     </Section>
   )
 }
@@ -279,6 +269,15 @@ function SurfacesSection() {
             <p className="mt-2 font-mono text-xs leading-relaxed text-fg-muted">{s.desc}</p>
           </div>
         ))}
+      </div>
+
+      <div className="mt-12">
+        <p className="label mb-4">See it live</p>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Video name="tui-pick-and-launch" caption="Pick a model & launch — Enter writes the model and opens the tool." />
+          <Video name="tui-speed-test" caption="AI Speed Test — Ctrl+A benchmarks the selected model." />
+          <Video name="web-url-deep-linking" caption="URL deep-linking — filter the dashboard, share the URL." />
+        </div>
       </div>
     </Section>
   )

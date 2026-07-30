@@ -1,61 +1,112 @@
 ---
-title: Configuration File Schema
-description: Field reference for ~/.free-coding-models/config.json and environment variable overrides.
+title: Configuration File
+description: Reference for ~/.free-coding-models.json — API keys, provider toggles, favorites, settings, and the Smart Model Router config, plus environment variable precedence.
 section: Reference & Support
 ---
 
-# Configuration File Schema Reference
+Everything FCM persists lives in one JSON file: **`~/.free-coding-models.json`**. It is created automatically on first run with `0600` permissions, and stores your API keys, per-provider toggles, favorites, UI settings, and the Smart Model Router config.
 
-Settings and API keys are persisted in `~/.free-coding-models/config.json`.
+## File location
 
----
+- **macOS / Linux**: `~/.free-coding-models.json`
+- **Windows**: `%USERPROFILE%\.free-coding-models.json`
 
-## File Location
+<Callout type="note" title="Runtime data vs config">
+The config *file* is `~/.free-coding-models.json` (a single JSON file at your home root). Runtime data — the shared 24h **probe cache**, runtime telemetry, token counters, and daemon logs — lives in the **`~/.free-coding-models/` directory**. They are two different things.
+</Callout>
 
-- **macOS / Linux**: `~/.free-coding-models/config.json`
-- **Windows**: `%USERPROFILE%\.free-coding-models\config.json`
-
----
-
-## Schema Structure Example
+## Schema
 
 ```json
 {
-  "activeModel": "gemini-2.5-flash",
-  "pingIntervalMs": 30000,
-  "probeMode": "balanced",
-  "hideUnconfigured": false,
-  "telemetryEnabled": true,
-  "systemPrePrompt": "You are an AI coding assistant routed by FCM Router.",
-  "providers": {
-    "gemini": {
-      "apiKey": "AIzaSy..."
-    },
-    "groq": {
-      "apiKey": "gsk_..."
-    },
-    "nvidia": {
-      "apiKey": "nvapi-..."
-    },
-    "qwen": {
-      "apiKey": "sk-..."
-    }
+  "apiKeys": {
+    "nvidia":      "nvapi-xxx",
+    "groq":        "gsk_xxx",
+    "cerebras":    "csk_xxx",
+    "openrouter":  "sk-or-xxx"
   },
-  "customSources": [
-    {
-      "name": "Local Ollama",
-      "baseUrl": "http://localhost:11434/v1"
+  "providers": {
+    "nvidia":     { "enabled": true },
+    "groq":       { "enabled": true },
+    "openrouter": { "enabled": true },
+    "zai":        { "enabled": false }
+  },
+  "settings": {
+    "hideUnconfiguredModels": true
+  },
+  "favorites": [
+    "nvidia/deepseek-ai/deepseek-v3.2"
+  ],
+  "router": {
+    "enabled": true,
+    "activeSet": "fast-coding",
+    "port": 19280,
+    "probeMode": "balanced",
+    "prePrompt": {
+      "enabled": true,
+      "text": "You are free-coding-models, the free coding-model routing agent..."
+    },
+    "sets": {
+      "fast-coding": {
+        "name": "fast-coding",
+        "models": [
+          { "provider": "groq", "model": "openai/gpt-oss-120b", "priority": 1 },
+          { "provider": "cerebras", "model": "gpt-oss-120b", "priority": 2 }
+        ]
+      }
     }
-  ]
+  }
 }
 ```
 
----
+Only the providers you've configured appear in `apiKeys` / `providers`. Toggle a provider off with `providers.<id>.enabled: false` without deleting its key.
 
-## Environment Variable Precedence
+## API key fields
 
-Environment variables override `config.json` keys:
+Keys are stored under `apiKeys.<providerId>` using the catalog provider IDs: `nvidia`, `groq`, `cerebras`, `googleai`, `github-models`, `mistral`, `cloudflare`, `openrouter`, `sambanova`, `ovhcloud`, `codestral`, `zai`, `scaleway`, `qwen`, `opencode-zen`, `kilo`, `llm7`, `routeway`, `novita`, `ollama-cloud`. See the [provider table](/docs/core/providers) for the full list.
 
-1. `GROQ_API_KEY`, `GEMINI_API_KEY`, `NVIDIA_API_KEY`, `DASHSCOPE_API_KEY`, `CEREBRAS_API_KEY`, `MISTRAL_API_KEY`, `CODESTRAL_API_KEY`, `OPENROUTER_API_KEY`, `SAMBANOVA_API_KEY`, `SCALEWAY_API_KEY`, `ZAI_API_KEY`, `CLOUDFLARE_API_KEY`, `OVH_AI_ENDPOINTS_ACCESS_TOKEN`, `NOVITA_API_KEY`, `ROUTEWAY_API_KEY`, `GITHUB_TOKEN`.
-2. Provider key in `~/.free-coding-models/config.json`.
-3. Default fallback free community keys.
+## Environment variable precedence
+
+The **TUI** reads env vars before config values. The **Smart Model Router daemon** reads config keys first, then falls back to env vars — because a background service may not inherit your shell environment.
+
+| Variable | Provider |
+|----------|----------|
+| `NVIDIA_API_KEY` | NVIDIA NIM |
+| `GROQ_API_KEY` | Groq |
+| `CEREBRAS_API_KEY` | Cerebras |
+| `GOOGLE_API_KEY` | Google AI Studio |
+| `GITHUB_TOKEN` | GitHub Models |
+| `MISTRAL_API_KEY` | Mistral La Plateforme + Codestral |
+| `CLOUDFLARE_API_TOKEN` (+ `CLOUDFLARE_ACCOUNT_ID`) | Cloudflare Workers AI |
+| `OPENROUTER_API_KEY` | OpenRouter |
+| `SAMBANOVA_API_KEY` | SambaNova |
+| `OVH_AI_ENDPOINTS_ACCESS_TOKEN` | OVHcloud AI Endpoints |
+| `ZAI_API_KEY` | ZAI |
+| `SCALEWAY_API_KEY` | Scaleway |
+| `DASHSCOPE_API_KEY` | Alibaba DashScope |
+| `ROUTEWAY_API_KEY` | Routeway |
+| `NOVITA_API_KEY` | Novita AI |
+| `OLLAMA_API_KEY` | Ollama Cloud |
+| `KILO_API_KEY` *(optional)* | Kilo (works without a key) |
+| `LLM7_API_KEY` *(optional)* | LLM7 (works without a key) |
+
+## Daemon environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FCM_HOST` | `0.0.0.0` | Bind host (`127.0.0.1` for localhost-only) |
+| `FCM_PORT` | `19280` | Router/dashboard port (scans `19280`–`19289` if busy) |
+| `FCM_WEB_PORT` | `3333` | Catalog-only `web` dashboard port |
+| `FREE_CODING_MODELS_TELEMETRY` | `1` | `0` disables telemetry |
+
+## Runtime files
+
+| File | Purpose |
+|------|---------|
+| `~/.free-coding-models.json` | Config — keys, settings, router, favorites |
+| `~/.free-coding-models/probe-cache.json` | 24h shared probe cache across all surfaces |
+| `~/.free-coding-models/runtime-telemetry.json` | Per-model real-world success rate + throughput |
+| `~/.free-coding-models-tokens.json` | Daily + all-time token counters |
+| `~/.free-coding-models-daemon.log` | Rotating daemon lifecycle & routing logs |
+
+→ **Full config reference:** [`docs/config.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/config.md)

@@ -1,0 +1,77 @@
+---
+title: Pi
+description: Launch the Pi coding agent with a free model from FCM — it writes ~/.pi/agent/settings.json and opens Pi. Plus the FCM-Pi extension for in-agent /fcm commands.
+section: Agent Integrations
+---
+
+[Pi](https://pi.dev) is a terminal coding agent. FCM writes the selected provider + model into Pi's config and launches `pi` so you can start coding immediately.
+
+## Launch from FCM
+
+```bash
+free-coding-models --pi
+free-coding-models --pi --tier S --origin cerebras
+# → Pi, pre-filtered to S-tier Cerebras models
+```
+
+Press **Enter** on a row → FCM writes the model into Pi's settings and launches `pi`.
+
+## What FCM writes
+
+Config paths: **`~/.pi/agent/models.json`** (provider config) + **`~/.pi/agent/settings.json`** (default model on next launch).
+
+The provider entry follows the AI SDK OpenAI-compatible format with the API key referenced via env var.
+
+## Install
+
+If the `pi` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.
+
+## Extension — `FCM-Pi` (in-agent `/fcm` commands)
+
+`FCM-Pi` brings the scanner/ranker into your Pi session so you can hot-swap models without leaving the agent. It stays **silent by default** — no scan, no footer noise, no automatic model switch on boot or `/resume`. It only acts when you ask.
+
+> ⚠️ **BETA** — install is via local path; not yet on npm.
+
+### Install
+
+Add the extension path to `~/.pi/agent/settings.json`:
+
+```json
+{
+  "packages": [
+    "/Users/<you>/Documents/GitHub/free-coding-models/packages/fcm-pi"
+  ]
+}
+```
+
+Restart Pi. The extension loads automatically. Requires Pi + `free-coding-models` installed and configured with at least one API key.
+
+### Features
+
+| Feature | What it does |
+|---------|--------------|
+| **Silent startup** | No scan, no footer noise, no auto-switch on boot or `/resume` |
+| **Manual scan** | `/fcm` pings ~30 candidates in parallel, then waits for your explicit pick |
+| **Live progress** | The Pi status bar shows `⠸ Probing: Kimi K2.6 [Nvidia]…` only while probing, then hides |
+| **10-min disk cache** | Results cached to `~/.pi/agent/fcm-cache.json` for fast diagnostics |
+| **Error-triggered picker** | If a request fails (HTTP 4xx/5xx), FCM reopens the picker and marks the failed model `🔴 BUGGED` |
+| **Daemon integration** | If the router daemon is running (`--daemon-bg`), scan results are fetched instantly from its cache |
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `/fcm` | Re-scan and pick a model interactively from the top 10 |
+| `/fcm-list` | Ranked table of top 20 models (SWE / Latency / TPS / Provider) |
+| `/fcm-router` | Connect Pi to the local FCM Smart Router daemon |
+| `/fcm-status` | Diagnostics: active model, last scan source, daemon state |
+
+### Composite ranking
+
+Models are ranked by: **SWE-bench (60%) + Latency (20%) + TPS (10%) + Stability (10%)**.
+
+### Cerebras 8k caveat
+
+Cerebras free-tier API has a strict **~8k total token limit** (prompt + tools + completion). Tiny-context models can pass a `hi` probe but fail real agent prompts, so FCM hides 8k Cerebras models from the picker.
+
+→ Full architecture: [`packages/fcm-pi/README.md`](https://github.com/vava-nessa/free-coding-models/blob/main/packages/fcm-pi/README.md)

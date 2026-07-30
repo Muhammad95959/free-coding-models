@@ -1,0 +1,28 @@
+---
+title: Goose
+description: Launch Goose with a free model from FCM — it writes a custom provider JSON + secrets.yaml + updates config.yaml (GOOSE_PROVIDER/GOOSE_MODEL) and opens Goose.
+section: Agent Integrations
+---
+
+[Goose](https://github.com/block/goose) (by Block) is an AI agent that can automate engineering tasks. FCM installs the provider as a custom Goose extension, writes the API key to `secrets.yaml`, and sets `GOOSE_PROVIDER` + `GOOSE_MODEL` in `config.yaml`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --goose
+free-coding-models --goose --tier S
+```
+
+## What FCM writes
+
+| File | Purpose |
+|------|---------|
+| `~/.config/goose/custom_providers/<providerId>.json` | Custom OpenAI-compatible provider descriptor |
+| `~/.config/goose/secrets.yaml` | API key in `key: value` format |
+| `~/.config/goose/config.yaml` | `GOOSE_PROVIDER` + `GOOSE_MODEL` set at the top level |
+
+This three-file split is what Goose expects for custom OpenAI-compatible providers.
+
+## Install
+
+If the `goose` CLI isn't installed, FCM detects it, offers a one-line install (Goose's official global command), then resumes the same launch.

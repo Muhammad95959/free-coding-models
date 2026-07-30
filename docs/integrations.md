@@ -12,20 +12,32 @@ Every tool follows the same pattern:
 
 ## Tool → Config mapping
 
+Every tool writes the selected provider + model into its native config (or sets env vars for CLI-only tools), then launches it. Missing CLIs are detected and offered for one-line install automatically.
+
 | Tool | Flag | Config written |
 |------|------|----------------|
 | OpenCode CLI | `--opencode` | `~/.config/opencode/opencode.json` |
-| OpenCode Desktop | `--opencode-desktop` | `~/.config/opencode/opencode.json` (then opens app) |
-| OpenCode WebUI | `--opencode-web` | `~/.config/opencode/opencode.json` (then opens web dashboard) |
+| OpenCode Desktop | `--opencode-desktop` | `~/.config/opencode/opencode.json` (then opens the app) |
+| OpenCode WebUI | `--opencode-web` | `~/.config/opencode/opencode.json` (then opens the web dashboard) |
 | OpenClaw | `--openclaw` | `~/.openclaw/openclaw.json` |
 | Crush | `--crush` | `~/.config/crush/crush.json` |
-| Goose | `--goose` | `~/.config/goose/config.yaml` + `custom_providers/` |
-| Aider | `--aider` | `~/.aider.conf.yml` |
+| Goose | `--goose` | `~/.config/goose/config.yaml` + `custom_providers/<id>.json` + `secrets.yaml` |
+| Aider | `--aider` | `~/.aider.conf.yml` (+ passes `--model`) |
 | Kilo CLI | `--kilo` | `~/.config/kilo/opencode.json` |
-| Qwen Code | `--qwen` | `~/.qwen/settings.json` |
+| Qwen Code | `--qwen` | `~/.qwen/settings.json` (+ `~/.qwen/models.json`) |
 | OpenHands | `--openhands` | `LLM_MODEL` env var |
 | Amp | `--amp` | `~/.config/amp/settings.json` |
-| Pi | `--pi` | `~/.pi/agent/settings.json` |
+| Pi | `--pi` | `~/.pi/agent/models.json` + `~/.pi/agent/settings.json` |
+| Continue | `--continue` | `~/.continue/config.yaml` |
+| Cline | `--cline` | `~/.cline/globalState.json` |
+| Hermes | `--hermes` | `~/.hermes/config.yaml` (via `hermes config set` + `hermes gateway restart`) |
+| ForgeCode | `--forgecode` | `~/.forge/.forge.toml` (`[[providers]]` block) |
+| ZCode | `--zcode` | `~/.zcode/v2/config.json` + `bots-model-cache.v2.json` |
+| Xcode Intelligence | `--xcode` | None — launches Xcode; configure the endpoint in Xcode settings |
+| Copilot CLI | `--copilot` | `COPILOT_*` BYOK env vars (`COPILOT_PROVIDER_BASE_URL`, `COPILOT_MODEL`, `COPILOT_PROVIDER_API_KEY`) |
+| FCM Router | `--fcm-router` | Connects the tool to the local router daemon (`http://localhost:19280/v1`, model `fcm`) |
+
+> Default (no tool flag) = OpenCode CLI. Press **`Z`** in the TUI to cycle tools without restarting. Entries installed via the **`Y`** flow are namespaced under `fcm-*` in the target config.
 
 ---
 

@@ -1,0 +1,40 @@
+---
+title: Kilo
+description: Launch Kilo CLI with a free model from FCM — it writes ~/.config/kilo/opencode.json and launches kilo.
+section: Agent Integrations
+---
+
+[Kilo CLI](https://kilo.ai) is an OpenCode-flavoured coding agent. FCM writes the selected model into Kilo's OpenCode-compatible config and launches `kilo`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --kilo
+free-coding-models --kilo --origin kilo
+```
+
+## What FCM writes
+
+Config path: **`~/.config/kilo/opencode.json`** (shared format with OpenCode)
+
+```json
+{
+  "provider": {
+    "kilo": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Kilo",
+      "options": {
+        "baseURL": "https://api.kilo.ai/v1",
+        "apiKey": "{env:KILO_API_KEY}"
+      }
+    }
+  },
+  "model": "kilo/<model-id>"
+}
+```
+
+## Install
+
+If the `kilo` CLI isn't installed, FCM detects it, offers a one-line install (Kilo's official global command), then resumes the same launch.
+
+> Kilo itself can also answer without a key via its free auto-router — FCM includes the model in the catalog regardless of whether you've set `KILO_API_KEY`.

@@ -1,59 +1,72 @@
 ---
 title: Tier System & Benchmarks
-description: Tier classification scale (S+, S, A+, A, A-, B+, B, C) based on SWE-bench Verified benchmark scores.
-section: Core concepts
+description: Every model is tiered by its SWE-bench Verified score, from S+ (frontier) down to C (edge). Filter and sort by tier in the TUI or CLI.
+section: Core concepts & advanced
 ---
 
-# Tier System & Benchmark Scoring
+Every model in the catalog is tiered by its **SWE-bench Verified** score — the industry-standard benchmark for real coding tasks. This lets you filter to models that are actually capable of the work you're doing, not just fast.
 
-`free-coding-models` categorizes catalog models into standardized performance tiers based on **SWE-bench Verified** scores (self-reported or evaluated via swe-bench.com / swe-rebench.com).
+## Tier scale
 
----
+| Tier | SWE-bench | Best for |
+|------|-----------|----------|
+| <Badge variant="s-plus">S+</Badge> | **≥ 70%** | Complex refactors, real-world GitHub issues |
+| <Badge variant="s">S</Badge> | **60–70%** | Most coding tasks, strong general use |
+| <Badge variant="a-plus">A+</Badge> / <Badge variant="a">A</Badge> | **40–60%** | Solid alternatives, targeted programming |
+| <Badge variant="b">A-</Badge> / <Badge variant="b">B+</Badge> | **30–40%** | Smaller tasks, constrained infra |
+| <Badge variant="b">B</Badge> / <Badge variant="c">C</Badge> | **Under 30%** | Code completion, edge/minimal setups |
 
-## Performance Tiers Scale
-
-The tier scale is defined in `sources.js` as follows:
-
-| Tier | Badge | Score Range | Description | Active Model Examples in `sources.js` |
-|---|---|---|---|---|
-| **S+ Tier** | <Badge variant="s-plus">S+ TIER</Badge> | **≥ 70.0%** | Frontier coding models | `z-ai/glm-5.2` (82.8%), `minimaxai/minimax-m2.7` (78.0%), `qwen3.6-27b` (77.2%), `openai/gpt-5` (74.9%) |
-| **S Tier** | <Badge variant="s">S TIER</Badge> | **60.0% – 69.9%** | High-performance coding models | `openai/gpt-oss-120b` (62.4%), `gemini-2.5-pro` (63.8%), `openai/o3` (69.1%), `gemini-3.1-flash-lite` (62.8%) |
-| **A+ Tier** | <Badge variant="a-plus">A+ TIER</Badge> | **50.0% – 59.9%** | Great fast completion models | `openai/gpt-oss-20b` (50.3%), `google/gemma-4-31b-it` (52.0%), `gemini-2.5-flash` (54.0%) |
-| **A Tier** | <Badge variant="a">A TIER</Badge> | **40.0% – 49.9%** | Good general utility models | `qwen/qwen2.5-coder-32b-instruct` (47.0%), `deepseek-ai/deepseek-r1` (49.2%), `codestral-2508` (40.0%) |
-| **A- Tier** | <Badge variant="b">A- TIER</Badge> | **35.0% – 39.9%** | Decent utility models | `nvidia/nemotron-3-nano-30b-a3b` (38.8%), `stockmark/stockmark-2-100b-instruct` (36.0%) |
-| **B+ Tier** | <Badge variant="b">B+ TIER</Badge> | **30.0% – 34.9%** | Average small models | `mistralai/ministral-14b-instruct-2512` (34.0%), `codestral-2501` (34.0%) |
-| **B Tier** | <Badge variant="b">B TIER</Badge> | **20.0% – 29.9%** | Below average / lightweight | `llama-3.3-70b-versatile` (22.0%), `meta/llama-3.2-11b-vision-instruct` (28.0%) |
-| **C Tier** | <Badge variant="c">C TIER</Badge> | **< 20.0%** | Edge / lightweight models | `microsoft/phi-4-mini-instruct` (14.0%), `llama-3.1-8b-instant` (18.0%) |
+> SWE-bench scores come from the model's official report or community evaluation (swe-bench.com / swe-rebench.com). Some models have no published score yet (shown as `-`) but are still tiered by provider/model signals.
 
 ---
 
-## Filtering and Sorting via CLI
+## Filter and sort by tier
 
-Filter models by tier directly:
+### In the TUI
+
+Press **`T`** to cycle the tier filter (All → S+ → S → A+ → A → A- → B+ → B → C → All). Press **`S`** to sort by SWE-bench score.
+
+### From the CLI
+
+`--tier` filters by **tier family** — a single letter expands to a range:
+
+| Flag | Tiers shown |
+|------|-------------|
+| `--tier S` | S+ and S |
+| `--tier A` | A+, A, A- |
+| `--tier B` | B+ and B |
+| `--tier C` | C only |
 
 ```bash
-# Filter S+ Tier models
-free-coding-models --tier S+
-
-# Filter S Tier models
+# S-tier family only (S+ and S)
 free-coding-models --tier S
 
-# Filter A+ Tier models
-free-coding-models --tier A+
-```
+# Elite-focused preset (S-tier filter + verdict sort, resettable in-app)
+free-coding-models --premium
 
-Sort by benchmark score:
+# Top tiers only (A+, S, S+)
+free-coding-models --best
 
-```bash
+# Sort by SWE score, descending
 free-coding-models --sort swe --desc
 ```
 
 ---
 
-## Drift Detection (`--check-drift`)
+## Extended benchmark catalog
 
-To compare local `sources.js` definitions against upstream `models.dev` data:
+FCM layers an extended benchmark catalog (`src/data/benchmarks.json`) on top of `sources.js` — adding Coding, Math, Agentic, Reasoning, MMLU-Pro, GPQA, and HLE scores for models that have them (the footer shows `📊 bench N`).
+
+---
+
+## Drift detection (`--check-drift`)
+
+The catalog is enriched with live `models.dev` community data in the background (footer: `📡 N live · M curated`). To diff your local `sources.js` against upstream `models.dev`:
 
 ```bash
 free-coding-models --check-drift
 ```
+
+This prints a drift report and exits `1` on mismatch — handy for CI to catch when a provider changes its model list. Use `--drift-threshold <N>` to only fail when N+ mismatches are found.
+
+→ **Full stability score & column reference:** [`docs/stability.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/stability.md)

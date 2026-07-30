@@ -1,0 +1,30 @@
+---
+title: Aider
+description: Launch Aider with a free model from FCM — it writes ~/.aider.conf.yml with the selected model and launches aider.
+section: Agent Integrations
+---
+
+[Aider](https://aider.chat) is a terminal coding agent that pairs with your editor via git. FCM writes the selected model into `aider.conf.yml` and launches `aider`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --aider
+free-coding-models --aider --tier S --origin cerebras
+```
+
+## What FCM writes
+
+Config path: **`~/.aider.conf.yml`**
+
+```yaml
+model: openai/gpt-oss-120b
+openai-api-key: fcm-managed
+openai-api-base: https://api.groq.com/openai/v1
+```
+
+FCM also passes `--model <id>` to the `aider` invocation so the selected model takes effect immediately.
+
+## Install
+
+If the `aider` CLI isn't installed, FCM detects it, offers a one-line install (`pip install aider-chat` or the official equivalent), then resumes the same launch.

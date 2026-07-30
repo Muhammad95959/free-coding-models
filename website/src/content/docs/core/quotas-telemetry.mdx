@@ -1,48 +1,61 @@
 ---
-title: Passive Quotas & Telemetry
-description: Passive HTTP response header parsing and local runtime performance telemetry tracking.
-section: Core concepts
+title: Quotas & Runtime Telemetry
+description: Passive quota tracking from response headers (zero extra requests) and local runtime telemetry that scores models on real-world success rate and throughput.
+section: Core concepts & advanced
 ---
 
-# Passive Quotas & Runtime Telemetry
+FCM gathers two layers of "honest" data on top of the SWE-bench tiers and ping latency: **passive quota** from response headers, and **runtime telemetry** from real routed requests.
 
-`free-coding-models` includes passive rate limit tracking and local runtime telemetry.
+## Passive quota from response headers
 
----
+Every chat-completion response carries rate-limit headers (`x-ratelimit-remaining-requests`, etc.). The daemon parses them **passively on every routed request** — zero extra network requests, zero quota waste.
 
-## 1. Passive Quota Header Monitoring
+- **8 header variants** supported (SambaNova, Mistral, generic `x-ratelimit-*`, a no-`x-` proxy variant, plus 3 daily/token/token-minute Cerebras-style variants).
+- **Pre-warmed by pings** — even health pings return headers, so quota is visible before you ever route a real request.
+- **5-minute staleness** — snapshots older than 5 min are excluded, with the active key-fetcher as fallback for idle providers.
 
-To monitor rate limit quotas without consuming API calls, `free-coding-models` parses standard HTTP response headers returned by providers on proxied completion calls.
+When remaining requests reach zero, the router preemptively skips the model before an HTTP 429 occurs.
 
-### Parsed Headers
+| Surface | What you'll see |
+|---------|-----------------|
+| TUI footer | `📊 groq 78% · sambanova 41%` (top 5 most-depleted first) |
+| Web Dashboard | `Provider Quota` section with animated progress bars |
+| `/stats.quota` | `{ providerKey: { remaining, limit, percent, source, lastUpdated, windowType } }` |
 
-- **`x-ratelimit-remaining-requests`**: Remaining request budget.
-- **`x-ratelimit-remaining-tokens`**: Remaining token budget.
-- **`x-ratelimit-reset-requests`**: Timestamp for request quota reset.
-- **`x-ratelimit-reset-tokens`**: Timestamp for token quota reset.
-- **`retry-after`**: Retry delay specified on HTTP 429 responses.
-
-When remaining requests reach zero, the router preemptively skips the model before an HTTP 429 error occurs.
-
----
-
-## 2. Local Telemetry Metrics
-
-Local telemetry tracks runtime performance parameters:
-
-- **Tokens Per Second (tok/s)**: Average output token generation speed.
-- **Success Rate (%)**: Percentage of successful 2xx calls.
-- **P95 Latency**: 95th percentile completion latency.
-- **Jitter & Stability Score**: Standard deviation of latency across consecutive pings.
-
-Telemetry data is saved locally to `~/.free-coding-models/telemetry.json`.
+The `source` field is `"header"` (passive) or `"endpoint"` (active fetcher) — handy in devtools to debug why a provider shows the value it does.
 
 ---
 
-## Disabling Telemetry
+## Runtime telemetry: real-world scores
 
-Disable local telemetry collection:
+Every routed request through the daemon feeds a persistent per-model telemetry file (`~/.free-coding-models/runtime-telemetry.json`) — the **honesty layer** that complements SWE-bench with what models *actually* do on free tiers.
+
+- **Real success rate** = `successCalls / totalCalls` (updated on every request, success and failure alike).
+- **Real throughput** = `avgTokensPerSecond` from completion tokens / total latency.
+- **Recent calls (last 50)** — for "why did this just 500?" without rebuilding state.
+- **Composite `Real` score** = `successRate × 0.6 + sigmoid01(tok/s) × 0.25 + recency × 0.15` (null below 5 calls — no penalty for new models).
+
+| Surface | What you'll see |
+|---------|-----------------|
+| TUI `Real` column | Inline composite per row (`–` when insufficient) |
+| TUI `W` / `Shift+W` | Sort by real-world score / Runtime Report overlay |
+| Web Dashboard | "Runtime Telemetry" cards with animated success-rate bars |
+| `/stats.runtime` | `{ stats: { modelsTracked, totalCalls, modelsWithSignal }, models: {…} }` |
+
+<Callout type="note" title="Privacy">
+The file is **local only** (`0600` perms) and holds metadata only: success, latency, tokens, error reason. No prompts, no responses, no content. Wipe the baseline with `--clear-runtime`.
+</Callout>
+
+---
+
+## Disabling telemetry
+
+FCM also collects **anonymous** usage telemetry to understand how the CLI is used (app version, tool mode, OS, terminal family, a random local install ID — never keys, prompts, or code). Disable it with:
 
 ```bash
 free-coding-models --no-telemetry
+# …or set the env var
+export FREE_CODING_MODELS_TELEMETRY=0
 ```
+
+→ **Config & runtime file paths:** [Configuration File](/docs/reference/config-file)

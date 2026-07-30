@@ -1,56 +1,97 @@
 ---
-title: OpenCode Plugin Integration
-description: Complete documentation for the OpenCode CLI plugin (packages/fcm-opencode) with /fcm commands, reasoning handling, and symlink setup.
-section: Integrations
+title: OpenCode
+description: Launch OpenCode CLI, Desktop, or WebUI straight from FCM — pick a free model, it writes opencode.json and opens OpenCode. Plus the fcm-opencode plugin for in-agent /fcm commands.
+section: Agent Integrations
 ---
 
-# OpenCode Plugin Integration (`packages/fcm-opencode`)
+[OpenCode](https://opencode.ai) is the default target of `free-coding-models` (no tool flag). FCM writes the selected provider + model into `opencode.json`, then launches OpenCode CLI, Desktop, or WebUI.
 
-`free-coding-models` includes an OpenCode plugin located at [`packages/fcm-opencode`](file:///Users/vava/Documents/GitHub/free-coding-models/packages/fcm-opencode).
+## Launch from FCM
 
----
+```bash
+free-coding-models                              # → OpenCode CLI (default)
+free-coding-models --opencode                   # explicit CLI
+free-coding-models --opencode-desktop           # → opens the desktop app
+free-coding-models --opencode-web               # → opens the web dashboard
+```
 
-## Repository Section
+Pre-filter and pre-target in one go:
 
-- **Plugin Code**: [`packages/fcm-opencode`](file:///Users/vava/Documents/GitHub/free-coding-models/packages/fcm-opencode)
-- **Shared Core**: [`packages/fcm-agent-core`](file:///Users/vava/Documents/GitHub/free-coding-models/packages/fcm-agent-core)
+```bash
+free-coding-models --opencode --tier S --origin groq
+# → OpenCode CLI, only S-tier Groq models
+```
 
----
+Press **Enter** on a row → FCM writes the model into `~/.config/opencode/opencode.json` and launches OpenCode. All three modes share the same config file.
 
-## Key Features
+## What FCM writes
 
-- **Light Startup**: Uses 10-minute cross-tool disk cache (`~/.pi/agent/fcm-cache.json`) to prevent boot freezes.
-- **Provider Prefixing**: Injects providers with `fcm-*` IDs into `~/.config/opencode/config.json`.
-- **Reasoning Format Compatibility**: Normalizes `<think>...</think>` tags for reasoning LLMs (DeepSeek-R1, Moonshot Kimi, MiMo) into native OpenCode reasoning blocks.
-- **Env Variable Security**: References API keys via `{env:FCM_<PROVIDER>_API_KEY}` without inlining raw key strings.
+Config path: **`~/.config/opencode/opencode.json`**
 
----
+```json
+{
+  "provider": {
+    "nvidia": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "NVIDIA NIM",
+      "options": {
+        "baseURL": "https://integrate.api.nvidia.com/v1",
+        "apiKey": "{env:NVIDIA_API_KEY}"
+      }
+    }
+  },
+  "model": "nvidia/deepseek-ai/deepseek-v3.2"
+}
+```
 
-## Installation (Symlink)
+API keys are referenced via `{env:FCM_<PROVIDER>_API_KEY}` — never inlined as raw strings.
 
-Symlink the plugin entry file into OpenCode's plugins folder:
+### OpenCode Zen models
+
+OpenCode Zen models (Big Pickle, DeepSeek V4 Flash Free, MiMo-V2.5 Free, Nemotron 3 Super Free, MiniMax M3 Free) are exclusive to OpenCode CLI / Desktop via the Zen AI gateway. They're available in the catalog when your Zen key is configured and auto-switch to OpenCode CLI on launch.
+
+### ZAI + OpenCode (transparent proxy)
+
+ZAI uses `/api/coding/paas/v4/*` instead of standard `/v1/*`. When you pick a ZAI model in OpenCode mode, FCM automatically starts a localhost proxy that rewrites ZAI paths to OpenCode's expected format. It starts on a random port and shuts down when OpenCode exits — no manual config.
+
+### tmux sub-agent panes
+
+When launched inside `tmux`, FCM auto-adds `--port` so OpenCode can spawn sub-agent panes (priority: reuse `OPENCODE_PORT` if valid and free → else pick first free port in `4096–5095`).
+
+## Install
+
+If the OpenCode CLI isn't installed, FCM detects it, offers a one-line install (OpenCode's official global command), then resumes the same model launch.
+
+## Plugin — `fcm-opencode` (in-agent `/fcm` commands)
+
+The `fcm-opencode` plugin brings the FCM scanner/ranker directly into your OpenCode session so you can hot-swap models mid-session without leaving the editor. Startup is intentionally light: fresh cache first, daemon second, **no direct scan** unless you run `/fcm`.
+
+> ⚠️ **BETA** — install is currently via local symlink; not yet published to a plugin registry.
+
+### Install (symlink)
 
 ```bash
 mkdir -p ~/.config/opencode/plugins
-ln -sf /Users/<your-username>/Documents/GitHub/free-coding-models/packages/fcm-opencode/index.js \
+ln -sf /Users/<you>/Documents/GitHub/free-coding-models/packages/fcm-opencode/index.js \
   ~/.config/opencode/plugins/fcm-opencode.js
 ```
 
-Or run the CLI auto-injection:
+`opencode-plugin/` at the repo root is a thin compat wrapper so existing symlinks keep working.
 
-```bash
-free-coding-models --opencode
-```
+### Commands
 
----
+| Command | Description |
+|---------|-------------|
+| `/fcm` | Run an explicit scan and list ranked choices (no switch) |
+| `/fcm 1` | Switch OpenCode config to ranked model #1 |
+| `/fcm best` | Switch OpenCode config to the best ranked model |
+| `/fcm rescan` | Force a fresh scan |
+| `/fcm status` / `/fcm-status` | Show plugin diagnostics |
+| `/fcm router` / `/fcm-router` | Switch OpenCode config to the local FCM Smart Router daemon |
 
-## OpenCode Plugin Commands
+### Highlights
 
-| Command | Action | Description |
-|---|---|---|
-| `/fcm` | Scan Models | Scans candidate models and lists choices without changing current model |
-| `/fcm 1` / `/fcm 2` | Select Model #N | Switches OpenCode active model to ranked choice #N |
-| `/fcm best` | Select Best | Switches OpenCode to the top-ranked healthy model |
-| `/fcm rescan` | Force Rescan | Forces a fresh latency and health probe scan |
-| `/fcm status` (or `/fcm-status`) | Diagnostics | Shows active model, cache state, and daemon status |
-| `/fcm router` (or `/fcm-router`) | Connect Router | Switches OpenCode session to local FCM Smart Router daemon |
+- **Light startup** — uses a 10-minute cross-tool disk cache to prevent boot freezes; falls back to the daemon cache if the router is running.
+- **Reasoning format compatibility** — normalizes `<think>…</think>` tags from reasoning models (DeepSeek-R1, Kimi, MiMo) into native OpenCode reasoning blocks.
+
+→ Full architecture: [`packages/fcm-opencode/README.md`](https://github.com/vava-nessa/free-coding-models/blob/main/packages/fcm-opencode/README.md)

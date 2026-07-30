@@ -1,0 +1,32 @@
+---
+title: Continue
+description: Launch Continue CLI with a free model from FCM — it writes ~/.continue/config.yaml with an OpenAI-compatible provider entry and launches continue.
+section: Agent Integrations
+---
+
+[Continue](https://continue.dev) is an open-source AI code assistant (VS Code / JetBrains extension and CLI). FCM writes the selected provider + model into Continue's `config.yaml` as an OpenAI-compatible `provider` entry and launches `continue`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --continue
+free-coding-models --continue --origin groq
+```
+
+## What FCM writes
+
+Config path: **`~/.continue/config.yaml`**
+
+```yaml
+models:
+  - name: groq/gpt-oss-120b
+    provider: openai
+    apiBase: https://api.groq.com/openai/v1
+    apiKey: fcm-managed
+```
+
+FCM writes a minimal `config.yaml` that Continue CLI can parse directly — the selected model appears in Continue's model picker.
+
+## Install
+
+If the `continue` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

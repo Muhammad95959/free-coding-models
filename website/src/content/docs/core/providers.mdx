@@ -1,64 +1,86 @@
 ---
 title: Provider Ecosystem & Keys
-description: Complete breakdown of active providers in sources.js, API endpoints, environment variables, and TUI key management.
-section: Core concepts
+description: All 20 active providers in the catalog — model counts, tier ranges, free tiers, base endpoints, and env vars. One key is enough to start.
+section: Core concepts & advanced
 ---
 
-# Provider Ecosystem & API Keys
+`free-coding-models` tracks **~222 models across 20 active providers**. You only need **one key** to start — sign up on any provider, grab a key, paste it into the TUI (`P` → Settings) or export it as an env var.
 
-`free-coding-models` aggregates free API endpoints across 20 active provider sources defined in `sources.js`.
+## The fastest sign-ups
+
+The fastest providers to start with (no credit card, instant key):
+
+- **Groq** → [console.groq.com/keys](https://console.groq.com/keys) — Llama 4, GPT-OSS, blazing fast
+- **Cerebras** → [cloud.cerebras.ai](https://cloud.cerebras.ai) — the lowest latency in the whole catalog
+- **NVIDIA NIM** → [build.nvidia.com](https://build.nvidia.com) — 27 models, the biggest free variety
+
+## All 20 providers
+
+| # | Provider | Models | Tier range | Free tier | Env var |
+|---|----------|--------|-----------|-----------|--------|
+| 1 | [NVIDIA NIM](https://build.nvidia.com) | 27 | S+ → C | ~40 RPM (no credit card) | `NVIDIA_API_KEY` |
+| 2 | [Groq](https://console.groq.com/keys) | 8 | S → B | 30 RPM, 1K–14.4K req/day (no credit card) | `GROQ_API_KEY` |
+| 3 | [Cerebras](https://cloud.cerebras.ai) | 2 | S+ → S | 30 RPM, 1M tokens/day (no credit card) | `CEREBRAS_API_KEY` |
+| 4 | [Google AI Studio](https://aistudio.google.com/apikey) | 7 | S+ → A | Gemini free quotas vary by model/region | `GOOGLE_API_KEY` |
+| 5 | [GitHub Models](https://models.github.ai) | 15 | S+ → C | Quota depends on GitHub/Copilot tier | `GITHUB_TOKEN` |
+| 6 | [Mistral La Plateforme](https://console.mistral.ai/api-keys) | 5 | S+ → A | Experiment plan, free evaluation tier | `MISTRAL_API_KEY` |
+| 7 | [Cloudflare Workers AI](https://dash.cloudflare.com) | 16 | S+ → B | 10K neurons/day, 300 RPM (no credit card) | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
+| 8 | [OpenRouter](https://openrouter.ai/keys) | 24 | S+ → C | 50 req/day free, 1K/day with $10 spend | `OPENROUTER_API_KEY` |
+| 9 | [SambaNova](https://cloud.sambanova.ai/apis) | 7 | S+ → B+ | Small developer quota, useful for light usage | `SAMBANOVA_API_KEY` |
+| 10 | [OVHcloud AI Endpoints](https://endpoints.ai.cloud.ovh.net) | 10 | S → B | 2 req/min/IP free, 400 RPM with key | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
+| 11 | [Codestral](https://console.mistral.ai/api-keys) | 1 | B+ | 30 RPM, 2K req/day | `MISTRAL_API_KEY` |
+| 12 | [ZAI](https://z.ai) | 2 | S | Free Flash models only | `ZAI_API_KEY` |
+| 13 | [Scaleway](https://console.scaleway.com/iam/api-keys) | 10 | S+ → B | 1M free tokens | `SCALEWAY_API_KEY` |
+| 14 | [Alibaba DashScope](https://modelstudio.console.alibabacloud.com) | 11 | S+ → A+ | 1M free tokens/model, Singapore, 90 days | `DASHSCOPE_API_KEY` |
+| 15 | [OpenCode Zen](https://opencode.ai/zen) | 5 | S+ → A | Free with OpenCode account | `OPENCODE_ZEN_API_KEY` (Zen models ✨) |
+| 16 | [Kilo](https://kilo.ai) | 1 | A+ | Free auto-router works without a key | `KILO_API_KEY` *(optional)* |
+| 17 | [LLM7](https://llm7.io) | 4 | S+ → B+ | Shared free tier, optional free token | `LLM7_API_KEY` *(optional)* |
+| 18 | [Routeway](https://routeway.ai) | 15 | S+ → C | Explicit `:free` zero-price models | `ROUTEWAY_API_KEY` |
+| 19 | [Novita AI](https://novita.ai) | 4 | S+ → S | Only zero-price live chat models included | `NOVITA_API_KEY` |
+| 20 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
+
+> A few providers (**Kilo**, **LLM7**, the OVHcloud sandbox) can answer *without* a key, with tighter shared limits.
 
 ---
 
-## Active Providers List (`sources.js`)
-
-| Key | Provider Name | Base Endpoint | Key Env Variable |
-|---|---|---|---|
-| `nvidia` | NVIDIA NIM | `https://integrate.api.nvidia.com/v1` | `NVIDIA_API_KEY` |
-| `groq` | Groq | `https://api.groq.com/openai/v1` | `GROQ_API_KEY` |
-| `cerebras` | Cerebras | `https://api.cerebras.ai/v1` | `CEREBRAS_API_KEY` |
-| `googleai` | Google AI | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
-| `github-models` | GitHub Models | `https://models.github.ai/inference` | `GITHUB_TOKEN` |
-| `mistral` | Mistral LP | `https://api.mistral.ai/v1` | `MISTRAL_API_KEY` |
-| `cloudflare` | Cloudflare AI | `https://api.cloudflare.com/client/v4` | `CLOUDFLARE_API_KEY` |
-| `openrouter` | OpenRouter | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
-| `sambanova` | SambaNova | `https://api.sambanova.ai/v1` | `SAMBANOVA_API_KEY` |
-| `ovhcloud` | OVHcloud AI | `https://oai.endpoints.kepler.ai.cloud.ovh.net/v1` | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
-| `codestral` | Codestral | `https://api.mistral.ai/v1` | `CODESTRAL_API_KEY` |
-| `zai` | ZAI | `https://api.z.ai/api/coding/paas/v4` | `ZAI_API_KEY` |
-| `scaleway` | Scaleway | `https://api.scaleway.ai/v1` | `SCALEWAY_API_KEY` |
-| `qwen` | Alibaba DashScope | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
-| `opencode-zen` | OpenCode Zen | `https://opencode.ai/zen/v1` | OpenCode Zen Key |
-| `kilo` | Kilo | `https://api.kilo.ai/api/gateway` | No key required |
-| `llm7` | LLM7 | `https://api.llm7.io/v1` | No key required |
-| `routeway` | Routeway | `https://api.routeway.ai/v1` | `ROUTEWAY_API_KEY` |
-| `novita` | Novita AI | `https://api.novita.ai/openai/v1` | `NOVITA_API_KEY` |
-| `ollama-cloud` | Ollama Cloud | `https://ollama.com/v1` | `OLLAMA_CLOUD_API_KEY` |
-
----
-
-## Configuring API Keys
+## Configuring API keys
 
 ### Option 1: Interactive TUI Settings
 
-Press **`P`** in the terminal UI to open the Provider API Key Settings screen. Keys are stored locally in `~/.free-coding-models/config.json`.
+Press **`P`** in the terminal UI to open the Provider API Key Settings screen. Keys are stored in `~/.free-coding-models.json` (the single config file). You can also use the Web Dashboard **Settings** page, which has a per-provider **Test key** button.
 
-### Option 2: Environment Variables
+### Option 2: Environment variables
 
 Export keys in your shell (`~/.zshrc` / `~/.bashrc`):
 
 ```bash
 export GROQ_API_KEY="gsk_..."
-export GEMINI_API_KEY="AIzaSy..."
-export CEREBRAS_API_KEY="csk-..."
+export GOOGLE_API_KEY="AIzaSy..."
+export CEREBRAS_API_KEY="csk_..."
 export DASHSCOPE_API_KEY="sk-..."
 ```
 
+The TUI reads env vars first; the daemon reads config first then falls back to env vars (background services may not inherit your shell). See [Configuration File](/docs/reference/config-file) for precedence details.
+
+<Callout type="warning" title="Cloudflare needs two values">
+Cloudflare Workers AI requires **both** `CLOUDFLARE_API_TOKEN` **and** `CLOUDFLARE_ACCOUNT_ID`. The base endpoint embeds your account ID: `https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1`.
+</Callout>
+
 ---
 
-## Filtering Catalog by Origin
+## Health checks & quota
 
-Filter models by specific provider origin:
+When you've configured a provider's API key, the continuous health probes are **authenticated and count against that provider's daily quota**. FCM protects you:
+
+- **Auto-pauses** a provider the moment its probe gets a `429` (honors the `Retry-After` header).
+- **Backs off exponentially** per failing model (30s → 1m → 2m → 5m).
+- **Surfaces a footer chip** like `⏸ openrouter 14h` so you can see which providers are resting.
+
+If you don't need authenticated probes, just leave the key empty — anonymous probes still work for liveness checks and won't burn your quota.
+
+---
+
+## Filtering by origin
 
 ```bash
 # Filter models provided by Groq
@@ -71,14 +93,11 @@ free-coding-models --origin nvidia
 free-coding-models --origin qwen
 ```
 
----
-
-## Unconfigured Models Display
+Control whether models without a key are shown:
 
 ```bash
-# Hide models without configured API keys
-free-coding-models --hide-unconfigured
-
-# Show all catalog models
-free-coding-models --show-unconfigured
+free-coding-models --hide-unconfigured   # only providers you have keys for
+free-coding-models --show-unconfigured   # show all catalog models
 ```
+
+→ **Full provider + env-var reference:** [Configuration File](/docs/reference/config-file)

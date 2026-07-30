@@ -1,0 +1,32 @@
+---
+title: Hermes
+description: Launch Hermes Agent with a free model from FCM — it configures Hermes via `hermes config set` + `hermes gateway restart`, then launches `hermes chat`.
+section: Agent Integrations
+---
+
+[Hermes](https://github.com/hermes-agent) is a CLI coding agent that exposes configuration via its own `hermes config set` command. FCM uses that command (no direct file writes), restarts the gateway, then launches `hermes chat`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --hermes
+free-coding-models --hermes --tier S
+```
+
+## What FCM writes
+
+Rather than editing a config file, FCM drives Hermes through its own CLI:
+
+| Command | Effect |
+|---------|--------|
+| `hermes config set model.default <modelId>` | Sets the default model |
+| `hermes config set model.provider custom` | Uses the custom (FCM-injected) provider |
+| `hermes config set model.base_url <baseUrl>` | Sets the OpenAI-compatible base URL |
+| `hermes config set model.api_key <apiKey>` | Sets the API key for the provider |
+| `hermes gateway restart` | Applies the new config before launch |
+
+Final config (managed by Hermes itself): **`~/.hermes/config.yaml`**
+
+## Install
+
+If the `hermes` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

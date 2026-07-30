@@ -1,33 +1,46 @@
 ---
-title: OpenClaw Integration
-description: Patch OpenClaw model registry with free AI models and automatic failover chains.
-section: Integrations
+title: OpenClaw
+description: Launch OpenClaw with a free model from FCM — it writes ~/.openclaw/openclaw.json (providers nested under models.providers) and opens OpenClaw.
+section: Agent Integrations
 ---
 
-# OpenClaw Integration
+OpenClaw is an OpenAI-compatible coding agent. FCM writes the selected provider + model as primary into `openclaw.json` and launches `openclaw`.
 
-Inject free model provider configurations into **OpenClaw** agents.
-
----
-
-## 1. Automatic Patching
-
-Patch OpenClaw model configuration (`~/.openclaw/config.json`):
+## Launch from FCM
 
 ```bash
 free-coding-models --openclaw
-```
-
----
-
-## 2. Combined Filtering Flags
-
-Inject specific tiers or high-uptime models into OpenClaw:
-
-```bash
-# Inject S-tier models only
 free-coding-models --openclaw --tier S
-
-# Inject models with >98% uptime
-free-coding-models --openclaw --fiable
 ```
+
+## What FCM writes
+
+Config path: **`~/.openclaw/openclaw.json`**
+
+```json
+{
+  "models": {
+    "providers": {
+      "nvidia": {
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "api": "openai-completions"
+      }
+    }
+  },
+  "env": { "NVIDIA_API_KEY": "nvapi-xxxx" },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "nvidia/deepseek-ai/deepseek-v3.2" },
+      "models": { "nvidia/deepseek-ai/deepseek-v3.2": {} }
+    }
+  }
+}
+```
+
+> ⚠️ `providers` must be nested under `models.providers` — a root-level `providers` key is ignored.
+>
+> ⚠️ The model must also be listed in `agents.defaults.models` (the allowlist), or OpenClaw rejects it with *"not allowed"*.
+
+## Install
+
+If the `openclaw` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

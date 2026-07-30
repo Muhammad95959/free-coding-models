@@ -1,0 +1,28 @@
+---
+title: Xcode Intelligence
+description: Launch Xcode with FCM — FCM opens the Xcode app on macOS. Configure the model endpoint inside Xcode's own settings.
+section: Agent Integrations
+---
+
+[Xcode Intelligence](https://developer.apple.com/xcode/) is Apple's IDE with built-in AI assistance (macOS only). FCM launches the Xcode app and provides the selected model + endpoint info, but Xcode Intelligence's provider config is managed inside Xcode itself.
+
+## Launch from FCM
+
+```bash
+free-coding-models --xcode
+free-coding-models --xcode --tier S
+```
+
+## What FCM does
+
+| Step | Detail |
+|------|--------|
+| Launch command | `open -a Xcode` |
+| Config written | None — Xcode manages its own provider settings |
+| Env vars | The selected provider's API key + base URL are passed through the launch environment |
+
+FCM does **not** write `~/.xcode/*` or any config file. You configure the endpoint inside **Xcode → Settings → Intelligence** by selecting an OpenAI-compatible provider and pasting the base URL + key that FCM prints to the terminal.
+
+## Install
+
+If Xcode isn't installed (or isn't on `PATH`), FCM detects it and offers to open the App Store page for Xcode. macOS only.

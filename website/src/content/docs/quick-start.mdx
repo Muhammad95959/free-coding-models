@@ -1,106 +1,127 @@
 ---
 title: Quick Start (API Keys & 60s Setup)
-description: Links to create free provider API keys, 60-second CLI setup, interactive TUI, background daemon, and agent extensions.
+description: From zero to coding with a free model in about 2 minutes — grab one free API key, launch the TUI, pick a model, and go.
 section: Getting started
 ---
 
-# Quick Start Guide
+From zero to "coding with a free model" in about 2 minutes.
 
----
-
-## 1. Create Free Provider Accounts & Get API Keys
-
-Before querying cloud endpoints, obtain free API keys from developer portals:
-
-| Provider | Portal Account Creation Link | Key Environment Variable |
-|---|---|---|
-| **Google AI Studio** | [aistudio.google.com](https://aistudio.google.com/) | `GEMINI_API_KEY` |
-| **Groq Console** | [console.groq.com/keys](https://console.groq.com/keys) | `GROQ_API_KEY` |
-| **Cerebras Cloud** | [cloud.cerebras.ai](https://cloud.cerebras.ai) | `CEREBRAS_API_KEY` |
-| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com) | `NVIDIA_API_KEY` |
-| **Alibaba DashScope** | [modelstudio.console.alibabacloud.com](https://modelstudio.console.alibabacloud.com) | `DASHSCOPE_API_KEY` |
-| **GitHub Models** | [models.github.ai](https://models.github.ai) | `GITHUB_TOKEN` |
-| **Mistral AI** | [console.mistral.ai](https://console.mistral.ai) | `MISTRAL_API_KEY` |
-| **Cloudflare AI** | [dash.cloudflare.com](https://dash.cloudflare.com) | `CLOUDFLARE_API_KEY` |
-| **OpenRouter** | [openrouter.ai/keys](https://openrouter.ai/keys) | `OPENROUTER_API_KEY` |
-| **SambaNova Cloud** | [cloud.sambanova.ai](https://cloud.sambanova.ai) | `SAMBANOVA_API_KEY` |
-| **Scaleway** | [console.scaleway.com/iam/api-keys](https://console.scaleway.com/iam/api-keys) | `SCALEWAY_API_KEY` |
-
-Export keys in your shell (`~/.zshrc` or `~/.bashrc`):
+## ① Install
 
 ```bash
-export GROQ_API_KEY="gsk_..."
-export GEMINI_API_KEY="AIzaSy..."
-export CEREBRAS_API_KEY="csk-..."
+npm install -g free-coding-models
+free-coding-models --help   # sanity check — prints every flag
 ```
 
----
+Requires **Node.js 18+** — that's the only prerequisite. FCM has a single runtime dependency (`chalk`), no native build step, and never needs `sudo`.
 
-## 2. Interactive Terminal UI
+## ② Grab one free API key
 
-Run `free-coding-models` without arguments to launch the ANSI terminal UI:
+FCM tracks ~222 models across 20 providers, but you only need **one key** to start. The fastest sign-ups (no credit card, instant key):
+
+- **Groq** → [console.groq.com/keys](https://console.groq.com/keys) — Llama 4, GPT-OSS, blazing fast
+- **Cerebras** → [cloud.cerebras.ai](https://cloud.cerebras.ai) — the lowest latency in the whole catalog
+- **NVIDIA NIM** → [build.nvidia.com](https://build.nvidia.com) — 27 models, the biggest free variety
+
+👉 See the full [provider table](/docs/core/providers) for limits, tiers, and env vars.
+
+## ③ Launch & paste your key
 
 ```bash
 free-coding-models
 ```
 
-- **`↑` / `↓`**: Navigate catalog rows.
-- **`S`**: Sort models by SWE-bench score.
-- **`T`**: Cycle tier filter (`All` → `S+` → `S` → `A+` → `A` → `A-` → `B+` → `B` → `C`).
-- **`P`**: Open Provider API Key Settings overlay.
-- **`Enter`**: Select active model.
+{/* AGENT TODO: delete the <Callout> below once `website/public/videos/tui-first-launch.mp4` is committed. */}
+<Video name="tui-first-launch" caption="First launch — ~222 models ping in parallel." />
+
+<Callout type="warning" title="🎬 Recording script — delete this Callout when the video file is added">
+
+**Setup** — Fresh terminal, font ≥ 16px, fullscreen. A clean state (run with no keys so the demo works for everyone — keyless rows show 🔑 NO KEY).
+
+**Shot list (~12s, no audio)**
+1. **0:00–0:02** — Cursor on a blank prompt. Type `free-coding-models`, press **Enter**. The TUI opens.
+2. **0:02–0:09** — **Don't interact.** Watch the table populate in real time as rows flip to ✅ in parallel. Let it fill for ~7s.
+3. **0:09–0:12** — The top 3 rows get 🥇🥈🥉 medal borders. Hold 2s on the finished table.
+
+**Export** — MP4 H.264, 720p, 30fps, no audio, trim to 10–15s, target **< 2 MB**.
+
+**When you've committed `website/public/videos/tui-first-launch.mp4`, DELETE this entire `<Callout>` block.** The `<Video />` component above will auto-play on loop. The same file powers the README via `<video>` (mutualized).
+</Callout>
+
+On first run FCM prompts you for API keys. **Paste yours** (or press `Enter` to skip — you'll still see keyless latency rows marked 🔑 NO KEY, and can add keys later with **`P`**). Models start pinging in parallel; rows light up green ✅ as they respond.
+
+## ④ Pick a model & launch your tool
+
+```
+↑↓ navigate the live table   →   Enter to launch
+```
+
+{/* AGENT TODO: delete the <Callout> below once `website/public/videos/tui-pick-and-launch.mp4` is committed. */}
+<Video name="tui-pick-and-launch" caption="Pick a model & launch — Enter writes the model and opens the tool." />
+
+<Callout type="warning" title="🎬 Recording script — delete this Callout when the video file is added">
+
+**Setup** — TUI already running with the table populated. Font ≥ 16px, fullscreen.
+
+**Shot list (~10s, no audio)**
+1. **0:00–0:02** — Press **↓** a few times to move the cursor onto a model row.
+2. **0:02–0:04** — Press **Enter**.
+3. **0:04–0:10** — The tool (OpenCode CLI by default) opens with the selected model. Hold a few seconds to show it launched.
+
+**Export** — MP4 H.264, 720p, 30fps, no audio, 10–15s, < 2 MB.
+
+**When committed at `website/public/videos/tui-pick-and-launch.mp4`, DELETE this `<Callout>`**.
+</Callout>
+
+The model you land on is written straight into your tool's config **and the tool opens immediately**. The default target is **OpenCode CLI**; pre-target another tool from the command line or cycle it live with **`Z`**:
+
+```bash
+free-coding-models --goose --tier S      # Goose, pre-filtered to S-tier only
+free-coding-models --crush --origin groq  # Crush, Groq models only
+free-coding-models --aider                # Aider
+free-coding-models --opencode --premium   # OpenCode, elite-focused preset
+```
+
+> 💡 **Missing tool?** If the target CLI isn't installed, FCM catches it, offers a one-line install prompt, installs the official global binary, then resumes the launch.
 
 ---
 
-## 3. One-Liner CLI Queries
+## Setting keys as env vars (optional)
+
+Instead of pasting in the TUI, you can export keys in your shell (`~/.zshrc` / `~/.bashrc`):
 
 ```bash
-# Print top-performing model string
-free-coding-models --best
+export GROQ_API_KEY="gsk_..."
+export GOOGLE_API_KEY="AIzaSy..."
+export CEREBRAS_API_KEY="csk_..."
+export NVIDIA_API_KEY="nvapi-..."
+```
 
-# Filter S+ Tier models
-free-coding-models --tier S+
+The TUI reads env vars first. See [Configuration File](/docs/reference/config-file) for the full precedence rules.
 
-# Filter high reliability models (>98% uptime)
+---
+
+## Headless one-liners
+
+```bash
+# Print the fastest S-tier model ID for scripts
+free-coding-models --tier S --json | jq -r '.[0].modelId'
+
+# Wait 10s, print the single most reliable model right now
 free-coding-models --fiable
 
-# Output catalog as JSON
-free-coding-models --json | jq '.[0]'
+# Show only top tiers (A+, S, S+)
+free-coding-models --best
 ```
 
 ---
 
-## 4. Background Proxy Daemon & Web Server
+## Go further
 
-Start the local proxy daemon at `http://localhost:19280/v1`:
+Once the TUI feels familiar, FCM has three more surfaces — pick the one that matches how you work:
 
-```bash
-free-coding-models --daemon-bg
-```
+- 🌐 **Prefer a browser?** → `free-coding-models web` opens the [Web Dashboard](/docs/integrations/web-dashboard) on `localhost:3333`.
+- 🔀 **Want one endpoint that never dies?** → `free-coding-models --daemon-bg` starts the [Smart Model Router](/docs/core/router-daemon); point any tool at `http://localhost:19280/v1`.
+- 🤖 **Live inside an agent?** → install the [OpenCode plugin](/docs/integrations/opencode) or the [Pi extension](/docs/integrations/pi-extension) to hot-swap models mid-session.
 
-Check status:
-
-```bash
-free-coding-models --daemon-status
-```
-
-Test cURL query:
-
-```bash
-curl http://localhost:19280/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "fcm",
-    "messages": [
-      {"role": "user", "content": "Write a Python string reverse function."}
-    ]
-  }'
-```
-
----
-
-## 5. Extensions & Coding Tools
-
-- **OpenCode CLI Plugin**: Run `free-coding-models --opencode` or see [`packages/fcm-opencode`](/docs/integrations/opencode).
-- **Pi Agent Extension**: Install [`packages/fcm-pi`](/docs/integrations/pi-extension).
-- **OpenClaw Integration**: Run `free-coding-models --openclaw` or see [`OpenClaw Guide`](/docs/integrations/openclaw).
+→ **Full keybindings & workflows:** [Terminal Dashboard (TUI)](/docs/integrations/cli-tui)

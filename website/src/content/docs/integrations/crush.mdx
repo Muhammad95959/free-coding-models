@@ -1,0 +1,41 @@
+---
+title: Crush
+description: Launch Crush with a free model from FCM — it writes crush.json with the provider + models.large/small defaults and opens Crush.
+section: Agent Integrations
+---
+
+[Crush](https://github.com/charmbracelet/crush) is a terminal coding agent from Charmbracelet. FCM writes the selected provider + model into `crush.json` (setting both `models.large` and `models.small` to the picked model) and launches `crush`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --crush
+free-coding-models --crush --origin groq
+```
+
+## What FCM writes
+
+Config path: **`~/.config/crush/crush.json`**
+
+```json
+{
+  "$schema": "https://charm.land/crush.json",
+  "providers": {
+    "groq": {
+      "type": "openai",
+      "baseURL": "https://api.groq.com/openai/v1",
+      "apiKey": "{env:GROQ_API_KEY}"
+    }
+  },
+  "models": {
+    "large": "groq/openai/gpt-oss-120b",
+    "small": "groq/openai/gpt-oss-120b"
+  }
+}
+```
+
+Both `models.large` and `models.small` are set to the selected model so Crush uses it for every request.
+
+## Install
+
+If the `crush` CLI isn't installed, FCM detects it, offers a one-line install (Charmbracelet's official global command), then resumes the same launch.

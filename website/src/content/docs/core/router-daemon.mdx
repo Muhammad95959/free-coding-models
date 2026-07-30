@@ -1,82 +1,149 @@
 ---
-title: FCM Smart Router & Auto-Failover
-description: In-depth technical documentation for the FCM Smart Router daemon, circuit breaker, failover logic, and system pre-prompts.
-section: Core concepts
+title: Smart Model Router (advanced)
+description: A local OpenAI-compatible daemon that routes each request to the best available free model, with automatic failover, a circuit breaker, probe modes, and a chat playground.
+section: Core concepts & advanced
 ---
 
-# FCM Smart Router & Auto-Failover Engine
+The **FCM Router** is a local OpenAI-compatible daemon. Point any coding tool at a single localhost endpoint and let FCM route each request to the best available model in your active set — with automatic failover when a model 429s or 5xxs.
 
-The **FCM Smart Router** is a background daemon that exposes an OpenAI-compatible proxy server at `http://localhost:19280/v1`.
+> This is the most advanced surface. Most users start with the TUI or Web Dashboard and only reach for the router once they want *one endpoint that never goes down*.
 
----
-
-## 1. How the Router Works
-
-When an AI coding client sends a request to `http://localhost:19280/v1/chat/completions` with `"model": "fcm"`:
-
-1. **Model Selection**: The router evaluates your active model set and selects the highest-ranked model in **CLOSED (Healthy)** state.
-2. **Pre-Prompt Injection**: Prepends a system message introducing the assistant as routed by FCM (editable via Settings).
-3. **Request Proxying**: Forwards the request payload to the target provider endpoint with proper authorization headers.
-4. **Transparent Failover**: If the target provider returns **HTTP 429** (Rate Limit) or **5xx** (Server Error), the router catches the failure in under 50ms and retries with the next healthy model in the set.
-5. **Circuit Breaker Update**: Updates the circuit breaker state machine for the failing model.
-
----
-
-## 2. Circuit Breaker State Machine
-
-Each catalog model maintains an individual circuit breaker state:
-
-| State | Color Code | Trigger Condition | Router Behavior |
-|---|---|---|---|
-| **CLOSED** | 🟢 Healthy | Last 1-token probe returned HTTP 200/2xx | Preferred for active routing |
-| **OPEN** | 🔴 Down | 3 consecutive probes or live requests failed | Skipped during failover; 60s cooldown |
-| **HALF_OPEN** | 🟡 Recovering | Cooldown timer expired | Retries with 1 test request |
-| **AUTH_ERROR** | 🟠 Auth Error | HTTP 401/403 Invalid or missing API key | Skipped; auto-heal swaps model on start |
-| **STALE** | ⚪ Deprecated | Decommissioned by provider | Filtered out of active set |
-
----
-
-## 3. Background Probe Mechanism
-
-The daemon runs background 1-token chat-completion pings to measure actual API availability and latency rather than simple DNS reachability:
-
-- **Aggressive (`10s`)**: Rapid rate-limit detection.
-- **Balanced (`30s`)**: Default setting for high availability.
-- **Eco (`120s`)**: Low overhead mode to conserve quota.
-
----
-
-## 4. Auto-Heal Mechanism
-
-On daemon startup:
-- The active model set is scanned.
-- Any model in **AUTH_ERROR** or **STALE** condition is automatically swapped for a healthy working alternative from the same provider or tier.
-- Manual reordering or model additions disable auto-heal for custom user sets.
-
----
-
-## 5. System Pre-Prompt Injection
-
-Every request proxied through `http://localhost:19280/v1` has a system message prepended.
-
-- **Default Pre-Prompt**: Introduces the FCM routing persona and dashboard URL.
-- **Customization**: Editable via Web Dashboard or TUI Settings (**`P`**). Max length: 4000 characters.
-- **Disabling**: Can be toggled off in settings if your client requires strict un-modified prompt payloads.
-
----
-
-## 6. Daemon Control Commands
+## Quick start
 
 ```bash
-# Start daemon in background
+# Start the router in the background (keeps running after the TUI closes)
 free-coding-models --daemon-bg
 
-# Check daemon status JSON
+# Check the active port, set, model count, uptime, and request totals
 free-coding-models --daemon-status
 
-# Stop daemon
+# Stop it cleanly
 free-coding-models --daemon-stop
-
-# Discover & sync active router set
-free-coding-models --sync-set
 ```
+
+Point your coding tool at:
+
+| Field | Value |
+|-------|-------|
+| Base URL | `http://localhost:19280/v1` |
+| Model | `fcm` |
+| API key | `fcm-local` |
+
+On first start the daemon auto-creates a `fast-coding` set from your configured providers. Router settings live in `~/.free-coding-models.json`, lifecycle logs in `~/.free-coding-models-daemon.log`, and token metadata in `~/.free-coding-models-tokens.json`.
+
+---
+
+## How it works
+
+### 1. Probe mechanism (adaptive cadence)
+
+The daemon sends a 1-token chat-completion ping to every model in the active set. It measures latency **+ status code**, not just reachability, so a wrong API key is caught and the circuit breaker opens. Probe modes:
+
+| Mode | Interval | Use when |
+|------|----------|----------|
+| `eco` | 120s | You want to save quota |
+| `balanced` *(default)* | 30s | Everyday use |
+| `aggressive` | 10s | You're actively debugging routing |
+
+### 2. Circuit breaker (per-model state)
+
+Each model flips between states:
+
+| State | Meaning |
+|-------|---------|
+| 🟢 **Healthy** | Last probe returned 2xx — route here freely |
+| 🔴 **Down** | Last 3 probes failed — skip until cooldown |
+| 🟡 **Recovering** | Cooldown expired — retrying with 1 request |
+| 🟠 **Auth error** | 401/403 — your API key is wrong for this model |
+| ⚪ **Deprecated** | Removed from the catalog — will be replaced |
+
+### 3. Failover order
+
+Models are tried in priority order; a `Recovering` / `Down` / `Auth error` model is skipped and the request goes to the next healthy one. If *all* fail, you get a `503` with a `models_tried` list in the body for debugging.
+
+- **Transient failures** (`429`, `500`, `502`, `503`, timeouts) fail over to the next model.
+- **Auth problems** (`401`, `403`, missing keys) are marked separately so bad credentials never poison the circuit breaker; after one provider returns an auth error, the router skips the rest of that provider for the current request.
+
+### 4. Auto-heal (on by default)
+
+At daemon start, any model in `Auth error` or `Deprecated` is swapped for a working alternative (same provider first, then cross-provider). The first time you manually add/remove/reorder a model, auto-heal switches off and your choices are preserved — so a new user with a half-broken key set lands on a usable default set by the time the dashboard renders.
+
+---
+
+## Playground — chat with the router
+
+The fastest way to try the router without configuring a tool. Every chat starts with a configurable **pre-prompt** that introduces the assistant as the FCM routing agent.
+
+```bash
+free-coding-models --daemon-bg     # 1. start the router (if not running)
+free-coding-models --playground    # 2. open the Playground in the TUI
+# …or press ; inside the TUI
+# …or click "Playground" in the Web Dashboard header
+```
+
+{/* AGENT TODO: delete the <Callout> below once `website/public/videos/router-playground.mp4` is committed. */}
+<Video name="router-playground" caption="Playground — chat with the router and see the routed provider/model on the reply." />
+
+<Callout type="warning" title="🎬 Recording script — delete this Callout when the video file is added">
+
+**Setup** — TUI running (or run `free-coding-models --daemon-bg` in another terminal first). Font ≥ 16px, fullscreen.
+
+**Shot list (~13s, no audio)**
+1. **0:00–0:02** — In the TUI, press **`;`** to open the Playground overlay.
+2. **0:02–0:04** — Type a short message (e.g. `hello`) and press **Enter**.
+3. **0:04–0:11** — The response streams token-by-token (SSE). The routed-via provider/model + latency + tokens metadata appears under the reply.
+4. **0:11–0:13** — Hold 2s on the finished reply so the metadata is readable.
+
+**Export** — MP4 H.264, 720p, 30fps, no audio, 10–15s, < 2 MB.
+
+**When committed at `website/public/videos/router-playground.mp4`, DELETE this `<Callout>`**.
+</Callout>
+
+The Playground streams responses token-by-token (SSE), shows the routed-via provider/model + latency + tokens on every reply, lets you pin a specific model for A/B testing, and lets you toggle the pre-prompt per session. The pre-prompt lives in `router.prePrompt`:
+
+```json
+{
+  "router": {
+    "prePrompt": {
+      "enabled": true,
+      "text": "You are free-coding-models, the free coding-model routing agent..."
+    }
+  }
+}
+```
+
+The daemon reloads it on its 10s config-refresh tick, so edits from any surface take effect quickly.
+
+---
+
+## Auto-discover the best set — `--sync-set`
+
+`--sync-set [name]` auto-discovers, live-probes, and populates a named router set with the best currently-available coding models — perfect for scheduled refreshes so your set stays current without manual picking.
+
+```bash
+free-coding-models --sync-set               # create/refresh the default "auto" set
+free-coding-models --sync-set my-coding-set # named set
+free-coding-models --daemon-bg              # then run the daemon with it
+```
+
+Each candidate is probed twice (plain text must return exactly `OK`, and a tool-call must produce a valid `tool_calls` array), so models that work reliably with function-calling tools get in. Run it on a cron to keep the set fresh:
+
+```bash
+# crontab — refresh every 4 hours
+0 */4 * * * /usr/local/bin/free-coding-models --sync-set >> ~/.free-coding-models-sync.log 2>&1
+```
+
+---
+
+## Daemon control commands
+
+| Command | Description |
+|---------|-------------|
+| `free-coding-models --daemon-bg` | Start the daemon detached in the background |
+| `free-coding-models --daemon-status` | Print router status JSON (port, set, uptime, request totals) |
+| `free-coding-models --daemon-stop` | Gracefully stop the running daemon |
+| `free-coding-models --sync-set [name]` | Auto-discover + live-probe models into a router set |
+
+→ **Full pipeline & output shape:** [`docs/sync-set.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/sync-set.md)
+→ **REST API endpoints:** [REST API Specification](/docs/reference/rest-api)
+→ **Full router guide:** [`docs/README_ROUTER.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/README_ROUTER.md)

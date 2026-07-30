@@ -2,8 +2,72 @@
  * @file src/components/DocsSidebar.tsx
  * @description Sidebar navigation component for docs.
  */
+import { useState } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
-import { docsNav } from '~/content/nav'
+import { docsNav, type DocGroup, type DocLink } from '~/content/nav'
+
+/** 📖 Renders one nav group. If the group declares a `primaryCount`, the items
+ *  beyond it are collapsed behind a "View N more..." toggle. The currently
+ *  active item is always rendered, even when collapsed, so the user never
+ *  loses track of their place in the nav. */
+function NavGroup({ group, pathname }: { group: DocGroup; pathname: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const primaryCount = group.primaryCount ?? group.items.length
+  const hasMore = group.items.length > primaryCount
+
+  const activeIndex = group.items.findIndex(
+    (item) => pathname === `/docs/${item.slug}`,
+  )
+
+  // 📖 Render items in their natural order. Always include the primary slice
+  // + the active item (so you can see where you are) + the rest when expanded.
+  const visibleItems: DocLink[] = []
+  for (let i = 0; i < group.items.length; i++) {
+    if (i < primaryCount || i === activeIndex || expanded) {
+      visibleItems.push(group.items[i])
+    }
+  }
+
+  const hiddenCount = group.items.length - primaryCount
+
+  return (
+    <div>
+      <p className="label mb-2.5 text-fg-faint">{group.title}</p>
+      <ul className="space-y-1">
+        {visibleItems.map((item) => {
+          const active = pathname === `/docs/${item.slug}`
+          return (
+            <li key={item.slug}>
+              <Link
+                to="/docs/$"
+                params={{ _splat: item.slug }}
+                className={`block border-l-2 py-1 pl-3 font-mono text-xs transition-colors ${
+                  active
+                    ? 'border-accent text-fg font-semibold'
+                    : 'border-transparent text-fg-muted hover:border-border-strong hover:text-fg'
+                }`}
+              >
+                {item.title}
+              </Link>
+            </li>
+          )
+        })}
+        {hasMore && (
+          <li>
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              className="block w-full border-l-2 border-transparent py-1 pl-3 text-left font-mono text-xs text-fg-faint transition-colors hover:border-border-strong hover:text-fg"
+              aria-expanded={expanded}
+            >
+              {expanded ? '− View less' : `+ View ${hiddenCount} more...`}
+            </button>
+          </li>
+        )}
+      </ul>
+    </div>
+  )
+}
 
 export function DocsSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -11,29 +75,7 @@ export function DocsSidebar() {
   return (
     <nav className="space-y-7">
       {docsNav.map((group) => (
-        <div key={group.title}>
-          <p className="label mb-2.5 text-fg-faint">{group.title}</p>
-          <ul className="space-y-1">
-            {group.items.map((item) => {
-              const active = pathname === `/docs/${item.slug}`
-              return (
-                <li key={item.slug}>
-                  <Link
-                    to="/docs/$"
-                    params={{ _splat: item.slug }}
-                    className={`block border-l-2 py-1 pl-3 font-mono text-xs transition-colors ${
-                      active
-                        ? 'border-accent text-fg font-semibold'
-                        : 'border-transparent text-fg-muted hover:border-border-strong hover:text-fg'
-                    }`}
-                  >
-                    {item.title}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
+        <NavGroup key={group.title} group={group} pathname={pathname} />
       ))}
     </nav>
   )

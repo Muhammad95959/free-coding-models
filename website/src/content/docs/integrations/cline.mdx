@@ -1,0 +1,24 @@
+---
+title: Cline
+description: Launch Cline with a free model from FCM — it writes ~/.cline/globalState.json with an OpenAI-compatible provider config and launches cline.
+section: Agent Integrations
+---
+
+[Cline](https://github.com/cline/cline) is a coding agent that runs in VS Code and as a CLI. FCM writes the selected provider + model into Cline's `globalState.json` (under `apiConfiguration`) and launches `cline`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --cline
+free-coding-models --cline --tier S
+```
+
+## What FCM writes
+
+Config path: **`~/.cline/globalState.json`**
+
+FCM injects an OpenAI-compatible provider entry under `apiConfiguration`, pointing the API base at the selected provider's endpoint and the API key at the FCM-managed env reference. The selected model becomes Cline's default.
+
+## Install
+
+If the `cline` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

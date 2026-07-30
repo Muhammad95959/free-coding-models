@@ -1,0 +1,38 @@
+---
+title: ForgeCode
+description: Launch ForgeCode with a free model from FCM — it writes a managed [[providers]] TOML block into ~/.forge/.forge.toml + sets [session] defaults and launches forge.
+section: Agent Integrations
+---
+
+[ForgeCode](https://github.com/forge-code/forge) is a coding agent configured via a `forge.toml` file. FCM writes a managed `[[providers]]` block into the existing TOML (or creates the file) and sets `[session]` defaults so the selected model is used on launch.
+
+## Launch from FCM
+
+```bash
+free-coding-models --forgecode
+free-coding-models --forgecode --tier S
+```
+
+## What FCM writes
+
+Config path: **`~/.forge/.forge.toml`**
+
+```toml
+[[providers]]
+name = "groq"
+type = "openai-compatible"
+base_url = "https://api.groq.com/openai/v1"
+api_key = "{env:GROQ_API_KEY}"
+
+[providers.models]
+groq/openai/gpt-oss-120b = {}
+
+[session]
+default_model = "groq/openai/gpt-oss-120b"
+```
+
+FCM reads the existing `forge.toml` (if any) and inserts the managed provider block alongside the user's own settings — nothing is overwritten.
+
+## Install
+
+If the `forge` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

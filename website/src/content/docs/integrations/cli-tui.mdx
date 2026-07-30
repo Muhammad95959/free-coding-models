@@ -1,72 +1,166 @@
 ---
-title: CLI Dashboard & Keybindings
-description: Full reference for the ANSI interactive terminal UI (TUI), keybindings, sorting options, and command palette.
-section: Integrations
+title: Terminal Dashboard (TUI)
+description: Full reference for the interactive terminal UI (TUI) — complete keybindings, mouse actions, sorting, filters, and common workflows.
+section: Surfaces (core)
 ---
 
-# CLI Dashboard & Keybindings Guide
-
-The interactive terminal UI (TUI) of `free-coding-models` provides real-time model catalog browsing, sorting, and key configuration.
-
----
-
-## Launch Command
+The TUI is the heart of `free-coding-models`. Launch it with `free-coding-models` and you get a live, sortable table of every model — real latency, stability, verdict, and a one-key launch into your coding tool.
 
 ```bash
 free-coding-models
 ```
 
----
+## First-run flow
 
-## Complete Keybindings Matrix
+1. `free-coding-models` opens the TUI and prompts for API keys. **Paste one** (or press `Enter` to skip — keyless rows still ping, marked 🔑 NO KEY).
+2. Models start pinging in parallel. Rows turn green ✅ as they respond.
+3. Navigate with **`↑↓`**, press **`Enter`** on the model you want — FCM writes it into your tool's config **and launches the tool**.
 
-| Key | Action | Description |
-|---|---|---|
-| **`↑` / `↓`** | Row Navigation | Move row cursor selection up/down |
-| **`Enter`** | Select Model | Select active model string |
-| **`T`** | Cycle Tier Filter | Cycle filter (`All` → `S+` → `S` → `A+` → `A` → `A-` → `B+` → `B` → `C`) |
-| **`P`** | Provider Settings | Open API key configuration modal |
-| **`Z`** | Cycle Tool Mode | Switch mode (`OpenCode CLI`, `Desktop`, `OpenClaw`, `Pi`, `Aider`, etc.) |
-| **`S`** | Sort by SWE | Sort catalog by SWE-bench score |
-| **`Y`** | Sort by Tier | Sort catalog by Tier |
-| **`R`** | Sort by Rank | Sort catalog by default overall rank |
-| **`O`** | Sort by Origin | Sort catalog alphabetically by provider origin |
-| **`M`** | Sort by Model | Sort catalog by model ID name |
-| **`L`** | Sort by Latest Ping | Sort catalog by latest latency ping (ms) |
-| **`A`** | Sort by Avg Ping | Sort catalog by average latency ping (ms) |
-| **`N`** | Sort by Context | Sort catalog by context window size (tokens) |
-| **`H`** | Sort by Condition | Sort catalog by health condition |
-| **`V`** | Sort by Verdict | Sort catalog by health verdict |
-| **`U`** | Sort by Uptime | Sort catalog by uptime percentage |
-| **`Ctrl+P`** | Command Palette | Open fuzzy command palette |
-| **`Esc`** | Close Overlay | Close active modal, overlay, or command palette |
-| **`Ctrl+C`** | Quit TUI | Exit terminal interface |
+The default view shows only the providers you have keys for, so the table stays calm. Add more keys any time with **`P`** → Settings.
 
 ---
 
-## Command Palette (`Ctrl+P`)
+## Common workflows
 
-Press **`Ctrl+P`** in the TUI to open the fuzzy command palette overlay to search models, filter tiers, sort columns, or launch daemon actions.
-
----
-
-## Automated Terminal Testing (`tmux`)
-
-To test TUI rendering headlessly:
+**"Give me the fastest model that actually works"**
+Sort by stability with **`B`** (or **`V`** for verdict) — the top rows with 🥇🥈🥉 medals are your best bets. Models in `NO KEY` or `AUTH FAIL` are faded to 80% opacity so you instantly see what you can't use.
 
 ```bash
-# 1. Spawn TUI in detached session
-tmux new-session -d -s fcm-test "free-coding-models"
-
-# 2. Wait for initial render
-sleep 2
-
-# 3. Capture screen text
-tmux capture-pane -p -t fcm-test
-
-# 4. Send keypress ('T' to cycle tier)
-tmux send-keys -t fcm-test "T"
-
-# 5. Terminate session
-tmux kill-session -t fcm-test
+free-coding-models --opencode --origin groq
+# → navigate, press Enter. opencode.json is written and the CLI opens.
 ```
+
+**"Benchmark before I commit to a model"**
+
+{/* AGENT TODO: delete the <Callout> below once `website/public/videos/tui-speed-test.mp4` is committed. */}
+<Video name="tui-speed-test" caption="AI Speed Test — Ctrl+A benchmarks the selected model (real completion, not just a ping)." />
+
+<Callout type="warning" title="🎬 Recording script — delete this Callout when the video file is added">
+
+**Setup** — TUI running with the table populated. Font ≥ 16px, fullscreen.
+
+**Shot list (~12s, no audio)**
+1. **0:00–0:02** — Cursor sits on a model row.
+2. **0:02–0:04** — Press **Ctrl+A**.
+3. **0:04–0:09** — Spinner, then the **AI Latency** and **TPS** columns populate with real numbers.
+4. **0:09–0:12** — Hold 2–3s on the result so the viewer can read it.
+
+**Export** — MP4 H.264, 720p, 30fps, no audio, 10–15s, < 2 MB.
+
+**When committed at `website/public/videos/tui-speed-test.mp4`, DELETE this `<Callout>`**.
+</Callout>
+
+- **`Ctrl+A`** runs an AI Speed Test on the selected model (a real completion request — not just a ping). Results split into **AI Latency** + **TPS**.
+- **`Ctrl+U`** runs the global benchmark across all visible models.
+- Enable **Startup AI Speed Scan** in Settings (`P`) to run the global benchmark automatically after launch.
+
+**"I don't know which model to pick — pick for me"**
+Press **`Q`** to open **Smart Recommend**, a 3-question wizard (task type, priorities…) that returns Top 3 shared-score recommendations.
+
+**"Keep my go-to models pinned"**
+Star a model with **`F`** — favorites persist across sessions (shared with the Web Dashboard via `~/.free-coding-models.json`). Press **`Y`** to toggle **Pinned mode**: favorites stay pinned at the top and never scroll off-screen.
+
+**"Switch tools without restarting"**
+Press **`Z`** to cycle the target tool (OpenCode → OpenClaw → Crush → Goose → …). Models incompatible with the active tool get a dark-red row background.
+
+**"My terminal theme fights the TUI colors"**
+Press **`G`** to cycle **Auto → Dark → Light**. Recolors the full interface live (table, Settings, Help, overlays).
+
+---
+
+## Keyboard reference
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate models |
+| `Enter` | Launch the selected model in the active tool |
+| `Z` | Cycle target tool |
+| `T` | Cycle tier filter (All → S+ → S → A+ → A → A- → B+ → B → C → All) |
+| `D` | Cycle provider filter |
+| `E` | Cycle visibility filter (`Active only → Configured only → Usable only`) |
+| `X` | Clear the active custom text filter |
+| `F` | Favorite / unfavorite a model |
+| `Y` | Toggle favorites mode (`Normal` ↔ `Pinned + always visible`) |
+| `G` | Cycle global theme (`Auto → Dark → Light`) |
+| **`Ctrl+P`** | Open the ⚡️ **Command Palette** (fuzzy action launcher) |
+| **`;`** | Open the **Playground** chat overlay (chat with the FCM router) |
+| **`Ctrl+A`** | Run an AI Speed Test for the selected model |
+| **`Ctrl+U`** | Run the Global AI Speed Test (real provider requests) |
+| `R` | Sort by Rank |
+| `S` | Sort by SWE-bench score |
+| `C` | Sort by Context window size |
+| `M` | Sort by Model name |
+| `O` | Sort by Origin (provider) |
+| `L` | Sort by Last ping |
+| `A` | Sort by Average ping |
+| `H` | Sort by Health / condition |
+| `V` | Sort by Verdict |
+| `B` | Sort by staBility score |
+| `U` | Sort by Uptime |
+| `W` | Sort by real-world score (`Real` column — see Runtime telemetry) |
+| `Shift+W` | Open the Runtime Report overlay (per-model breakdown + recent calls) |
+| `Shift+B` | Toggle visibility of broken models (footer shows `⚡ N cached · 🔴 M broken`) |
+| `Shift+U` | Update to the latest version (when an update is available) |
+| `P` | Settings (API keys, providers, updates, theme, Startup Speed Scan) |
+| `Q` | Smart Recommend overlay |
+| `N` | Changelog |
+| `I` | Feedback / bug report |
+| `K` | Help overlay |
+| `Ctrl+C` | Exit |
+
+---
+
+## Mouse reference
+
+| Action | Result |
+|--------|--------|
+| **Click column header** | Sort by that column |
+| **Click Tier header** | Cycle tier filter |
+| **Click CLI Tools header** | Cycle tool mode |
+| **Click model row** | Move cursor to model |
+| **Double-click model row** | Select and launch model |
+| **Right-click model row** | Toggle favorite |
+| **Scroll wheel** | Navigate table / overlays / palette |
+| **Click footer hotkey** | Trigger that action |
+| **Click update banner** | Install latest version and relaunch |
+| **Click outside modal** | Close the command palette |
+
+---
+
+## Command Palette
+
+Press **`Ctrl+P`** to open the fuzzy **Command Palette** — the fastest way to reach any filter, sort, view, or action in the app. It searches across the full TUI command registry, so you rarely need to remember a hotkey.
+
+<Callout type="tip" title="Speed test from the palette">
+The palette exposes everything — including `AI Speed Test` and `Global AI Speed Test` — so if you forget `Ctrl+A` / `Ctrl+U`, just press `Ctrl+P` and type "speed".
+</Callout>
+
+---
+
+## Pre-target a tool from the command line
+
+Skip the `Z` cycle entirely by launching the TUI pre-configured for a tool. `Enter` then writes the model into that tool's config and launches it:
+
+```bash
+free-coding-models --goose --tier S      # Goose, pre-filtered to S-tier only
+free-coding-models --crush --origin groq  # Crush, Groq models only
+free-coding-models --aider                # Aider
+free-coding-models --opencode --premium   # OpenCode, elite-focused preset
+```
+
+The default target (no tool flag) is **OpenCode CLI**. If the target CLI isn't installed, FCM catches it, offers a one-line install prompt, installs the official global binary, then resumes the exact same launch.
+
+---
+
+## Headless (no TUI)
+
+```bash
+# Print the fastest S-tier model ID for scripts
+free-coding-models --tier S --json | jq -r '.[0].modelId'
+
+# Wait 10s, pick the single most reliable model right now
+free-coding-models --fiable
+```
+
+→ **Full column reference & stability formula:** [`docs/stability.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/stability.md)
+→ **All CLI flags:** [CLI Flags & Commands](/docs/reference/cli-flags)

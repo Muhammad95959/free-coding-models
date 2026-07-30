@@ -1,0 +1,45 @@
+---
+title: ZCode
+description: Launch ZCode with a free model from FCM — it writes ~/.zcode/v2/config.json + bots-model-cache.v2.json so the selected model appears in ZCode's picker and launches ZCode.
+section: Agent Integrations
+---
+
+[ZCode](https://zcode.ai) is a desktop coding app. FCM writes the selected provider + model into ZCode's config and bot-model cache so it appears in ZCode's model picker, then opens the app.
+
+## Launch from FCM
+
+```bash
+free-coding-models --zcode
+free-coding-models --zcode --tier S
+```
+
+## What FCM writes
+
+| File | Purpose |
+|------|---------|
+| **`~/.zcode/v2/config.json`** | Provider + model entries |
+| **`~/.zcode/v2/bots-model-cache.v2.json`** | Model picker cache — the selected model appears in the UI |
+
+```json
+// config.json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "groq": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Groq",
+      "options": {
+        "baseURL": "https://api.groq.com/openai/v1",
+        "apiKey": "{env:GROQ_API_KEY}"
+      }
+    }
+  },
+  "model": "groq/openai/gpt-oss-120b"
+}
+```
+
+The API key is referenced via env var in `config.json` and a placeholder is written to the picker cache so ZCode recognises the model as configured.
+
+## Install
+
+If ZCode isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

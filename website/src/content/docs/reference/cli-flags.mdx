@@ -1,77 +1,128 @@
 ---
-title: CLI Flags & Commands Reference
-description: Reference matrix of tool flags, analysis flags, sorting flags, and server maintenance options.
+title: CLI Flags & Commands
+description: Complete command-line reference — tool launchers, filtering & display flags, sorting, output modes, runtime options, and server commands.
 section: Reference & Support
 ---
 
-# CLI Flags & Commands Reference
+Flags combine freely in any order. Run `free-coding-models --help` to print the full list in-app.
 
-Complete command-line interface specification for `free-coding-models`.
+## Tool launchers
 
----
+Start the TUI pre-configured for a tool, then `Enter` writes the model into that tool's config **and launches it**. The default (no tool flag) is **OpenCode CLI**. Press `Z` in the TUI to cycle tools without restarting.
 
-## Tool Integration Flags
+| Flag | Tool |
+|------|------|
+| `--opencode` | 📦 OpenCode CLI |
+| `--opencode-desktop` | 📦 OpenCode Desktop |
+| `--opencode-web` | 📦 OpenCode WebUI |
+| `--openclaw` | 🦞 OpenClaw |
+| `--crush` | 💘 Crush |
+| `--goose` | 🪿 Goose |
+| `--aider` | 🛠 Aider |
+| `--kilo` | ⚡️ Kilo CLI |
+| `--qwen` | 🐉 Qwen Code |
+| `--openhands` | 🤲 OpenHands |
+| `--amp` | ⚡ Amp |
+| `--hermes` | 🔮 Hermes |
+| `--continue` | ▶️ Continue |
+| `--cline` | 🧠 Cline |
+| `--xcode` | 🛠 Xcode Intelligence |
+| `--pi` | π Pi |
+| `--copilot` | 🤖 Copilot CLI |
+| `--forgecode` | 🔥 ForgeCode |
+| `--zcode` | 🧊 ZCode |
+| `--fcm-router` | 🔀 FCM Router |
+| `--jcode` | jcode |
+| `--caveman` | Caveman Code |
 
-| Flag | Mode / Tool | Action |
-|---|---|---|
-| `--opencode` | OpenCode CLI | Export configuration to `~/.opencode/config.json` |
-| `--openclaw` | OpenClaw | Patch OpenClaw model registry |
-| `--pi` | Pi | Format configuration for Pi agent |
-| `--jcode` | jcode | Format configuration for jcode |
-| `--opencode-desktop` | OpenCode Desktop | Format config for OpenCode Desktop |
-| `--opencode-web` | OpenCode Web | Format config for OpenCode Web |
-| `--crush` | Crush | Format config for Crush |
-| `--goose` | Goose | Format config for Goose CLI |
-| `--aider` | Aider | Format config for Aider |
-| `--kilo` | Kilo CLI | Format config for Kilo CLI |
-| `--qwen` | Qwen Code | Format config for Qwen Code |
-| `--openhands` | OpenHands | Format config for OpenHands |
-| `--amp` | Amp | Format config for Amp |
-| `--hermes` | Hermes | Format config for Hermes |
-| `--continue` | Continue | Format config for Continue.dev |
-| `--cline` | Cline | Format config for Cline |
-| `--xcode` | Xcode Intelligence | Format config for Xcode Intelligence |
-| `--fcm-router` | FCM Router | Start FCM Router proxy |
-| `--caveman` | Caveman Code | Format config for Caveman Code |
-| `--copilot` | Copilot CLI | Format config for Copilot CLI |
-| `--forgecode` | ForgeCode | Format config for ForgeCode |
-| `--zcode` | ZCode | Format config for ZCode |
-
----
-
-## Analysis & Filtering Flags
-
-| Flag | Short | Description | Example |
-|---|---|---|---|
-| `--best` | `-b` | Select and print top-performing model string | `free-coding-models -b` |
-| `--fiable` | `-f` | Filter models with high uptime (>98%) | `free-coding-models -f` |
-| `--json` | | Output catalog results as JSON | `free-coding-models --json` |
-| `--tier [T]` | `-t` | Filter catalog by tier (`S+`, `S`, `A+`, `A`, `A-`, `B+`, `B`, `C`) | `free-coding-models --tier S+` |
-| `--sort [col]` | | Sort by column (`rank`, `tier`, `origin`, `model`, `ping`, `avg`, `swe`, `ctx`, `condition`, `verdict`, `uptime`) | `free-coding-models --sort swe --desc` |
-| `--desc` / `--asc` | | Set sort direction (descending / ascending) | `free-coding-models --sort ping --asc` |
-| `--origin [p]` | | Filter by provider (`groq`, `nvidia`, `googleai`, `qwen`, `cerebras`) | `free-coding-models --origin groq` |
-| `--ping-interval [ms]` | | Override health probe interval in ms | `free-coding-models --ping-interval 15000` |
-| `--hide-unconfigured` | | Hide models without configured API keys | `free-coding-models --hide-unconfigured` |
-| `--show-unconfigured` | | Show all catalog models | `free-coding-models --show-unconfigured` |
-| `--reprobe` / `--no-cache` | | Force-rebuild persistent probe-cache | `free-coding-models --reprobe` |
-| `--probe-ttl [ms]` | | Override probe-cache TTL (default: 24h) | `free-coding-models --probe-ttl 3600000` |
-| `--show-broken` | | Show models marked broken by probe-cache | `free-coding-models --show-broken` |
-| `--check-drift` | | Diff `sources.js` against `models.dev` | `free-coding-models --check-drift` |
-| `--drift-threshold [N]` | | Fail `--check-drift` only when N+ mismatches found | `free-coding-models --drift-threshold 2` |
+> Incompatible models get a dark-red row background when a tool mode is active. → Tool → config mapping: [`docs/integrations.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/integrations.md)
 
 ---
 
-## Config & Server Maintenance Commands
+## Filtering & display
+
+| Flag | Description |
+|------|-------------|
+| `--best` | Show only top tiers (A+, S, S+) |
+| `--premium` | Start with an S-tier filter + verdict sort (resettable in-app) |
+| `--tier <S\|A\|B\|C>` | Filter by tier family — `S` = S+/S, `A` = A+/A/A-, `B` = B+/B, `C` = C only |
+| `--origin <provider>` | Filter by provider (e.g. `nvidia`, `groq`, `cerebras`) |
+| `--hide-unconfigured` | Hide models whose provider has no API key |
+| `--show-unconfigured` | Show all models regardless of key configuration |
+
+## Sorting
+
+| Flag | Description |
+|------|-------------|
+| `--sort <column>` | Start sorted by a specific column |
+| `--asc` | Sort ascending |
+| `--desc` | Sort descending |
+
+Valid `--sort` columns: `rank`, `tier`, `origin`, `model`, `ping`, `avg`, `swe`, `ctx`, `condition`, `verdict`, `uptime`, `stability`, `aiLatency`, `tps`.
+
+## Output modes
+
+| Flag | Description |
+|------|-------------|
+| `--json` | Skip the TUI — print all results as JSON and exit (great for `jq`) |
+| `--fiable` | Wait 10s, pick the most reliable model, print `provider/model_id` and exit |
+| `--recommend` | Open Smart Recommend immediately on startup |
+
+## Runtime options
+
+| Flag | Description |
+|------|-------------|
+| `--ping-interval <ms>` | Override the ping interval in milliseconds |
+| `--reprobe` / `--no-cache` | Rebuild the persistent probe-cache this run |
+| `--probe-ttl <ms>` | Override the probe-cache TTL (default 24h) |
+| `--show-broken` | Don't auto-hide broken models this run |
+| `--check-drift` | Diff `sources.js` against `models.dev`; exit 1 on mismatch |
+| `--drift-threshold <N>` | Only fail `--check-drift` when N+ mismatches are found |
+| `--no-telemetry` | Disable anonymous telemetry for this run |
+
+---
+
+## Server & maintenance commands
 
 | Command / Flag | Description |
-|---|---|
-| `web` / `--web` / `--gui` | Start Web Dashboard (`http://localhost:19280`) |
-| `playground` / `--playground` | Open terminal Playground chat overlay |
-| `--daemon` | Start FCM Router daemon in foreground |
-| `--daemon-bg` | Start FCM Router daemon in background |
-| `--daemon-status` | Print FCM Router daemon status JSON |
-| `--daemon-stop` | Gracefully stop FCM Router daemon |
-| `--sync-set [name]` | Auto-discover and live-probe models into active router set |
-| `--no-telemetry` | Disable local performance telemetry collection |
-| `--help` / `-h` | Print CLI help manual |
-| `--version` / `-v` | Print package version |
+|----------------|-------------|
+| `web` / `--web` / `--gui` | Start the catalog-only Web Dashboard on `http://localhost:3333` (`FCM_WEB_PORT`) |
+| `playground` / `--playground` | Open the in-TUI Playground chat overlay (auto-starts the router if needed) |
+| `--daemon` | Start the Smart Router daemon + Web Dashboard (foreground, port `19280`) |
+| `--daemon-bg` | Start the daemon detached in the background |
+| `--daemon-status` | Print router daemon status JSON |
+| `--daemon-stop` | Gracefully stop the router daemon |
+| `--sync-set [name]` | Auto-discover and live-probe models into a router set |
+| `--help` / `-h` | Print this help text and exit |
+| `--version` / `-v` | Print the package version |
+
+> The catalog `web` dashboard runs on **port 3333**; the `--daemon` mode runs the full dashboard **+ router** on **port 19280**.
+
+---
+
+## Examples
+
+```bash
+# Crush, pre-filtered to S-tier only
+free-coding-models --crush --tier S
+
+# Get the fastest S-tier model ID (headless, for scripts)
+free-coding-models --tier S --json | jq -r '.[0].modelId'
+
+# Most reliable model right now
+free-coding-models --fiable
+
+# Start the local Smart Model Router endpoint
+free-coding-models --daemon-bg
+
+# Elite-focused preset (resettable in-app)
+free-coding-models --premium
+
+# Sort by SWE score descending
+free-coding-models --sort swe --desc
+
+# Groq models only
+free-coding-models --origin groq
+```
+
+→ **Full flag reference:** [`docs/flags.md`](https://github.com/vava-nessa/free-coding-models/blob/main/docs/flags.md)

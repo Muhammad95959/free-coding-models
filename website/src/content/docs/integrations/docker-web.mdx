@@ -1,90 +1,76 @@
 ---
-title: Web Dashboard & Docker Server
-description: Web Dashboard interface and OpenAI-compatible background proxy server running on localhost:19280.
-section: Integrations
+title: Docker Server
+description: Run the Web Dashboard and Smart Model Router headless in Docker — port 19280, configurable host/telemetry, with compose and troubleshooting.
+section: Surfaces (core)
 ---
 
-# Web Dashboard & Docker Server
+Run FCM without installing Node.js using the official Docker image. The container serves the full **Web Dashboard + Smart Model Router** on port `19280`.
 
-`free-coding-models` includes a Web Dashboard interface and background proxy server served on port `19280`.
+## Quick start
+
+> **Note:** GHCR requires authentication even for public images. Login once with:
+> ```bash
+> echo $GITHUB_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+> ```
+> Or use a [personal access token](https://github.com/settings/tokens) with `read:packages` scope.
+
+```bash
+# Quick start — daemon + web UI on port 19280
+docker run -p 19280:19280 ghcr.io/vava-nessa/free-coding-models:latest
+
+# With an API key
+docker run -p 19280:19280 -e OPENROUTER_API_KEY=your_key ghcr.io/vava-nessa/free-coding-models:latest
+```
+
+Point your coding tool at `http://localhost:19280/v1` with model `fcm` and key `fcm-local`. See the [Smart Model Router](/docs/core/router-daemon) for routing details.
+
+**Available image tags:** `latest` · `v{major}.{minor}.{patch}` (e.g. `v0.3.70`) · `v{major}.{minor}` (e.g. `v0.3`) · `v{major}` (e.g. `v0`)
 
 ---
 
-## 1. Running the Web Dashboard
+## Environment variables
 
-Launch the Web Dashboard in your browser:
-
-```bash
-free-coding-models web
-```
-
-Or start the daemon:
-
-```bash
-free-coding-models --daemon
-```
-
-Navigate to `http://localhost:19280`.
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `FCM_HOST` | `0.0.0.0` | Bind host (`127.0.0.1` for localhost-only) |
+| `FCM_PORT` | `19280` | Port to listen on (scans `19280`–`19289` if busy) |
+| `FREE_CODING_MODELS_TELEMETRY` | `0` | `0` disables telemetry |
+| `<PROVIDER>_API_KEY` | — | Any provider key, e.g. `OPENROUTER_API_KEY`, `GROQ_API_KEY` |
 
 ---
 
-## 2. Running via Docker
-
-Run the Web Dashboard and API server inside a Docker container:
-
-```bash
-docker run -d \
-  --name free-coding-models \
-  -p 19280:19280 \
-  -v ~/.free-coding-models:/root/.free-coding-models \
-  --restart unless-stopped \
-  ghcr.io/vava-nessa/free-coding-models:latest
-```
-
-### Docker Compose (`docker-compose.yml`)
+## Docker Compose
 
 ```yaml
 version: '3.8'
-
 services:
-  free-coding-models:
+  fcm:
     image: ghcr.io/vava-nessa/free-coding-models:latest
-    container_name: free-coding-models
+    container_name: fcm
+    restart: unless-stopped
     ports:
       - "19280:19280"
-    volumes:
-      - ~/.free-coding-models:/root/.free-coding-models
     environment:
-      - NODE_ENV=production
-    restart: unless-stopped
+      FREE_CODING_MODELS_TELEMETRY: "0"
+      FCM_HOST: "0.0.0.0"
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    volumes:
+      - fcm-data:/home/fcm
+volumes:
+  fcm-data:
+```
+
+```bash
+docker-compose up -d
 ```
 
 ---
 
-## 3. Daemon Control CLI Flags
+## Troubleshooting
 
-```bash
-# Start daemon in background
-free-coding-models --daemon-bg
+- **Won't start** — `docker logs fcm`, and check port 19280 isn't in use (`docker ps | grep 19280`).
+- **Health check fails** — wait ~30s for the first probe cycle; verify keys with `docker exec fcm curl http://localhost:19280/health`.
+- **Can't connect from host** — ensure `FCM_HOST=0.0.0.0` (default) and the firewall allows localhost.
+- **Reset data** — config lives in the `fcm-data` volume; wipe it with `docker-compose down -v`.
 
-# Check daemon status
-free-coding-models --daemon-status
-
-# Stop daemon
-free-coding-models --daemon-stop
-```
-
----
-
-## 4. OpenAI API Proxy (`localhost:19280/v1`)
-
-```bash
-curl http://localhost:19280/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "fcm",
-    "messages": [
-      {"role": "user", "content": "Write a TypeScript function to sort numbers."}
-    ]
-  }'
-```
+→ **Routing behavior** & circuit breaker: [Smart Model Router](/docs/core/router-daemon)

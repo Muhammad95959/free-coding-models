@@ -1,0 +1,27 @@
+---
+title: Caveman Code
+description: Launch Caveman Code with a free model from FCM — FCM builds a provider env block (ANTHROPIC_API_KEY/OPENAI_API_KEY) and launches caveman.
+section: Agent Integrations
+---
+
+[Caveman Code](https://github.com/caveman-ai/caveman-code) is a terminal coding agent that reads provider credentials from environment variables.
+
+## Launch from FCM
+
+```bash
+free-coding-models --caveman
+free-coding-models --caveman --tier A+
+```
+
+## What FCM sets
+
+FCM builds a provider env block and launches `caveman`:
+
+- `ANTHROPIC_API_KEY=<your-key>` for Anthropic-backed models
+- `OPENAI_API_KEY=<your-key>` for OpenAI-compatible models
+
+No config file is written — Caveman reads credentials directly from env.
+
+## Install
+
+If the `caveman` CLI isn't installed, FCM detects it, offers a one-line install, then resumes the same launch.

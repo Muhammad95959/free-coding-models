@@ -281,17 +281,26 @@
   white-space: pre;
 }
 
+/* 📖 Responsive tables: every MDX/changelog table is wrapped in .table-scroll by
+   the `table` component override (MdxComponents) / MarkdownRenderer. Cells wrap
+   their content so a long description never widens the column — and a genuinely
+   wide table scrolls *inside* this box instead of forcing a horizontal page scroll. */
 .prose .table-scroll {
   overflow-x: auto;
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--color-border-strong);
+  max-width: 100%;
+  margin: 1.5rem 0;
+}
+
+.prose .table-scroll table {
+  margin: 0;
 }
 
 .prose table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
-  white-space: nowrap;
+  table-layout: auto;
 }
 
 .prose thead th {
@@ -304,6 +313,9 @@
   color: var(--color-fg-faint);
   padding: 0.6rem 1.25rem 0.6rem 0;
   border-bottom: 1px solid var(--color-border);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .prose tbody td {
@@ -311,6 +323,16 @@
   border-bottom: 1px solid var(--color-border);
   color: var(--color-fg-muted);
   vertical-align: top;
+  /* Let long cell content (URLs, code tokens, long descriptions) wrap to the
+     next line instead of stretching the column — and the page — wider. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose thead th:first-child,
+.prose tbody td:first-child {
+  min-width: 8rem;
 }
 
 .prose tbody td:first-child {

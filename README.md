@@ -6,10 +6,9 @@
 
 <p align="center">
   <strong>Find the fastest free coding model in seconds</strong><br>
-  Track ~222 models across 20 trusted free or free-limited AI providers in real time<br><br>
-  <strong>Install Free API endpoints to your favorite AI coding tools:</strong><br>
-  OpenCode CLI / Desktop / WebUI, OpenClaw, Crush, Goose, Aider, Kilo CLI, Qwen Code, OpenHands, Amp, Hermes, Continue, Cline, Xcode, Pi, ZCode and more...<br><br>
-  <strong>Use Kimi K2, DeepSeek V3, GPT-OSS, Qwen3, MiniMax M3, GLM, Llama 4, Gemma 4, Devstral and more — for free</strong>
+  Track ~222 models across 20 trusted free or free-limited AI providers in real time, then install the one you pick straight into your favorite coding tool.<br><br>
+  <strong>Works with:</strong> OpenCode CLI / Desktop / WebUI, OpenClaw, Crush, Goose, Aider, Kilo CLI, Qwen Code, OpenHands, Amp, Hermes, Continue, Cline, Xcode, Pi, ZCode, ForgeCode, Copilot and more.<br><br>
+  <strong>Use Kimi K2, DeepSeek V3/V4, GPT-OSS, Qwen3, MiniMax M3, GLM, Llama 4, Gemma 4, Devstral and more — for free</strong>
 </p>
 
 <p align="center">
@@ -26,21 +25,23 @@ free-coding-models
 ```
 
 <p align="center">
-  create a free account on one of the <a href="#-list-of-free-ai-providers">providers</a>
+  <sub>Then create a free account on one of the <a href="#-free-ai-providers">20 providers</a> to grab an API key.</sub>
 </p>
 
 <p align="center">
   <a href="#-why-this-tool">💡 Why</a> •
   <a href="#-quick-start">⚡ Quick Start</a> •
-  <a href="#-list-of-free-ai-providers">🟢 Providers</a> •
-  <a href="#-usage">🚀 Usage</a> •
-  <a href="#-tui-keys">⌨️ TUI Keys</a> •
-  <a href="#-features">✨ Features</a> •
+  <a href="#-free-ai-providers">🟢 Providers</a> •
+  <a href="#-the-terminal-ui-tui">🎛️ TUI</a> •
+  <a href="#-the-web-dashboard">🌐 Web</a> •
+  <a href="#-agent-extensions">🔌 Extensions</a> •
+  <a href="#-the-smart-model-router">🔀 Router</a> •
+  <a href="#-reference">📖 Reference</a> •
   <a href="#-contributing">📋 Contributing</a> •
   <a href="#️-model-licensing--commercial-use">⚖️ Licensing</a> •
   <a href="#-telemetry">📊 Telemetry</a> •
   <a href="#️-security--trust">🛡️ Security</a> •
-  <a href="#-other-free-ai-resources">🆓 Other Free AI Resources</a>
+  <a href="#-other-free-ai-resources">🆓 More resources</a>
 </p>
 
 <p align="center">
@@ -59,21 +60,112 @@ free-coding-models
 
 ## 💡 Why this tool?
 
-There are **~222 cataloged free or free-limited coding models** across 20 vetted providers. Which one is fastest right now? Which one is actually stable versus just lucky on the last ping?
+There are **~222 cataloged free or free-limited coding models** across 20 vetted providers. Which one is fastest *right now*? Which one is actually stable, versus just lucky on the last ping?
 
-This CLI pings them all in parallel, shows live latency, and calculates a **live Stability Score (0-100)**. Average latency alone is misleading if a model randomly spikes to 6 seconds; the stability score measures true reliability by combining **p95 latency** (30%), **jitter/variance** (30%), **spike rate** (20%), and **uptime** (20%). 
+`free-coding-models` (FCM) answers that by pinging every model in parallel, showing live latency, and computing a **live Stability Score (0–100)**. Average latency alone is misleading — a model that randomly spikes to 6 seconds isn't reliable. The stability score combines **p95 latency** (30%), **jitter/variance** (30%), **spike rate** (20%), and **uptime** (20%) to measure true reliability.
 
-It then writes the model you pick directly into your coding tool's config — so you go from "which model?" to "coding" in under 10 seconds.
+Once you've picked a model, FCM writes it directly into your coding tool's config — so you go from *"which model?"* to *"coding"* in under 10 seconds.
+
+**FCM ships as four surfaces**, all powered by the same engine:
+
+| Surface | What it is | When to use it |
+|---|---|---|
+| 🎛️ **TUI** | The interactive terminal dashboard | The default. Live ranking, pick + launch a model. |
+| 🌐 **Web Dashboard** | A browser control center | Browse from your browser, share filtered views, run headless in Docker. |
+| 🔌 **Extensions** | OpenCode & Pi agent plugins | Hot-swap models mid-session without leaving your agent. |
+| 🔀 **Router** | A local OpenAI-compatible daemon | One localhost endpoint that auto-fails-over between free models. |
+
+> The TUI and Web Dashboard are the **core** of the product — that's where most users live. Extensions and the Router build on top of the same engine and are covered later in this doc.
 
 ---
 
 ## ⚡ Quick Start
 
-### 🟢 List of Free AI Providers
+From zero to "coding with a free model" in about 2 minutes — then a fast tour of the coolest features. Each step links to the full section when you want to go deeper.
 
-Create a free account on one provider below to get started. A few providers (`Kilo`, `LLM7`, OVHcloud sandbox) can also answer without a key, with tighter shared limits.
+### ① Install
 
-**~222 coding models** across 20 active providers, ranked by practical free-tier usefulness.
+```bash
+npm install -g free-coding-models
+free-coding-models --help   # sanity check — prints every flag
+```
+
+Requires **Node.js 18+**. That's the only prerequisite — FCM has a single runtime dependency (`chalk`), no native build step, and never needs `sudo`. Update later at any time with `npm install -g free-coding-models@latest` (or `Shift+U` inside the app).
+
+### ② Grab one free API key
+
+FCM tracks ~222 models across 20 providers, but you only need **one key** to start. The fastest sign-ups (no credit card, instant key):
+
+- **Groq** → [console.groq.com/keys](https://console.groq.com/keys) — Llama 4, GPT-OSS, blazing fast
+- **Cerebras** → [cloud.cerebras.ai](https://cloud.cerebras.ai) — the lowest latency in the whole catalog
+- **NVIDIA NIM** → [build.nvidia.com](https://build.nvidia.com) — 27 models, the biggest free variety
+
+👉 See the full [**provider table**](#-free-ai-providers) for limits, tiers, and env vars. You can add more keys at any time from inside the app (**`P`** → Settings) — one is enough to begin.
+
+### ③ Launch & paste your key
+
+```bash
+free-coding-models
+```
+
+On first run FCM prompts you for API keys. **Paste yours** (or press `Enter` to skip — you'll still see keyless latency rows marked 🔑 NO KEY, and can add keys later with **`P`**). Models start pinging in parallel; rows light up green ✅ as they respond. The default view shows only the providers you have keys for, so the table is calm, not overwhelming.
+
+### ④ Pick a model & launch your tool
+
+```
+↑↓ navigate the live table   →   Enter to launch
+```
+
+The model you land on is written straight into your tool's config **and the tool opens immediately** — that's the whole trick, start to finish in seconds. The default target is **OpenCode CLI**; pre-target another tool from the command line or cycle it live with **`Z`**:
+
+```bash
+free-coding-models --goose --tier S      # Goose, pre-filtered to S-tier only
+free-coding-models --crush --origin groq  # Crush, Groq models only
+free-coding-models --aider                # Aider
+free-coding-models --opencode --premium   # OpenCode, elite-focused preset
+```
+
+> 💡 **Missing tool?** If the target CLI isn't installed, FCM catches it, offers a one-line install prompt, installs the official global binary, then resumes the exact same launch automatically.
+>
+> 💡 **Headless?** Skip the TUI entirely: `free-coding-models --tier S --json | jq -r '.[0].modelId'` prints the fastest S-tier model ID for scripts. Or `free-coding-models --fiable` waits 10s and prints the single most reliable model right now.
+
+→ Full keybindings & workflows: [The Terminal UI (TUI)](#-the-terminal-ui-tui)
+
+### ⑤ The 30-second cool tour 👇
+
+You're in. Try these next — they're the features that make FCM feel good:
+
+| Press | What happens | Go deeper |
+|---|---|---|
+| **`Ctrl+P`** | Open the ⚡️ **Command Palette** — fuzzy-search every filter, sort, and action in the app | [TUI](#-the-terminal-ui-tui) |
+| **`Q`** | **Smart Recommend** — answer 3 questions, get your Top 3 models picked for you | [TUI](#-the-terminal-ui-tui) |
+| **`Ctrl+A`** / **`Ctrl+U`** | Run a real **AI Speed Test** on one model / all visible models (splits into Latency + TPS) | [TUI](#-the-terminal-ui-tui) |
+| **`F`** then **`Y`** | **Favorite** a model, then **pin** your favorites to the top so they never scroll away | [TUI](#-the-terminal-ui-tui) |
+| **`Z`** | **Cycle tool** (OpenCode → OpenClaw → Crush → Goose → …) without restarting | [TUI](#-the-terminal-ui-tui) |
+| **`G`** | **Cycle theme** (Auto → Dark → Light) if your terminal fights the colors | [TUI](#-the-terminal-ui-tui) |
+| **`;`** | Open the **Playground** — chat with the router right inside the TUI | [Router](#-the-smart-model-router) |
+
+<p align="center">
+  <img src="https://img.shields.io/badge/USE_%E2%9A%A1%EF%B8%8F%20COMMAND%20PALETTE-CTRL%2BP-22c55e?style=for-the-badge" alt="Use ⚡️ Command Palette with Ctrl+P">
+</p>
+
+### ⑥ Go further
+
+Once the TUI feels familiar, FCM has three more surfaces — pick the one that matches how you work:
+
+- 🌐 **Prefer a browser?** → `free-coding-models web` opens the realtime [**Web Dashboard**](#-the-web-dashboard) on `localhost:3333` (or run it headless in [Docker](#-the-web-dashboard)).
+- 🔀 **Want one endpoint that never dies?** → `free-coding-models --daemon-bg` starts the [**Smart Model Router**](#-the-smart-model-router); point any tool at `http://localhost:19280/v1` with model `fcm` and let it auto-fail-over between free models.
+- 🤖 **Live inside an agent?** → install the [**OpenCode plugin**](#-agent-extensions) or the [**Pi extension**](#-agent-extensions) to hot-swap models mid-session with a single `/fcm`.
+
+<p align="center">
+  <img src="demo2.gif" alt="free-coding-models TUI demo" width="100%">
+</p>
+
+---
+
+## 🟢 Free AI Providers
+
+**~222 coding models** across 20 active providers, ranked by practical free-tier usefulness. Sign up on any one of them to get a key — you only need one to start.
 
 | # | Provider | Models | Tier range | Free tier | Env var |
 |---|----------|--------|-----------|-----------|--------|
@@ -98,24 +190,11 @@ Create a free account on one provider below to get started. A few providers (`Ki
 | 19 | [Novita AI](https://novita.ai) | 4 | S+ → S | Only zero-price live chat models included | `NOVITA_API_KEY` |
 | 20 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
 
-> 💡 One key is enough. Add more at any time with **`P`** inside the TUI.
-
-> 🧹 Audit cleanup: `iFlow` was removed because it shut down on April 17, 2026. `Together AI`, `Perplexity API`, `DeepInfra`, `Replicate`, `Fireworks`, `Hyperbolic`, `Hugging Face`, `SiliconFlow`, `Chutes AI` were removed from the active free catalog because they are paid, trial-credit only, too tiny to be useful, unclear as a stable free API, or tool-specific rather than a generally usable free provider. `Rovo` and `Gemini CLI` were also wiped out as tool integrations (CLI-only, not generally usable free providers).
-
-### ⚠️ Health checks consume provider quota
-
-> FCM continuously health-probes every model in the catalog so you see live latency, status, and verdict. When you've configured a provider's API key (e.g. `OPENROUTER_API_KEY`), **those probes are authenticated and count against that provider's daily quota**. Rate-limited providers like **OpenRouter** (50 req/day free, 1000 req/day at $10 spend) are particularly sensitive: a single overloaded model can burn your quota in minutes if it's re-pinged every second.
-
-> As of v0.3.83 (issue #146), FCM now:
-> - **Auto-pauses** a provider when its probe gets a `429` response (respects `Retry-After` header + the "try again N seconds later" message body).
-> - **Backs off exponentially** on per-model failures (30s → 1m → 2m → 5m) instead of re-pinging a broken model every cycle.
-> - **Surfaces a footer chip** like `⏸ openrouter 14h` so you can see which providers are resting.
-
-> **If you don't need authenticated probes for a provider**, just leave its key empty — anonymous probes still work for liveness checks on most providers, and they won't burn your personal quota.
-
----
+> 💡 One key is enough to start. Add more at any time by pressing **`P`** inside the TUI (or via the Web Dashboard **Settings** page). A few providers (`Kilo`, `LLM7`, OVHcloud sandbox) can even answer without a key, with tighter shared limits.
 
 ### Tier scale
+
+Every model is tiered by its **SWE-bench Verified** score — the industry-standard benchmark for real coding tasks.
 
 | Tier | SWE-bench | Best for |
 |------|-----------|----------|
@@ -125,26 +204,169 @@ Create a free account on one provider below to get started. A few providers (`Ki
 | **A-/B+** | 30–40% | Smaller tasks, constrained infra |
 | **B/C** | < 30% | Code completion, edge/minimal setups |
 
-**① Install and run:**
+Press **`T`** in the TUI to cycle the tier filter (All → S+ → S → … → C → All).
 
-```bash
-npm install -g free-coding-models
-free-coding-models
-```
+### ⚠️ Health checks consume provider quota
 
-On first run, you'll be prompted to enter your API key(s). You can skip providers and add more later with **`P`**.
+FCM continuously health-probes every model so you see live latency, status, and verdict. When you've configured a provider's API key, **those probes are authenticated and count against that provider's daily quota**. Rate-limited providers like **OpenRouter** (50 req/day free) are the most sensitive: one overloaded model re-pinged every second can burn your quota in minutes.
 
-Use ⚡️ Command Palette! with **Ctrl+P**.
+To protect you, FCM:
 
-<p align="center">
-  <img src="https://img.shields.io/badge/USE_%E2%9A%A1%EF%B8%8F%20COMMAND%20PALETTE-CTRL%2BP-22c55e?style=for-the-badge" alt="Use ⚡️ Command Palette with Ctrl+P">
-</p>
+- **Auto-pauses** a provider the moment its probe gets a `429` (it honors the `Retry-After` header).
+- **Backs off exponentially** per failing model (30s → 1m → 2m → 5m) instead of re-pinging it every cycle.
+- **Surfaces a footer chip** like `⏸ openrouter 14h` so you can see which providers are resting.
+
+> If you don't need authenticated probes for a provider, just leave its key empty — anonymous probes still work for liveness checks on most providers, and they won't burn your personal quota.
+
+<details>
+<summary><strong>🧹 Providers removed from the catalog (and why)</strong></summary>
+
+`iFlow` shut down on April 17, 2026. `Together AI`, `Perplexity API`, `DeepInfra`, `Replicate`, `Fireworks`, `Hyperbolic`, `Hugging Face`, `SiliconFlow`, `Chutes AI` were removed because they are paid, trial-credit only, too tiny to be useful, unclear as a stable free API, or tool-specific rather than a generally usable free provider. `Rovo` and `Gemini CLI` were removed as tool integrations (CLI-only, not generally usable free providers). The full list of free-tier providers kept *outside* the core catalog lives in [Other Free AI Resources](#-other-free-ai-resources).
+
+</details>
 
 ---
 
-## 🐳 Docker
+## 🎛️ The Terminal UI (TUI)
 
-Run FCM without installing Node.js using the official Docker image:
+The TUI is the heart of FCM. Launch it with `free-coding-models` and you get a live, sortable table of every model — real latency, stability, verdict, and a one-key launch into your coding tool.
+
+<p align="center"><video src="website/public/videos/tui-first-launch.mp4" alt="First launch — ~222 models ping in parallel" autoplay muted loop playsinline width="100%"></video></p>
+
+### First-run flow
+
+1. `free-coding-models` opens the TUI and prompts for API keys. Paste one (or skip).
+2. Models start pinging in parallel. Rows turn green ✅ as they respond.
+3. Navigate with **`↑↓`**, press **`Enter`** on the model you want — FCM writes it into your tool's config and launches the tool.
+
+### Common workflows
+
+**"Give me the fastest model that actually works"**
+Sort by stability with **`B`** (or **`V`** for verdict) — the top rows with 🥇🥈🥉 medals are your best bets. Models in `NO KEY` or `AUTH FAIL` are faded to 80% opacity so you instantly see what you can't use.
+
+**"Configure OpenCode with Groq's fastest model"**
+```bash
+free-coding-models --opencode --origin groq
+# → navigate, press Enter. opencode.json is written and the CLI opens.
+```
+
+<p align="center"><video src="website/public/videos/tui-pick-and-launch.mp4" alt="Pick a model & launch — Enter writes the model and opens the tool" autoplay muted loop playsinline width="100%"></video></p>
+
+**"Benchmark before I commit to a model"**
+- **`Ctrl+A`** runs an AI Speed Test on the selected model (a real completion request — not just a ping). Results split into **AI Latency** + **TPS**.
+- **`Ctrl+U`** runs the global benchmark across all visible models.
+- Enable **Startup AI Speed Scan** in Settings (`P`) to run the global benchmark automatically after launch.
+
+<p align="center"><video src="website/public/videos/tui-speed-test.mp4" alt="AI Speed Test — Ctrl+A benchmarks the selected model" autoplay muted loop playsinline width="100%"></video></p>
+
+**"I don't know which model to pick — pick for me"**
+Press **`Q`** to open **Smart Recommend**, a 3-question wizard (task type, priorities…) that returns Top 3 shared-score recommendations.
+
+**"Keep my go-to models pinned"**
+Star a model with **`F`** — favorites persist across sessions (shared with the Web Dashboard via `~/.free-coding-models.json`). Press **`Y`** to toggle **Pinned mode**: favorites stay pinned at the top and never scroll off-screen.
+
+**"Switch tools without restarting"**
+Press **`Z`** to cycle the target tool (OpenCode → OpenClaw → Crush → Goose → …). Models incompatible with the active tool get a dark-red row background so you instantly see what works.
+
+**"My terminal theme fights the TUI colors"**
+Press **`G`** to cycle **Auto → Dark → Light**. Recolors the full interface live (table, Settings, Help, overlays).
+
+### Keyboard reference
+
+| Key | Action |
+|-----|--------|
+| `↑↓` | Navigate models |
+| `Enter` | Launch the selected model in the active tool |
+| `Z` | Cycle target tool |
+| `T` | Cycle tier filter (All → S+ → S → … → C) |
+| `D` | Cycle provider filter |
+| `E` | Cycle visibility filter (`Active only → Configured only → Usable only`) |
+| `X` | Clear the active custom text filter |
+| `F` | Favorite / unfavorite a model |
+| `Y` | Toggle favorites mode (`Normal` ↔ `Pinned + always visible`) |
+| `G` | Cycle global theme (`Auto → Dark → Light`) |
+| **`Ctrl+P`** | Open the ⚡️ **Command Palette** (fuzzy action launcher) |
+| **`;`** | Open the **Playground** chat overlay (chat with the FCM router) |
+| **`Ctrl+A`** | Run an AI Speed Test for the selected model |
+| **`Ctrl+U`** | Run the Global AI Speed Test (real provider requests) |
+| `R/S/C/M/O/L/A/H/V/B/U` | Sort by Rank / SWE / ContexT / Model / Origin / Last ping / Avg ping / Health / Verdict / staBility / Uptime |
+| `W` | Sort by real-world score (`Real` column — see [Runtime telemetry](#-runtime-telemetry-real-world-scores)) |
+| `Shift+W` | Open the Runtime Report overlay (per-model breakdown + recent calls) |
+| `Shift+B` | Toggle visibility of broken models (footer shows `⚡ N cached · 🔴 M broken`) |
+| `Shift+U` | Update to the latest version (when an update is available) |
+| `P` | Settings (API keys, providers, updates, theme, Startup Speed Scan) |
+| `Q` | Smart Recommend overlay |
+| `N` | Changelog |
+| `I` | Feedback / bug report |
+| `K` | Help overlay |
+| `Ctrl+C` | Exit |
+
+### Mouse reference
+
+| Action | Result |
+|--------|--------|
+| **Click column header** | Sort by that column |
+| **Click Tier header** | Cycle tier filter |
+| **Click CLI Tools header** | Cycle tool mode |
+| **Click model row** | Move cursor to model |
+| **Double-click model row** | Select and launch model |
+| **Right-click model row** | Toggle favorite |
+| **Scroll wheel** | Navigate table / overlays / palette |
+| **Click footer hotkey** | Trigger that action |
+| **Click update banner** | Install latest version and relaunch |
+| **Click outside modal** | Close the command palette |
+
+→ **Stability score & full column reference:** [`docs/stability.md`](./docs/stability.md)
+
+---
+
+## 🌐 The Web Dashboard
+
+The Web Dashboard is a real-time, browser-based control center for the same catalog — full parity with the TUI for everything that's safe to port. It's the best surface for browsing at a glance, sharing filtered views, or running FCM headless in Docker.
+
+### Start it
+
+```bash
+# Catalog-only dashboard on http://localhost:3333 (override with FCM_WEB_PORT)
+free-coding-models web
+
+# Full dashboard + Smart Model Router on http://localhost:19280
+free-coding-models --daemon
+```
+
+| Mode | Port | What you get |
+|------|------|--------------|
+| `web` (or `--web` / `--gui`) | `3333` (`FCM_WEB_PORT`) | The realtime catalog dashboard only — browse, filter, benchmark. |
+| `--daemon` | `19280` (`FCM_PORT`) | Dashboard **+** the Smart Model Router API (`/v1/...`) on the same port. |
+| `--daemon-bg` | `19280` | Same as `--daemon`, but detached so it keeps running after the TUI closes. |
+
+> 💡 Open the dashboard with `open http://localhost:3333` (or `19280`), or drive it headless with `chrome-devtools`.
+
+### What's in the dashboard
+
+The model table uses **100% of the viewport width** (no rails) under a sticky header + filter bar, and every TUI capability ships behind a button or chip.
+
+| Area | Highlights |
+|---|---|
+| **Header** | Logo + version · nav (Dashboard, Settings, Analytics, Recommend, Router) · kebab menu (Help, Changelog, Install Endpoints, Installed Models) · endpoint target picker · `⌘K` palette · AI Latency toggle · theme · export |
+| **Model table** | 17 resizable columns (widths saved in localStorage), ⭐ star + 🔌 install per row, medal borders for top-3, dark-red rows for tool-incompatible models, click an AI Latency cell to run a per-row benchmark, sticky header |
+| **Filter bar** | Tier / Status / Verdict / Health chip rows · Visibility (Normal / Configured only / Usable only) · Provider select · text filter with `X` clear · Reset (TUI `N`) · ping mode (Speed / Normal / Slow / Forced) · "next ping in Xs" countdown |
+| **Detail panel** | Slide-in on row click · install-endpoint + per-row benchmark · favorite toggle + reorder (TUI `Shift+↑↓`) · latency trend chart · all stats |
+| **Command palette** | `⌘K` / `Ctrl+P` — the only global shortcut. Fuzzy search across views, theme, ping mode, reset, export, **and the full TUI command registry** |
+| **Smart Recommend** | The 3-question wizard → Top 3 shared-score recommendations with Pin + install actions |
+| **Router Dashboard** | Daemon start/stop, model health table with circuit-breaker badges, request log, probe-mode selector, "Probe all" benchmark, and a **Test Router** mini-playground |
+| **Token Usage** | (inside Analytics) today + all-time summary, 7-day bar chart, top models & providers breakdown |
+| **Settings parity** | Theme (auto/dark/light), favorites pinned mode, Startup AI Speed Scan, shell-env export, per-provider **Test key** button — all persisted to the same `~/.free-coding-models.json` the TUI uses |
+
+**Keyboard:** `Esc` closes any modal · `Cmd+K` toggles the palette. Everything else is mouse-first.
+
+**URL deep-linking:** `?tier=S+&sort=verdict&origin=groq&toolMode=goose&q=…` hydrates the dashboard on load **and** every filter/sort/view change is reflected back into the URL (debounced). CLI flags become shareable links — favorites are shared with the TUI through the same config file.
+
+<p align="center"><video src="website/public/videos/web-url-deep-linking.mp4" alt="URL deep-linking — filter the dashboard, share the URL" autoplay muted loop playsinline width="100%"></video></p>
+
+### Run it in Docker
+
+Run FCM without installing Node.js using the official image:
 
 > **Note:** GHCR requires authentication even for public images. Login once with:
 > ```bash
@@ -153,86 +375,25 @@ Run FCM without installing Node.js using the official Docker image:
 > Or use a [personal access token](https://github.com/settings/tokens) with `read:packages` scope.
 
 ```bash
-# Quick start (daemon + web UI on port 19280)
+# Quick start — daemon + web UI on port 19280
 docker run -p 19280:19280 ghcr.io/vava-nessa/free-coding-models:latest
 
 # With an API key
 docker run -p 19280:19280 -e OPENROUTER_API_KEY=your_key ghcr.io/vava-nessa/free-coding-models:latest
 ```
 
-Access the daemon web dashboard at `http://localhost:19280/` and configure your coding tool to use `http://localhost:19280/v1` with model `fcm`.
+Point your coding tool at `http://localhost:19280/v1` with model `fcm` and key `fcm-local`. See the [Smart Model Router](#-the-smart-model-router) section for routing details.
 
-For the full TUI-style catalog dashboard from an npm install, run:
+**Available image tags:** `latest` · `v{major}.{minor}.{patch}` (e.g. `v0.3.70`) · `v{major}.{minor}` (e.g. `v0.3`) · `v{major}` (e.g. `v0`)
 
-```bash
-free-coding-models web
-```
-
-This starts the realtime Web Dashboard locally, opens it in your browser, and uses `http://localhost:3333/` by default. Override the port with `FCM_WEB_PORT=3334 free-coding-models web`.
-
-#### Web Dashboard features (M4 parity with TUI)
-
-The local Web Dashboard is a real-time control center for the model catalog
-— not just a static table. The header holds every navigation entry, the
-model table uses **100% of the viewport width** (no left rail, no right rail),
-and every TUI capability that's safe to port ships behind a button or chip.
-
-| Area | What's there |
-|---|---|
-| **Header** | Logo + version · primary nav (Dashboard, Settings, Analytics, Recommend, Router) · kebab menu (Help, Changelog, Install Endpoints, Installed Models) · endpoint target picker · `⌘K` command palette · AI Latency · theme · export |
-| **Model table** | Full-bleed (no left/right border, no margin) under the sticky header + filter bar · 17 columns, resizable widths persisted in localStorage, ⭐ star per row, 🔌 install-endpoint button per row, medal borders for top-3, dark-red row class for tool-incompatible models, click AI Lat. cell to run a per-row benchmark · table header row stays sticky while scrolling |
-| **Filter bar** | Sticky right below the header (always visible) · Tier / Status / Verdict / Health chip rows · Visibility dropdown (Normal / Configured only / Usable only) · Provider select · custom text filter chip with `X` clear · Reset button (TUI `N`) · ping mode (Speed / Normal / Slow / Forced) · "next ping in Xs" countdown (TUI style, always shown) |
-| **Stats bar** | Removed in M1 (users found it noisy; the table + chips carry the same info at a glance) |
-| **Detail panel** | Slide-in from the right on row click · endpoint target indicator + install-endpoint button · per-row benchmark button (TUI `Ctrl+A`) · favorite toggle (TUI `F`) + up/down reorder (TUI `Shift+↑↓`) · latency trend chart · all stats |
-| **Command palette** | `⌘K` / `Ctrl+P` (the only global keyboard shortcut) · fuzzy search across views, theme, ping mode, reset, export, **and the full TUI command registry** (every filter / sort / tool / page entry from `src/tui/command-palette.js`) |
-| **Keyboard** | `Esc` closes any modal · `Cmd+K` toggles the palette — that's it. Everything else is mouse-first. |
-| **URL deep-linking** | `?tier=S+&sort=verdict&origin=groq&toolMode=goose&q=…` hydrates the dashboard on load **and** every filter / sort / view / endpoint target change is reflected back in the URL (debounced 80ms, `history.replaceState`). CLI flags become shareable links. |
-| **Favorites** | Shared with the TUI through `~/.free-coding-models.json` — a star in the Web is a star in the TUI. Includes pinned+sticky display mode (TUI `Y`). |
-| **Help modal** | Header overflow menu → "Help" opens a full-screen modal with all the TUI's keyboard shortcuts, filter behavior, and parity notes. Live search bar. |
-| **Changelog modal** | Header overflow menu → "Changelog" or Settings "Open Changelog" link. Two-phase (index of versions + per-version release notes). Deep-linkable to a specific version. |
-| **Update flow** | Header `⬆ vX.Y.Z` chip + popover with "Update now" + "What's new" (jumps to the new version's changelog entry). Polls every 5 min. |
-| **Settings parity** | Full Settings page: theme (auto/dark/light), favorites pinned mode, startup AI Speed Scan, shell env export, legacy proxy cleanup, per-provider **Test** key button (TUI `T` key), update row. All settings persisted to the same `~/.free-coding-models.json` the TUI uses. |
-| **Theme** | Tri-state `auto / dark / light` cycle (TUI `G`) — auto follows the OS preference. |
-| **Smart Recommend** | Header "Recommend" opens the 3-question wizard, runs the 10s analysis phase, then returns the Top 3 shared-score recommendations with Pin + install-endpoint actions. |
-| **Endpoint installs** | The Web never starts external tools. It writes the selected provider/model endpoint into the chosen tool config (`/api/install-endpoint`), then users start their tool themselves. |
-| **Router Dashboard** | Header "Router" opens a full modal with daemon start/stop, model health table with circuit breaker badges, request log, probe mode selector, quick-setup card (copy base URL + model to clipboard), **"Probe all" AI Latency/TPS benchmarking**, and a **"Test Router" mini playground** to live-route chats through the fallback chain. |
-| **Token Usage** | Integrated inside Analytics: today + all-time summary cards, 7-day usage bar chart, top models and top providers breakdown. |
-| **Installed Models** | Header overflow → "Installed Models" opens a modal that scans all tool configs (Goose, Crush, Aider, Kilo, Qwen, Pi, OpenHands, Amp) and shows configured models with soft-delete (backup saved). |
-| **Install Endpoints wizard** | Header overflow → "Install Endpoints" opens a 4-step wizard: pick provider → pick tool → select models → install. Writes managed provider catalogs into tool configs using the same engine as the TUI. |
-
-Roadmap items:
-- **M5** — Polish, accessibility, mobile hamburger nav, Lighthouse a11y ≥ 95.
-
-### Available Image Tags
-
-| Tag | Description |
-|-----|-------------|
-| `latest` | Most recent release |
-| `v{major}.{minor}.{patch}` | Specific version (e.g., `v0.3.70`) |
-| `v{major}.{minor}` | Minor version (e.g., `v0.3`) |
-| `v{major}` | Major version (e.g., `v0`) |
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FCM_HOST` | `0.0.0.0` | Host to bind to (set `127.0.0.1` for localhost-only) |
+| Env var | Default | Description |
+|---------|---------|-------------|
+| `FCM_HOST` | `0.0.0.0` | Bind host (`127.0.0.1` for localhost-only) |
 | `FCM_PORT` | `19280` | Port to listen on |
-| `FREE_CODING_MODELS_TELEMETRY` | `0` | Disable telemetry |
+| `FREE_CODING_MODELS_TELEMETRY` | `0` | `0` disables telemetry |
 
-Provider API keys (all optional):
-
-```bash
-docker run -p 19280:19280 \
-  -e NVIDIA_API_KEY=your_key \
-  -e GROQ_API_KEY=your_key \
-  -e OPENROUTER_API_KEY=your_key \
-  ghcr.io/vava-nessa/free-coding-models:latest
-```
-
-### Docker Compose
-
-Create a `docker-compose.yml`:
+<details>
+<summary><strong>Docker Compose + troubleshooting</strong></summary>
 
 ```yaml
 version: '3.8'
@@ -253,83 +414,112 @@ volumes:
   fcm-data:
 ```
 
-Run with `docker-compose up -d`. API keys can be passed via a `.env` file or environment variables.
+**Troubleshooting:**
+- **Won't start** — `docker logs fcm`, and check port 19280 isn't in use (`docker ps | grep 19280`).
+- **Health check fails** — wait ~30s for the first probe cycle; verify keys with `docker exec fcm curl http://localhost:19280/health`.
+- **Can't connect from host** — ensure `FCM_HOST=0.0.0.0` (default) and the firewall allows localhost.
+- **Reset data** — config lives in the `fcm-data` volume; wipe it with `docker-compose down -v`.
 
-### Troubleshooting
-
-**Container won't start:**
-- Check logs: `docker logs fcm`
-- Verify port 19280 is not in use: `docker ps | grep 19280`
-
-**Health check fails:**
-- Wait 30s for initial probe cycle
-- Verify API keys are valid: `docker exec fcm curl http://localhost:19280/health`
-
-**Cannot connect from host:**
-- Ensure `FCM_HOST=0.0.0.0` (default)
-- Check firewall allows localhost connections
-
-**Data persistence:**
-- Config is stored in Docker volume `fcm-data`
-- Recreate the volume with `docker-compose down -v` to reset
+</details>
 
 ---
 
-Need to fix contrast because your terminal theme is fighting the TUI? Press **`G`** at any time to cycle **Auto → Dark → Light**. The switch recolors the full interface live: table, Settings, Help, Smart Recommend, Feedback, and Changelog.
+## 🔌 Agent Extensions
 
-**② Pick a model and launch your tool:**
+FCM ships two **agent extensions** that bring the scanner/ranker directly into your coding agent — so you can hot-swap models mid-session without leaving the terminal. Both share one core (`fcm-agent-core`), so a scan done in one benefits the other.
 
-```
-↑↓ navigate   →   Enter to launch
-```
+### OpenCode Plugin — `fcm-opencode` ⚠️ BETA
 
-The model you select is automatically written into your tool's config (📦 OpenCode, 🦞 OpenClaw, 💘 Crush, etc.) and the tool opens immediately. Done.
-
-If the active CLI tool is missing, FCM now catches it before launch, offers a tiny Yes/No install prompt, installs the tool with its official global command, then resumes the same model launch automatically.
-
-> 💡 You can also run `free-coding-models --goose --tier S` to pre-filter to S-tier models for Goose before the TUI even opens.
-
-<p align="center">
-  <img src="demo2.gif" alt="free-coding-models TUI demo" width="100%">
-</p>
-
-## 🚀 Usage
-
-### Common scenarios
+The OpenCode adapter for the FCM scanner. Startup is intentionally light: fresh cache first, daemon second, **no direct scan** unless you run `/fcm`.
 
 ```bash
-# "I want the local web dashboard"
-free-coding-models --daemon
-
-# "I want one local endpoint that fails over between free models"
-free-coding-models --daemon-bg
-free-coding-models --daemon-status
-
-# "Start with an elite-focused preset, then adjust filters live"
-free-coding-models --premium
-
-# "I want to script this — give me JSON"
-free-coding-models --tier S --json | jq -r '.[0].modelId'
-
-# "I want to configure OpenClaw with Groq's fastest model"
-free-coding-models --openclaw --origin groq
+# Local install (symlink the adapter into OpenCode's plugins dir)
+mkdir -p ~/.config/opencode/plugins
+ln -sf /Users/<you>/Documents/GitHub/free-coding-models/packages/fcm-opencode/index.js \
+  ~/.config/opencode/plugins/fcm-opencode.js
 ```
 
-When launching the daemon (with `--daemon`), the web dashboard and router API are served from the same port. Configure tools with:
+> (`opencode-plugin/` at the repo root is kept as a thin compat wrapper, so existing symlinks keep working.)
 
-| Field | Value |
-|-------|-------|
-| Router Base URL | `http://localhost:19280/v1` |
-| Dashboard URL | `http://localhost:19280/` |
-| Model | `fcm` |
-| API key | `fcm-local` |
+| Command | Description |
+|---------|-------------|
+| `/fcm` | Run an explicit scan and list ranked choices (no switch) |
+| `/fcm 1` | Switch OpenCode config to ranked model #1 |
+| `/fcm best` | Switch OpenCode config to the best ranked model |
+| `/fcm rescan` | Force a fresh scan |
+| `/fcm status` / `/fcm-status` | Show plugin diagnostics |
+| `/fcm router` / `/fcm-router` | Switch OpenCode config to the local FCM Smart Router daemon |
 
-### Smart Model Router
+→ Full details: [`packages/fcm-opencode/README.md`](./packages/fcm-opencode/README.md)
 
-The **FCM Router** is a local OpenAI-compatible daemon that keeps running after the TUI closes. Point your coding tool at one localhost endpoint and let FCM route each request to the best available model in your active set.
+### Pi Extension — `FCM-Pi` ⚠️ BETA
+
+A native [Pi coding agent](https://pi.dev) extension. It stays **silent by default** — no scan, no footer noise, no automatic model switch on boot or `/resume`. It only acts when you ask.
+
+**Install** — add the extension path to `~/.pi/agent/settings.json` (not yet on npm — local path only):
+
+```json
+{
+  "packages": [
+    "/Users/<you>/Documents/GitHub/free-coding-models/pi-extension"
+  ]
+}
+```
+
+Then restart Pi. The extension loads automatically. Requires Pi + `free-coding-models` installed and configured with at least one API key.
+
+| Feature | What it does |
+|---------|--------------|
+| **Silent startup** | No scan, no footer noise, no auto-switch on boot or `/resume` |
+| **Manual scan** | `/fcm` pings ~30 candidates in parallel, then waits for your explicit pick |
+| **Live progress** | The Pi status bar shows `⠸ Probing: Kimi K2.6 [Nvidia]…` only while probing, then hides |
+| **10-min disk cache** | Results cached to `~/.pi/agent/fcm-cache.json` for fast diagnostics |
+| **Error-triggered picker** | If a request fails (HTTP 4xx/5xx), FCM reopens the picker and marks the failed model `🔴 BUGGED` |
+| **Daemon integration** | If the router daemon is running (`--daemon-bg`), scan results are fetched instantly from its cache |
+
+| Command | Description |
+|---------|-------------|
+| `/fcm` | Re-scan and pick a model interactively from the top 10 |
+| `/fcm-list` | Ranked table of top 20 models (SWE / Latency / TPS / Provider) |
+| `/fcm-router` | Connect Pi to the local FCM Smart Router daemon |
+| `/fcm-status` | Diagnostics: active model, last scan source, daemon state |
+
+**Composite ranking** — SWE-bench (60%) + Latency (20%) + TPS (10%) + Stability (10%). Tiny-context Cerebras models (~8k total tokens) are hidden from Pi/OpenCode pickers since they pass a `hi` probe but fail real agent prompts.
+
+→ Full architecture: [`packages/fcm-pi/README.md`](./packages/fcm-pi/README.md)
+
+### Shared agent architecture
+
+```
+packages/
+├── fcm-agent-core/   ← shared core (scan, rank, cache, daemon, keys, providers; no rendering)
+├── fcm-pi/           ← Pi adapter (hooks, commands, status-bar renderer, ~/.pi/agent disk writer)
+└── fcm-opencode/     ← OpenCode adapter (config mutation, commands, toasts, shell.env)
+```
+
+- The core emits **structured progress events**; each adapter renders them its own way (Pi status bar, OpenCode toast).
+- API keys are never inlined into OpenCode config — referenced via `{env:FCM_<PROVIDER>_API_KEY}`.
+- A **cross-tool cache** means a scan done in Pi benefits OpenCode (and vice-versa).
+
+> One-time self-link so `free-coding-models` resolves by name during local-path use:
+> ```bash
+> cd packages && mkdir -p node_modules && ln -s ../../ node_modules/free-coding-models
+> ```
+
+→ Public API & rationale: [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md)
+
+---
+
+## 🔀 The Smart Model Router
+
+The **FCM Router** is a local OpenAI-compatible daemon. Point any coding tool at a single localhost endpoint and let FCM route each request to the best available model in your active set — with automatic failover when a model 429s or 5xxs.
+
+> This is the most advanced surface. Most users start with the TUI or Web Dashboard and only reach for the router once they want *one endpoint that never goes down*.
+
+### Quick start
 
 ```bash
-# Start the router in the background
+# Start the router in the background (keeps running after the TUI closes)
 free-coding-models --daemon-bg
 
 # Check the active port, set, model count, uptime, and request totals
@@ -337,13 +527,9 @@ free-coding-models --daemon-status
 
 # Stop it cleanly
 free-coding-models --daemon-stop
-
-# Auto-discover and live-probe models into a named set
-free-coding-models --sync-set
-free-coding-models --sync-set my-coding-set
 ```
 
-Configure tools with:
+Point your coding tool at:
 
 | Field | Value |
 |-------|-------|
@@ -351,30 +537,46 @@ Configure tools with:
 | Model | `fcm` |
 | API key | `fcm-local` |
 
-The daemon auto-creates a `fast-coding` set from your configured providers on first start. It stores router settings in `~/.free-coding-models.json`, writes lifecycle logs to `~/.free-coding-models-daemon.log`, and tracks token metadata in `~/.free-coding-models-tokens.json`.
+On first start the daemon auto-creates a `fast-coding` set from your configured providers. It stores router settings in `~/.free-coding-models.json`, writes lifecycle logs to `~/.free-coding-models-daemon.log`, and tracks token metadata in `~/.free-coding-models-tokens.json`.
+
+### How it works
+
+**1. Probe mechanism (adaptive cadence)** — the daemon sends a 1-token chat-completion ping to every model in the active set. It measures latency **+ status code**, not just reachability, so a wrong API key is caught and the circuit breaker opens. Probe modes:
+
+| Mode | Interval | Use when |
+|------|----------|----------|
+| `eco` | 120s | You want to save quota |
+| `balanced` *(default)* | 30s | Everyday use |
+| `aggressive` | 10s | You're actively debugging routing |
+
+**2. Circuit breaker (per-model state)** — each model flips between states:
+
+| State | Meaning |
+|-------|---------|
+| 🟢 **Healthy** | Last probe returned 2xx — route here freely |
+| 🔴 **Down** | Last 3 probes failed — skip until cooldown |
+| 🟡 **Recovering** | Cooldown expired — retrying with 1 request |
+| 🟠 **Auth error** | 401/403 — your API key is wrong for this model |
+| ⚪ **Deprecated** | Removed from the catalog — will be replaced |
+
+**3. Failover order** — models are tried in priority order; a `Recovering` / `Down` / `Auth error` model is skipped and the request goes to the next healthy one. If *all* fail, you get a `503` with a `models_tried` list in the body for debugging.
+
+**4. Auto-heal (on by default)** — at daemon start, any model in `Auth error` or `Deprecated` is swapped for a working alternative (same provider first, then cross-provider). The first time you manually add/remove/reorder a model, auto-heal switches off and your choices are preserved — so a new user with a half-broken key set lands on a usable default set by the time the dashboard renders.
 
 ### Playground — chat with the router
 
-Every chat that goes through the FCM router starts with a configurable **pre-prompt** that introduces the assistant as the free-coding-models routing agent. The Playground is the fastest way to try the router without configuring a coding tool.
+The fastest way to try the router without configuring a tool. Every chat starts with a configurable **pre-prompt** that introduces the assistant as the FCM routing agent.
 
 ```bash
-# 1. Start the router (if it isn't already)
-free-coding-models --daemon-bg
-
-# 2. Open the Playground in the TUI
-free-coding-models --playground
-# ... or just press ; inside the TUI
-# ... or click "Playground" in the web dashboard header
+free-coding-models --daemon-bg     # 1. start the router (if not running)
+free-coding-models --playground    # 2. open the Playground in the TUI
+# …or press ; inside the TUI
+# …or click "Playground" in the Web Dashboard header
 ```
 
-The Playground:
+<p align="center"><video src="website/public/videos/router-playground.mp4" alt="Playground — chat with the router and see the routed provider/model" autoplay muted loop playsinline width="100%"></video></p>
 
-- Streams responses token-by-token (SSE).
-- Shows the routed-via provider/model + latency + tokens on every reply.
-- Lets you pin a specific model (`fcm` = auto-router, or `groq/<id>` / `cerebras/<id>` / etc.) for manual A/B testing.
-- Lets you toggle the pre-prompt per session, so you can see what the model answers *with* and *without* the FCM persona.
-
-The pre-prompt lives in the router config under `router.prePrompt` and can be edited from any surface (the daemon reloads it on its 10s config-refresh tick):
+The Playground streams responses token-by-token (SSE), shows the routed-via provider/model + latency + tokens on every reply, lets you pin a specific model (`fcm` = auto, or `groq/<id>` / `cerebras/<id>` / …) for A/B testing, and lets you toggle the pre-prompt per session. The pre-prompt lives in `router.prePrompt` and is editable from any surface (the daemon reloads it on its 10s config-refresh tick):
 
 ```json
 {
@@ -387,72 +589,113 @@ The pre-prompt lives in the router config under `router.prePrompt` and can be ed
 }
 ```
 
-Router endpoints:
+### Routing behavior details
+
+- Priority order works immediately on cold start, then probes refine health over time.
+- **Transient failures** (`429`, `500`, `502`, `503`, timeouts) fail over to the next model.
+- **Auth problems** (`401`, `403`, missing keys) are marked separately so bad credentials never poison the circuit breaker; after one provider returns an auth error, the router skips the rest of that provider for the current request.
+- Upstream HTML maintenance pages and malformed "successful" JSON are treated as retryable provider failures instead of being forwarded to your tool.
+- Quota/rate-limit failures include retry headers in the final router `503` payload when providers expose them.
+- If a coding tool disconnects mid-request, the daemon aborts the upstream request **without** counting it as a provider failure.
+- Streaming requests retry before the first byte; after partial output starts, the daemon records the failure and lets the current stream finish as safely as possible.
+
+### Auto-discover the best set — `--sync-set`
+
+`--sync-set [name]` auto-discovers, live-probes, and populates a named router set with the best currently-available coding models — perfect for scheduled refreshes so your set stays current without manual picking.
+
+```bash
+free-coding-models --sync-set              # create/refresh the default "auto" set
+free-coding-models --sync-set my-coding-set # named set
+free-coding-models --daemon-bg             # then run the daemon with it
+```
+
+Each candidate is probed twice (plain text must return exactly `OK`, and a tool-call must produce a valid `tool_calls` array), so models that work reliably with function-calling tools get in. Run it on a cron to keep the set fresh:
+
+```bash
+# crontab — refresh every 4 hours
+0 */4 * * * /usr/local/bin/free-coding-models --sync-set >> ~/.free-coding-models-sync.log 2>&1
+```
+
+→ Full pipeline, output shape, and failure modes: [`docs/sync-set.md`](./docs/sync-set.md)
+
+### REST API
+
+**Router endpoints** (`/v1/...`):
 
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /v1/chat/completions` | Route through the active set |
 | `POST /v1/sets/:name/chat/completions` | Route through a named set |
-| `GET /v1/models` | Return virtual models (`fcm`, `fcm:set-name`) |
+| `GET /v1/models` | Virtual models (`fcm`, `fcm:set-name`) |
 | `GET /health` | Daemon status JSON |
-| `GET /stats` | Routing, health, request log, and token stats |
+| `GET /stats` | Routing, health, request log, token + probe-cache + quota + runtime stats |
 | `GET /stream/events` | Live SSE events for router updates |
-| `POST /daemon/probe-mode` | Set probe mode with `{ "probeMode": "eco" | "balanced" | "aggressive" }` |
+| `POST /daemon/probe-mode` | Set probe mode `{ "probeMode": "eco" \| "balanced" \| "aggressive" }` |
 
-**Web Dashboard endpoints** (served from the same port in `--daemon` mode):
+**Web Dashboard endpoints** (same port in `--daemon` mode):
 
 | Endpoint | Purpose |
 |----------|---------|
 | `GET /` | Web dashboard HTML |
 | `GET /api/models` | All model data with latency stats |
 | `GET /api/config` | Provider config (keys masked) |
-| `GET /api/events` | Live SSE events for dashboard |
-| `GET /api/key/:provider` | Reveal full API key for provider |
+| `GET /api/events` | Live SSE events for the dashboard |
+| `GET /api/key/:provider` | Reveal the full API key for a provider |
 | `POST /api/settings` | Save API keys and provider toggles |
 
-Routing behavior:
+→ Full router guide: [`docs/README_ROUTER.md`](./docs/README_ROUTER.md)
 
-- Priority order works immediately on cold start, then probes refine health scores over time.
-- Transient failures (`429`, `500`, `502`, `503`, timeouts) fail over to the next model.
-- Authentication problems (`401`, `403`, missing keys) are marked separately so bad credentials do not poison the circuit breaker; after one provider returns an auth error, the router skips the rest of that provider for the current request.
-- Upstream HTML maintenance pages and malformed successful JSON are treated as retryable provider failures instead of being forwarded to your coding tool.
-- Quota and rate-limit failures include retry headers in the final router `503` payload when providers expose them.
-- If a coding tool disconnects mid-request, the daemon aborts the upstream request without counting it as a provider failure.
-- Streaming requests retry before the first byte; after partial output starts, the daemon records the failure and lets the current stream finish as safely as possible.
+---
 
-### Tool launcher flags
+## 📖 Reference
 
-| Flag | Launches |
-|------|----------|
-| `--opencode` | 📦 OpenCode CLI |
-| `--opencode-desktop` | 📦 OpenCode Desktop |
-| `--opencode-web` | 📦 OpenCode WebUI |
-| `--openclaw` | 🦞 OpenClaw |
-| `--crush` | 💘 Crush |
-| `--goose` | 🪿 Goose |
-| `--aider` | 🛠 Aider |
-| `--kilo` | ⚡️ Kilo CLI |
-| `--qwen` | 🐉 Qwen Code |
-| `--openhands` | 🤲 OpenHands |
-| `--amp` | ⚡ Amp |
-| `--hermes` | 🔮 Hermes |
-| `--continue` | ▶️ Continue CLI |
-| `--cline` | 🧠 Cline |
-| `--xcode` | 🛠️ Xcode Intelligence |
-| `--pi` | π Pi |
-| `--copilot` | 🤖 Copilot CLI |
-| `--forgecode` | 🔥 ForgeCode |
-| `--zcode` | 🧊 ZCode |
+The internals below power every surface. They're gathered here so they don't interrupt the core workflow above.
 
-Press **`Z`** in the TUI to cycle between tools without restarting.
+### CLI flags
 
-### CLI-Only Tools
+Flags combine freely in any order. Run `free-coding-models --help` to print the full list in-app.
 
-**Note:** When launching these tools via `Z` key or command palette, if the current mode doesn't match the tool, you'll see a confirmation alert asking to switch to the correct tool before launching.
+| Flag | Effect |
+|------|--------|
+| `--best` | Show only top tiers (A+, S, S+) |
+| `--premium` | Start with an S-tier filter + verdict sort (resettable in-app) |
+| `--tier <S\|A\|B\|C>` | Filter by tier family (`S` = S+/S, `A` = A+/A/A-, …) |
+| `--origin <provider>` | Filter by provider (e.g. `nvidia`, `groq`, `cerebras`) |
+| `--sort <column>` | Sort by `rank, tier, origin, model, ping, avg, swe, ctx, condition, verdict, uptime, stability, aiLatency, tps` |
+| `--asc` / `--desc` | Sort direction |
+| `--json` | Skip the TUI — print all results as JSON and exit (great for `jq`) |
+| `--fiable` | Wait 10s, pick the most reliable model, print `provider/model_id` and exit |
+| `--recommend` | Open Smart Recommend immediately on startup |
+| `--hide-unconfigured` / `--show-unconfigured` | Control whether models without a key are shown |
+| `--ping-interval <ms>` | Override the ping interval |
+| `--reprobe` / `--no-cache` | Rebuild the persistent probe-cache this run |
+| `--probe-ttl <ms>` | Override the probe-cache TTL (default 24h) |
+| `--show-broken` | Don't auto-hide broken models this run |
+| `--check-drift` | Diff `sources.js` against `models.dev`; exit 1 on mismatch |
+| `--no-telemetry` | Disable anonymous telemetry for this run |
 
-### OpenCode Zen Free Models
+**Tool launchers** — start the TUI pre-configured for a tool, then `Enter` writes the model into that tool's config and launches it:
 
-[OpenCode Zen](https://opencode.ai/zen) is a hosted AI gateway offering **5 free coding models** exclusively through OpenCode CLI and OpenCode Desktop. These models are **not** available through other tools.
+| Flag | Tool | Flag | Tool |
+|------|------|------|------|
+| `--opencode` | 📦 OpenCode CLI | `--openhands` | 🤲 OpenHands |
+| `--opencode-desktop` | 📦 OpenCode Desktop | `--amp` | ⚡ Amp |
+| `--opencode-web` | 📦 OpenCode WebUI | `--hermes` | 🔮 Hermes |
+| `--openclaw` | 🦞 OpenClaw | `--continue` | ▶️ Continue CLI |
+| `--crush` | 💘 Crush | `--cline` | 🧠 Cline |
+| `--goose` | 🪿 Goose | `--xcode` | 🛠️ Xcode Intelligence |
+| `--aider` | 🛠 Aider | `--pi` | π Pi |
+| `--kilo` | ⚡️ Kilo CLI | `--copilot` | 🤖 Copilot CLI |
+| `--qwen` | 🐉 Qwen Code | `--forgecode` | 🔥 ForgeCode |
+| | | `--zcode` | 🧊 ZCode |
+
+> Default (no tool flag) = OpenCode CLI. Press **`Z`** in the TUI to cycle tools without restarting. Incompatible models get a dark-red row background when a tool mode is active.
+
+→ Full flag reference: [`docs/flags.md`](./docs/flags.md) · Tool → config mapping: [`docs/integrations.md`](./docs/integrations.md)
+
+### OpenCode Zen — free models exclusive to OpenCode
+
+[OpenCode Zen](https://opencode.ai/zen) is a hosted AI gateway offering **5 free coding models** exclusively through OpenCode CLI/Desktop (OpenAI-compatible endpoint, so other tools can use them too):
 
 | Model | Tier | SWE-bench | Context |
 |-------|------|-----------|---------|
@@ -462,351 +705,82 @@ Press **`Z`** in the TUI to cycle between tools without restarting.
 | Nemotron 3 Super Free | A+ | 52.0% | 200k |
 | MiniMax M3 Free | S+ | 59.0% | 1M |
 
-To use Zen models: sign up at [opencode.ai/auth](https://opencode.ai/auth) and enter your Zen API key via `P` (Settings). Zen models appear in the main table and auto-switch to OpenCode CLI on launch.
+Sign up at [opencode.ai/auth](https://opencode.ai/auth), enter your Zen key via `P`, and Zen models appear in the main table (auto-switching to OpenCode CLI on launch).
 
-### Tool Compatibility
+### 🧠 Persistent probe cache
 
-When a tool mode is active (via `Z`), models incompatible with that tool are highlighted with a dark red background so you can instantly see which models work with your current tool.
+Every health-probe result is cached to `~/.free-coding-models/probe-cache.json` for **24 hours** and **shared across all surfaces** (CLI TUI, Web Dashboard / daemon, Tauri Desktop).
 
-| Model Type | Compatible Tools |
-|------------|-----------------|
-| Regular (NVIDIA, Groq, etc.) | All tools |
-| OpenCode Zen | All tools (OpenAI-compatible endpoint) |
+- **Warm start** renders the full ranking in <500ms using cached results, then re-pings only models that are due (broken or past TTL).
+- **Broken models** are auto-hidden across sessions — a model that 401s today stays out of tomorrow's default view, and recovers automatically when it returns `ok`.
+- **Cross-process safe** — debounced flush + atomic rename + read-merge-write, so the CLI and the daemon share the file without clobbering each other.
 
-→ **[Full flags reference](./docs/flags.md)**
-
----
-
-## 🧠 Persistent probe cache
-
-Every health probe result is cached to `~/.free-coding-models/probe-cache.json` for **24 hours** and **shared across all surfaces** (CLI TUI, Web Dashboard / daemon, Tauri Desktop).
-
-- **Warm start** renders the full ranking in <500ms using the cached results, then re-pings only the models that are due (broken or past TTL).
-- **Broken models** are auto-hidden across sessions — a model that 401s today stays out of tomorrow's default view. Recovery is automatic: if it comes back `ok`, it un-hides on the next probe.
-- **Cross-process safe**: a debounced flush + atomic rename + read-merge-write means the CLI and the daemon can share the file without clobbering each other.
-
-### Where the cache lives
-
-| Env / OS | Path |
-|----------|------|
-| `XDG_CACHE_HOME` set | `$XDG_CACHE_HOME/free-coding-models/probe-cache.json` |
-| Default (macOS / Linux) | `~/.free-coding-models/probe-cache.json` |
-| Windows | `%USERPROFILE%\.free-coding-models\probe-cache.json` |
-
-Inspect or wipe it manually any time — it's plain JSON with `0600` perms.
-
-### CLI flags
-
-| Flag | Effect |
-|------|--------|
-| `--reprobe` / `--no-cache` | Nuke the cache before this run; ping everything fresh |
+| Flag / key | Effect |
+|------------|--------|
+| `--reprobe` / `--no-cache` | Nuke the cache; ping everything fresh |
 | `--probe-ttl <ms>` | Override the 24h TTL (e.g. `--probe-ttl 3600000` for 1h) |
-| `--show-broken` | Don't auto-hide broken models this run (one-shot override) |
+| `--show-broken` | Don't auto-hide broken models this run |
+| `Shift+B` (TUI) | Toggle broken-model visibility (footer: `⚡ N cached · 🔴 M broken`) |
 
-### TUI keys
+**Cache location:** `$XDG_CACHE_HOME/free-coding-models/probe-cache.json` if set, else `~/.free-coding-models/probe-cache.json` (Windows: `%USERPROFILE%\.free-coding-models\probe-cache.json`). Plain JSON, `0600` perms — inspect or wipe it any time.
 
-| Key | Effect |
-|-----|--------|
-| **Shift+B** | Toggle visibility of broken models (footer chip shows `⚡ N cached · 🔴 M broken`) |
-
-### Daemon `/stats` shape
-
-```json
-{
-  "probeCache": {
-    "total": 222,
-    "ok": 178,
-    "broken": 13,
-    "freshCount": 165,
-    "staleCount": 13,
-    "dueCount": 26,
-    "hiddenCount": 13,
-    "providers": 9
-  }
-}
-```
-
----
-
-## 📊 Live quota from response headers
+### 📊 Live quota from response headers
 
 Every chat-completion response carries rate-limit headers (`x-ratelimit-remaining-requests`, etc.). The daemon parses them passively on every routed request — **zero extra network requests, zero quota waste**.
 
-- **8 header variants** supported: SambaNova, Mistral, generic `x-ratelimit-*`, the `ratelimit-*` (no-`x-`) variant some proxies use, and 3 daily / token / token-minute variants for Cerebras-style providers.
-- **Pre-warmed by pings**: even health-check pings return headers, so quota is visible in the CLI before you ever route a real request through the daemon.
-- **5-minute staleness**: snapshots older than 5 minutes are excluded, with the active `/api/v1/key` fetcher as fallback for idle providers.
-- **Case-insensitive**: some proxies vary casing; we handle all of them.
-- **Garbage-safe**: `limit: 0`, non-numeric values, or missing pairs return `null` (no crash).
-
-### Where it shows up
+- **8 header variants** supported (SambaNova, Mistral, generic `x-ratelimit-*`, no-`x-` proxy variant, + 3 daily/token/token-minute Cerebras-style variants).
+- **Pre-warmed by pings** — even health pings return headers, so quota is visible before you ever route a real request.
+- **5-minute staleness** — snapshots older than 5 min are excluded, with the active `/api/v1/key` fetcher as fallback for idle providers.
 
 | Surface | What you'll see |
 |---------|-----------------|
-| TUI footer | `📊 groq 78% · sambanova 41%` chip (top 5 most-depleted first) |
-| Web Dashboard | New `Provider Quota` section with animated progress bars per provider |
-| `/api/router/stats` | `quota: { providerKey: { remaining, limit, percent, source, lastUpdated, windowType } }` |
+| TUI footer | `📊 groq 78% · sambanova 41%` (top 5 most-depleted first) |
+| Web Dashboard | `Provider Quota` section with animated progress bars |
+| `/stats.quota` | `{ providerKey: { remaining, limit, percent, source, lastUpdated, windowType } }` |
 
-### Daemon `/stats.quota` shape
+The `source` field is `"header"` (passive) or `"endpoint"` (active fetcher) — handy in devtools to debug why a provider shows the value it does.
 
-```json
-{
-  "quota": {
-    "groq": { "remaining": 14, "limit": 30, "percent": 47, "windowType": "requests", "source": "header", "lastUpdated": 1753478400000 },
-    "sambanova": { "remaining": 1500, "limit": 14400, "percent": 10, "windowType": "day", "source": "header", "lastUpdated": 1753478400000 }
-  }
-}
-```
+### 📈 Runtime telemetry: real-world scores
 
-The `source` field is `"header"` when the value came from a passive response header, `"endpoint"` when it came from the active `/api/v1/key` fetcher. Use it in devtools to debug why a provider shows the value it does.
+Every routed request through the daemon feeds a persistent per-model telemetry file (`~/.free-coding-models/runtime-telemetry.json`) — the **honesty layer** that complements SWE-bench with what models *actually* do on free tiers.
 
----
-
-## 📈 Runtime telemetry: real-world scores
-
-Every routed request through the daemon feeds a persistent per-model telemetry file (`~/.free-coding-models/runtime-telemetry.json`) — the **honesty layer** that complements SWE-bench with what models actually do on free tiers.
-
-- **Real success rate** — `(successCalls / totalCalls)` updated on every routed request (success and failure paths alike).
-- **Real throughput** — `avgTokensPerSecond` derived from completion tokens / total latency, so you see what your code actually streams at.
-- **Recent calls (last 50)** — for debugging "why did this just 500?" without rebuilding state.
-- **Composite `Real` score** — `successRate × 0.6 + sigmoid01(tok/s) × 0.25 + recency × 0.15`. Null when below `MIN_CALLS_FOR_SCORE = 5` (no penalty for new models).
-
-### Where it shows up
+- **Real success rate** = `successCalls / totalCalls` (updated on every request, success and failure alike).
+- **Real throughput** = `avgTokensPerSecond` from completion tokens / total latency.
+- **Recent calls (last 50)** — for "why did this just 500?" without rebuilding state.
+- **Composite `Real` score** = `successRate × 0.6 + sigmoid01(tok/s) × 0.25 + recency × 0.15` (null below 5 calls — no penalty for new models).
 
 | Surface | What you'll see |
 |---------|-----------------|
-| TUI `Real` column | Inline composite score per row, `–` when insufficient data |
-| TUI `W` sort key | Sort by real-world score descending |
-| TUI `Shift+W` | Runtime Report overlay — per-model breakdown + recent calls |
+| TUI `Real` column | Inline composite per row (`–` when insufficient) |
+| TUI `W` / `Shift+W` | Sort by real-world score / Runtime Report overlay |
 | Web Dashboard | "Runtime Telemetry" cards with animated success-rate bars |
-| `/api/router/stats.runtime` | `{ stats: { modelsTracked, totalCalls, modelsWithSignal }, models: { ... } }` |
+| `/stats.runtime` | `{ stats: { modelsTracked, totalCalls, modelsWithSignal }, models: {…} }` |
 
-### Privacy
+**Privacy** — the file is **local only** (`0600` perms) and holds metadata only: success, latency, tokens, error reason. No prompts, no responses, no content. Wipe the baseline with `--clear-runtime`.
 
-The telemetry file lives **locally only** (`~/.free-coding-models/runtime-telemetry.json`, `0600` perms). Nothing is sent upstream unless you opt in to a future aggregate leaderboard. The file holds **metadata only** — success, latency, tokens, error reason. No prompts, no responses, no content.
+### Features at a glance
 
-### CLI flag
-
-- `--clear-runtime` — wipe the file before launching (reset the baseline).
-
----
-
-## π Pi Extension — FCM-Pi ⚠️ BETA
-
-**FCM-Pi** is a native [Pi coding agent](https://pi.dev) extension that integrates `free-coding-models` directly into your Pi session. It stays silent by default, scans only when you run `/fcm`, and lets you explicitly hot-swap models mid-session.
-
-> **BETA** — The extension is under active development and not yet published to npm. Install via local path only.
->
-> **Requires**: Pi coding agent (pi.dev) + free-coding-models installed and configured with at least one API key.
-
-### Installation
-
-Add the extension path to `~/.pi/agent/settings.json` (the extension is **not yet on npm** — local path only for now):
-
-```json
-{
-  "packages": [
-    "/Users/yourname/Documents/GitHub/free-coding-models/pi-extension"
-  ]
-}
-```
-
-Then restart Pi. The extension loads automatically.
-
-### What it does
-
-| Feature | Description |
-|---------|-------------|
-| **Silent startup** | No scan, no footer noise, and no automatic model switch on Pi boot or `/resume` |
-| **Manual scan** | `/fcm` pings ~30 candidate models in parallel and waits for your explicit selection |
-| **Temporary progress scan** | The Pi status bar shows live scan progress only while probing/benchmarking, then hides again |
-| **10-minute disk cache** | Results are cached to `~/.pi/agent/fcm-cache.json` for faster diagnostics and lists |
-| **Error-triggered picker** | If a request fails (HTTP 4xx/5xx), FCM reopens the picker and marks the failed model `🔴 BUGGED` |
-| **Daemon integration** | If the FCM router daemon is running (`free-coding-models --daemon-bg`), scan results are fetched instantly from its cache |
-
-### Scan progress display
-
-During `/fcm`, the Pi footer status shows:
-
-```
-⠸ Probing: Kimi K2.6 [Nvidia], Step 3.5 Flash [Stepfun] — 47% (14/30)
-⠼ Benchmarking: GLM 4.7 [Cerebras] — 60% (3/5)
-```
-
-- **Spinner** — 10-frame Braille animation at 80ms
-- **Phase label** — `Probing` (ping phase) or `Benchmarking` (AI latency phase)
-- **Live model name + provider** — shows the last 2 models being probed, scrolling as results come in
-- **Progress %** and counter always visible
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `/fcm` | Re-scan and pick a model interactively from the top 10 ranked |
-| `/fcm-list` | Display a ranked table of top 20 available models (SWE / Latency / TPS / Provider) |
-| `/fcm-router` | Explicitly connect Pi to the local FCM Smart Router daemon |
-| `/fcm-status` | Show diagnostics: active model, last scan source, daemon state |
-
-### Composite ranking
-
-Models are ranked using a composite score:
-
-| Weight | Metric | Description |
-|--------|--------|-------------|
-| **60%** | SWE-bench score | Coding capability |
-| **20%** | Latency | Network round-trip response time |
-| **10%** | TPS | Token throughput speed |
-| **10%** | Stability | Uptime + success rate |
-
-### Context window limits
-
-Cerebras free-tier API has a strict **~8k total token limit** (prompt + tools + completion). Tiny-context models can pass a `hi` probe but fail real agent prompts, so FCM hides 8k Cerebras models from Pi/OpenCode pickers.
-
-### Full documentation
-
-The adapter lives in [`packages/fcm-pi`](./packages/fcm-pi); `pi-extension/` is kept as a thin compat wrapper so existing local-path installs keep loading. See [`packages/fcm-pi/README.md`](./packages/fcm-pi/README.md) for the complete architecture, config format, and the one-time `packages/` self-link setup.
-
----
-
-## OpenCode Plugin — fcm-opencode ⚠️ BETA
-
-`fcm-opencode` is the OpenCode adapter for the same FCM scanner/ranker used by FCM-Pi.
-
-### Local install
-
-```bash
-mkdir -p ~/.config/opencode/plugins
-ln -sf /Users/vava/Documents/GitHub/free-coding-models/packages/fcm-opencode/index.js \
-  ~/.config/opencode/plugins/fcm-opencode.js
-```
-
-(`opencode-plugin/` at the repo root is kept as a thin compat wrapper, so existing symlinks keep working.)
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `/fcm` | Run an explicit scan and list ranked choices without switching |
-| `/fcm 1` | Switch OpenCode config to ranked model #1 |
-| `/fcm best` | Switch OpenCode config to the best ranked model |
-| `/fcm rescan` | Force a fresh scan |
-| `/fcm status` or `/fcm-status` | Show plugin diagnostics |
-| `/fcm router` or `/fcm-router` | Switch OpenCode config to the local FCM Smart Router daemon |
-
-Startup is intentionally light: fresh cache first, daemon second, **no direct scan** unless you run `/fcm`.
-
-See [`packages/fcm-opencode/README.md`](./packages/fcm-opencode/README.md) for details and limitations.
-
----
-
-## 🧩 Agent extensions architecture
-
-Both adapters share one core so scan/rank/cache/daemon/API-key/provider logic lives in exactly one place:
-
-```
-packages/
-├── fcm-agent-core/   ← shared core (scan, rank, cache, daemon, keys, provider descriptors; no rendering)
-├── fcm-pi/           ← Pi adapter (hooks, commands, status-bar renderer, ~/.pi/agent disk writer)
-└── fcm-opencode/     ← OpenCode adapter (config mutation, commands, toasts, shell.env)
-```
-
-- The core emits **structured progress events**; each adapter renders them its own way (Pi status bar, OpenCode toast).
-- API keys are never inlined into OpenCode config — they are referenced via `{env:FCM_<PROVIDER>_API_KEY}`.
-- The cross-tool cache means a scan done in Pi benefits OpenCode (and vice-versa).
-
-> The `packages/` tree needs a one-time self-link so `free-coding-models` resolves by name during local-path use:
-> ```bash
-> cd packages && mkdir -p node_modules && ln -s ../../ node_modules/free-coding-models
-> ```
-
-See [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md) for the public API and rationale. Tracked in [`.kandown/tasks/t2.md`](./.kandown/tasks/t2.md).
-
----
-
-## ⌨️ TUI Keys
-
-### Keyboard
-
-| Key | Action |
-|-----|--------|
-| `↑↓` | Navigate models |
-| `Enter` | Launch selected model in active tool |
-| `Z` | Cycle target tool |
-| `T` | Cycle tier filter |
-| `D` | Cycle provider filter |
-| `E` | Cycle visibility filter (`Active only → Configured only → Usable only`) |
-| `F` | Favorite / unfavorite model |
-| `Y` | Toggle favorites mode (`Normal filter/sort` default ↔ `Pinned + always visible`) |
-| `X` | Clear active custom text filter |
-| `G` | Cycle global theme (`Auto → Dark → Light`) |
-| `Ctrl+P` | Open ⚡️ command palette (search + run actions) |
-| `;` | Open the Playground chat overlay (chat with the FCM router) |
-| `Ctrl+A` | Run AI Speed Test for the selected model |
-| `Ctrl+U` | Run Global AI Speed Test (uses real provider requests) |
-| `R/S/C/M/O/L/A/H/V/B/U` | Sort columns |
-| `Shift+U` | Update to latest version (when update available) |
-| `P` | Settings (API keys, providers, updates, theme) |
-| `Q` | Smart Recommend overlay |
-| `N` | Changelog |
-| `W` | Cycle ping cadence |
-| `I` | Feedback / bug report |
-| `K` | Help overlay |
-| `Ctrl+C` | Exit |
-
-### Mouse
-
-| Action | Result |
-|--------|--------|
-| **Click column header** | Sort by that column |
-| **Click Tier header** | Cycle tier filter |
-| **Click CLI Tools header** | Cycle tool mode |
-| **Click model row** | Move cursor to model |
-| **Double-click model row** | Select and launch model |
-| **Right-click model row** | Toggle favorite |
-| **Scroll wheel** | Navigate table / overlays / palette |
-| **Click footer hotkey** | Trigger that action |
-| **Click update banner** | Install latest version and relaunch |
-| **Click command palette item** | Select item (double-click to confirm) |
-| **Click recommend option** | Select option (double-click to confirm) |
-| **Click outside modal** | Close command palette |
-
-→ **[Stability score & column reference](./docs/stability.md)**
-
----
-
-## ✨ Features
-
-- **Parallel pings** — all ~222 API/Zen-callable models tested simultaneously via native `fetch`
-- **AI benchmark columns** — `Ctrl+A` benchmarks the selected model, `Ctrl+U` benchmarks visible models, and results split cleanly into **AI Latency** plus **TPS**. Settings includes an opt-in **Startup AI Speed Scan** toggle to run the global benchmark automatically after launch.
-- **Tiny verdict indicator** — the first `❔` column mirrors the full Verdict as a compact emoji (`🟩`, `🟢`, `🟡`, `🟠`, etc.) and sorts by the same verdict order.
+- **Parallel pings** — all ~222 models tested simultaneously via native `fetch`
+- **AI benchmark columns** — `Ctrl+A` / `Ctrl+U` split into AI Latency + TPS; optional Startup AI Speed Scan
 - **Adaptive monitoring** — 2s burst for 60s → 10s normal → 30s idle
-- **Stability score** — composite 0–100 (p95 latency, jitter, spike rate, uptime)
+- **Stability score** — composite 0–100 (p95, jitter, spike rate, uptime)
 - **Smart ranking** — top 3 highlighted 🥇🥈🥉
-- **Favorites** — star models with `F`, persisted across sessions, default to normal rows, and switch display mode with `Y` (pinned+sticky vs normal rows)
-- **Configured-only default** — only shows providers you have keys for
-- **Keyless latency** — models ping even without an API key (show 🔑 NO KEY)
-- **Unusable row fade** — rows in `NO KEY` or `AUTH FAIL` state are rendered at 80% opacity (20% less opaque) on every surface (TUI + Web + Desktop), so the user can scan the table and instantly see which models they cannot actually use. Composes cleanly with the favorite/recommended/incompatible background tints.
+- **Configured-only default** — shows only providers you have keys for; keyless models still ping (🔑 NO KEY)
 - **Smart Recommend** — questionnaire picks the best model for your task type
-- **Smart Model Router** — local OpenAI-compatible daemon with model sets, failover, circuit breakers, health probes, and token stats
-- **Playground chat** — multi-turn chat with the router on every surface (TUI `;` / Web Playground nav / `free-coding-models --playground`). Streams responses and shows the routed-via provider/model on every reply.
-- **Auto-heal on startup** — the daemon replaces broken models in the active set (`AUTH_ERROR` / `STALE`) with working alternatives from the same provider first, then cross-provider. The first manual edit disables auto-heal so user choices are preserved. A new user with a half-broken key set lands on a usable default set by the time the dashboard renders.
-- **Web router set manager** — add, remove, drag-and-drop, and probe-sync the active router set from inside the Web Dashboard. The "Sync best models" button re-pings every candidate with the user's actual API keys and rebuilds the set with only models that return 2xx, so a new user lands on a working default set instead of a hardcoded one that 401s.
-- **Router pre-prompt** — a configurable first-class system message injected by the daemon on every `/v1/chat/completions` request it proxies. Default persona introduces the assistant as the FCM routing agent; editable from any surface.
-- **⚡️ Command Palette** — `Ctrl+P` opens a searchable action launcher for filters, sorting, overlays, and quick toggles
-- **Install Endpoints** — push a full provider catalog into any tool's config (from Settings `P` or ⚡️ Command Palette)
-- **Missing tool bootstrap** — detect absent CLIs, offer one-click install, then continue the selected launch automatically
-- **Tool compatibility matrix** — incompatible rows highlighted in dark red when a tool mode is active
-- **OpenCode Zen models** — 8 free models exclusive to OpenCode CLI/Desktop, powered by the Zen AI gateway
-- **Width guardrail** — shows a warning instead of a broken table in narrow terminals
-- **Readable everywhere** — semantic theme palette keeps table rows, overlays, badges, and help screens legible in dark and light terminals
-- **Global theme switch** — `G` cycles `auto`, `dark`, + `light` live without restarting
-- **Auto-retry** — timeout models keep getting retried
-- **Mandatory self-update policy** — startup checks npm for a newer FCM and installs it automatically without a prompt. If the install fails twice in a row (offline, proxy, or permissions), FCM still starts but shows a red outdated-version warning until the user retries with `Shift+U` or runs the displayed install command.
-- **Last release timestamp** — light pink footer shows `Last release: Mar 27, 2026, 09:42 PM` from npm so users know how fresh the data is
-- **Persistent probe-cache (t1)** — every health probe result is cached to `~/.free-coding-models/probe-cache.json` for 24h. Warm starts render the full ranking in <500ms, only re-ping the models that are due (broken or TTL-expired). Broken models are auto-hidden across sessions — toggle visibility with **Shift+B**. See [Persistent probe cache](#-persistent-probe-cache) below for `--reprobe`, `--probe-ttl`, `--show-broken`.
-- **Live quota from response headers (t2)** — every routed chat-completion response already carries `x-ratelimit-*` headers. The daemon parses them in 8 variants and exposes live per-provider quota on the TUI footer (`📊 groq 78% · sambanova 41%`) and in the Web Dashboard (`Provider Quota` section with animated progress bars). Zero extra network requests, zero quota waste. See [Live quota from headers](#-live-quota-from-response-headers) below.
-- **Runtime telemetry: real-world scores (t3)** — every routed request through the daemon feeds a persistent per-model telemetry file (`~/.free-coding-models/runtime-telemetry.json`) with real success rate, throughput, and recent calls. The `Real` column + `W` sort key in the TUI rank models by what *actually* works on free tiers, not what they claim on SWE-bench. See [Runtime telemetry](#-runtime-telemetry-real-world-scores) below.
-- **Extended benchmark catalog (t4)** — `src/data/benchmarks.json` (49 well-known models committed, refreshed at every release via `pnpm update:benchmarks`) layers **Coding Index, Math Index, Agentic Index, Reasoning Index, MMLU-Pro, GPQA, HLE** on top of `sources.js` with a lazy `Proxy` load + prefix-indexed O(key length) lookup. Surfaced on the TUI footer as `📊 bench 49 (2026-07-25)`. Curated SWE-bench scores are never overwritten — the overlay is additive.
-- **Live `models.dev` enrichment + drift detection (t5)** — the community-maintained `models.dev` catalog is fetched in the background (5 min in-process cache, 3 retries × 250 ms backoff) and overlaid onto every merged model with `metaSource` provenance. The footer chip shows `📡 102 live · 62 curated` so you see at a glance which values came from upstream. `--check-drift` prints a human-readable drift report vs `sources.js`; a weekly CI job opens a `catalog-drift` issue if anything changed.
+- **Smart Model Router** — local OpenAI-compatible daemon with model sets, failover, circuit breakers, health probes, token stats
+- **Playground chat** — multi-turn chat with the router on every surface
+- **⚡️ Command Palette** — `Ctrl+P` fuzzy action launcher
+- **Install Endpoints** — push a full provider catalog into any tool's config
+- **Missing-tool bootstrap** — detect absent CLIs, offer one-click install, resume the launch
+- **Tool compatibility matrix** — incompatible rows highlighted in dark red
+- **Width guardrail** — warning instead of a broken table in narrow terminals
+- **Mandatory self-update** — checks npm on startup and auto-installs; falls back to a red warning if install fails twice
+- **Extended benchmark catalog** — `src/data/benchmarks.json` layers Coding/Math/Agentic/Reasoning/MMLU-Pro/GPQA/HLE on top of `sources.js` (footer: `📊 bench 49 (2026-07-25)`)
+- **Live `models.dev` enrichment + drift detection** — community catalog overlaid in the background (footer: `📡 102 live · 62 curated`); `--check-drift` prints a drift report
+
+### Configuration file
+
+`~/.free-coding-models.json` (created on first run, `0600` perms) holds API keys, provider toggles, favorites, settings, and the router config. The TUI reads env vars first; the daemon reads config first then falls back to env vars (background services may not inherit your shell). → [`docs/config.md`](./docs/config.md)
 
 ---
 
@@ -814,25 +788,19 @@ See [`packages/fcm-agent-core/README.md`](./packages/fcm-agent-core/README.md) f
 
 We welcome contributions — issues, PRs, new provider integrations.
 
-**Q:** How accurate are the latency numbers?  
-**A:** Real round-trip times measured by your machine. Results depend on your network and provider load at that moment.
+**Q: How accurate are the latency numbers?**
+A: Real round-trip times measured by your machine. Results depend on your network and provider load at that moment.
 
-**Q:** Can I add a new provider?  
-**A:** Yes — see [`sources.js`](./sources.js) for the model catalog format.
+**Q: Can I add a new provider?**
+A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
 
-→ **[Development guide](./docs/development.md)** · **[Config reference](./docs/config.md)** · **[Tool integrations](./docs/integrations.md)**
+→ [Development guide](./docs/development.md) · [Config reference](./docs/config.md) · [Tool integrations](./docs/integrations.md) · [Stability & columns](./docs/stability.md) · [Sync-set](./docs/sync-set.md)
 
 ---
 
 ## ⚖️ Model Licensing & Commercial Use
 
-**Short answer:** The ~170 cataloged models are API/CLI-served models where generated-output ownership is generally granted by the provider/model terms. Always verify current provider terms for high-stakes commercial use.
-
-### Output Ownership
-
-For every model in this tool, **you own the generated output** — code, text, or otherwise — and can use it commercially. The licenses below govern the *model weights themselves*, not your generated content.
-
-### License Breakdown by Model Family
+**Short answer:** the ~222 cataloged models are API/CLI-served models where generated-output ownership is generally granted by the provider/model terms. **You own the generated output** — code, text, or otherwise — and can use it commercially. The licenses below govern the *model weights themselves*, not your generated content.
 
 | License | Models | Commercial Output |
 |---------|--------|:-----------------:|
@@ -842,34 +810,24 @@ For every model in this tool, **you own the generated output** — code, text, o
 | **Llama Community License** | Llama 3.3 70B, Llama 4 Scout/Maverick | ✅ Attribution required. >700M MAU → separate Meta license |
 | **DeepSeek License** | DeepSeek V3/V3.1/V3.2/V4 family | ✅ Use restrictions on model (no military, no harm) — output is yours |
 | **NVIDIA Nemotron License** | Nemotron Super/Ultra/Nano | ✅ Updated Mar 2026, now near-Apache 2.0 permissive |
-| **MiniMax Model License** | MiniMax M2, M2.5, M3 | ✅ Royalty-free, non-exclusive. Prohibited uses policy applies to model |
+| **MiniMax Model License** | MiniMax M2, M2.5, M3 | ✅ Royalty-free, non-exclusive. Prohibited-uses policy applies to model |
 | **Proprietary / hosted API terms** | Gemini, GitHub Models, Mistral/Codestral, OpenRouter-hosted models | ✅ Provider ToS applies |
 | **OpenCode Zen** | Big Pickle, GPT 5 Nano, MiniMax M3 Free, Nemotron 3 Super Free, HY3/Ling/Trinity previews | ✅ Per OpenCode Zen ToS |
 
-### Key Points
+**Key points:** (1) generated code is yours; (2) Apache 2.0 / permissive families (Qwen, GLM Flash, GPT-OSS, Devstral, Gemma) are the lowest-friction; (3) Llama requires "Built with Llama" attribution, >700M MAU needs a Meta license; (4) DeepSeek / MiniMax have use-restriction policies that govern the model, not your output; (5) API-served models grant output ownership under their current ToS.
 
-1. **Generated code is yours** — no model claims ownership of your output
-2. **Apache 2.0 / permissive model families** (Qwen, GLM Flash, GPT-OSS, Devstral, Gemma) are the lowest-friction options
-3. **Llama** requires "Built with Llama" attribution; >700M MAU needs a Meta license
-4. **DeepSeek / MiniMax** have use-restriction policies (no military use) that govern the model, not your generated code
-5. **API-served models** (Gemini, GitHub Models, OpenRouter, Mistral, etc.) grant output ownership under their current terms of service
-
-> ⚠️ **Disclaimer:** This is a summary, not legal advice. License terms can change. Always verify the current license on the model's official page before making legal decisions.
+> ⚠️ This is a summary, not legal advice. License terms can change — always verify on the model's official page before making legal decisions.
 
 ---
 
 ## 📊 Telemetry
 
-`free-coding-models` collects anonymous usage telemetry to help understand how the CLI is used and improve the product. No personal information, API keys, prompts, source code, file paths, or secrets are ever collected.
-
-The telemetry payload is limited to anonymous product analytics such as the app version, selected tool mode, operating system, terminal family, and a random anonymous install ID stored locally on your machine. When a model is launched, telemetry can also include the selected tool, provider, model ID, model label, model tier, launch result, and a few product actions such as installing provider catalogs, saving/removing API keys, or toggling shell environment export.
-
-Telemetry is enabled by default and can be disabled with any of the following:
+`free-coding-models` collects **anonymous** usage telemetry to understand how the CLI is used and improve the product. No personal information, API keys, prompts, source code, file paths, or secrets are ever collected — only anonymous product analytics (app version, tool mode, OS, terminal family, a random local install ID, and a few product actions like saving keys or installing catalogs).
 
 | Method | How |
 |--------|-----|
-| CLI flag | Run `free-coding-models --no-telemetry` |
-| Environment variable | Set `FREE_CODING_MODELS_TELEMETRY=0` (also supports `false` or `off`) |
+| CLI flag | `free-coding-models --no-telemetry` |
+| Env var | `FREE_CODING_MODELS_TELEMETRY=0` (also `false` / `off`) |
 
 ---
 
@@ -881,33 +839,21 @@ Telemetry is enabled by default and can be disabled with any of the following:
   <img src="https://img.shields.io/badge/supply_chain-verified-brightgreen" alt="supply chain verified">
 </p>
 
-### Supply Chain
-
 | Signal | Status |
 |--------|--------|
-| **npm Provenance** | ✅ Published with Sigstore-signed provenance |
-| **SBOM** | ✅ Software Bill of Materials attached to every GitHub Release |
-| **Dependencies** | ✅ 1 runtime dependency (`chalk`) |
-| **Lockfile** | ✅ `pnpm-lock.yaml` committed and tracked |
+| **npm Provenance** | ✅ Sigstore-signed |
+| **SBOM** | ✅ Attached to every GitHub Release |
+| **Dependencies** | ✅ 1 runtime (`chalk`) |
+| **Lockfile** | ✅ `pnpm-lock.yaml` tracked |
 | **Security Policy** | ✅ [`SECURITY.md`](SECURITY.md) |
 | **Code Owners** | ✅ [`CODEOWNERS`](CODEOWNERS) — all changes require maintainer review |
-| **Dependabot** | ✅ Weekly automated dependency + GitHub Actions updates |
-| **Audit CI** | ✅ `npm audit` runs on every push/PR + weekly scheduled scan |
+| **Dependabot** | ✅ Weekly automated updates |
+| **Audit CI** | ✅ `npm audit` on every push/PR + weekly scan |
 | **License** | ✅ MIT |
 
-### What This Tool Does
+**What this tool does:** pings public API endpoints to measure latency/availability · reads your API keys from `.env` (only if you configure them) · opens config files for editing (with permission) · reports anonymous usage data.
 
-- Pings public API endpoints to measure latency and check availability
-- Reads your API keys from `.env` files (only if you configure them)
-- Opens configuration files for editing (with your permission)
-- Reports anonymous usage data (no personal information — see footer)
-
-### What This Tool Does NOT Do
-
-- ❌ Does **not** send your API keys, code, or personal data to any third party
-- ❌ Does **not** install or execute arbitrary code beyond `chalk` (the only dependency)
-- ❌ Does **not** modify any files outside its own config directory
-- ❌ Does **not** require `sudo`, root, or elevated permissions
+**What this tool does NOT do:** ❌ never sends your API keys, code, or personal data to any third party · ❌ never installs or executes arbitrary code beyond `chalk` · ❌ never modifies files outside its own config dir · ❌ never requires `sudo`, root, or elevated permissions.
 
 > To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
@@ -923,7 +869,7 @@ Telemetry is enabled by default and can be disabled with any of the following:
  </picture>
 </a>
 
-
+---
 
 ## Special thanks to contributors
 
@@ -933,7 +879,7 @@ Telemetry is enabled by default and can be disabled with any of the following:
     <td align="center" width="120"><a href="https://github.com/erwinh22"><img src="https://avatars.githubusercontent.com/u/6641858?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="erwinh22"></a></td>
     <td align="center" width="120"><a href="https://github.com/whit3rabbit"><img src="https://avatars.githubusercontent.com/u/12357518?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="whit3rabbit"></a></td>
     <td align="center" width="120"><a href="https://github.com/skylaweber"><img src="https://avatars.githubusercontent.com/u/172871734?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="skylaweber"></a></td>
-    <td align="center" width="120"><a href="https://github.com/PhucTruong-ctrl"><img src="https://github.com/PhucTruong-ctrl.png?s=80" width="80" height="80" style="border-radius:50%" alt="PhucTruong-ctrl"></a></td>
+    <td align="center" width="120"><a href="https://github.com/PhucTruong-ctrl"><img src="https://avatars.githubusercontent.com/u/PhucTruong-ctrl.png?s=80" width="80" height="80" style="border-radius:50%" alt="PhucTruong-ctrl"></a></td>
     <td align="center" width="120"><a href="https://github.com/chindris-mihai-alexandru"><img src="https://avatars.githubusercontent.com/u/12643176?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="chindris-mihai-alexandru"></a></td>
     <td align="center" width="120"><a href="https://github.com/serajbaltu"><img src="https://avatars.githubusercontent.com/u/90699173?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="serajbaltu"></a></td>
     <td align="center" width="120"><a href="https://github.com/stgreenb"><img src="https://avatars.githubusercontent.com/u/18483964?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="stgreenb"></a></td>
@@ -961,7 +907,7 @@ Telemetry is enabled by default and can be disabled with any of the following:
 
 ## 🆓 Other Free AI Resources
 
-**Curated resources outside the active CLI catalog** — IDE extensions, coding agents, GitHub lists, and providers that are useful but not clean enough for the core free-provider table.
+Curated resources kept **outside** the active CLI catalog — IDE extensions, coding agents, GitHub lists, and providers that are useful but not clean enough for the core free-provider table.
 
 ### 📚 Awesome Lists (curated by the community)
 
@@ -988,7 +934,7 @@ Telemetry is enabled by default and can be disabled with any of the following:
 | [Windsurf](https://windsurf.com/) | 25 prompt credits/month | Required |
 | [Kilo Code](https://kilocode.ai/) | Up to $25 signup credits (one-time) | Required |
 | [Tabnine](https://www.tabnine.com/) | Basic completions + chat (limited) | Required |
-| [SuperMaven](https://supermaven.com/) | Basic suggestions, 1M token context | Required |
+| [SuperMaven](https://www.supermaven.com/) | Basic suggestions, 1M token context | Required |
 
 ### 🔑 API Providers with Permanent Free Tiers
 
@@ -1005,13 +951,13 @@ Telemetry is enabled by default and can be disabled with any of the following:
 | [Cloudflare Workers AI](https://dash.cloudflare.com) | 10K neurons/day | Llama 3.3 70B, QwQ 32B, 47+ models |
 | [OVHcloud AI Endpoints](https://endpoints.ai.cloud.ovh.net) | 2 req/min/IP sandbox | GPT-OSS, Qwen3, Mistral |
 
-### 🧪 Good Candidates Kept Outside the Core Catalog
+### 🧪 Good candidates kept outside the core catalog
 
-| Provider | Why it is not core |
+| Provider | Why it's not core |
 |----------|--------------------|
-| [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) | Useful gateway with included credits, but it is a router/billing layer, not a provider of permanently free models. |
-| [Cohere](https://cohere.com/) | Real evaluation key, but the allowance is small and the catalog is not coding-first enough for the default TUI. |
-| [Ollama Cloud](https://ollama.com/pricing) | Interesting for light cloud usage, but it is closer to hosted Ollama capacity than a classic OpenAI-compatible free provider. |
+| [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) | Useful gateway with included credits, but it's a router/billing layer, not a provider of permanently free models. |
+| [Cohere](https://cohere.com/) | Real evaluation key, but the allowance is small and the catalog isn't coding-first enough for the default TUI. |
+| [Ollama Cloud](https://ollama.com/pricing) | Interesting for light cloud usage, but closer to hosted Ollama capacity than a classic OpenAI-compatible free provider. |
 
 ### 💰 Providers with Trial Credits
 
@@ -1030,12 +976,12 @@ Telemetry is enabled by default and can be disabled with any of the following:
 | [Inference.net](https://inference.net) | $1 (+ $25 on survey) | Permanent |
 | [Novita](https://novita.ai/) | $0.5 | 1 year |
 
-These trial-credit providers are deliberately not treated as core providers unless their free allowance is practical for recurring coding use. A $0.10/month or $1 one-time credit is useful for experimentation, not for this CLI's default promise.
+These trial-credit providers are deliberately not treated as core unless their free allowance is practical for recurring coding use.
 
-### 🎓 Free with Education/Developer Programs
+### 🎓 Free with Education / Developer Programs
 
 | Program | What you get |
 |---------|--------------|
 | [GitHub Student Pack](https://education.github.com/pack) | Free Copilot Pro for students (verify with .edu email) |
 | [GitHub Copilot Free](https://code.visualstudio.com/blogs/2024/12/18/free-github-copilot) | 50 chat + 2,000 completions/month in VS Code |
-| [Copilot Pro for teachers/maintainers](https://docs.github.com/en/copilot/how-tos/manage-your-account/get-free-access-to-copilot-pro) | Free Copilot Pro for open source maintainers & educators |
+| [Copilot Pro for teachers/maintainers](https://docs.github.com/en/copilot/how-tos/manage-your-account/get-free-access-to-copilot-pro) | Free Copilot Pro for open-source maintainers & educators |

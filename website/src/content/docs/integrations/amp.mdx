@@ -1,0 +1,30 @@
+---
+title: Amp
+description: Launch Amp with a free model from FCM — it writes ~/.config/amp/settings.json with the selected model and launches amp.
+section: Agent Integrations
+---
+
+[Amp](https://ampcode.com) is a coding agent by Sourcegraph. FCM writes the selected provider + model into `settings.json` and launches `amp`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --amp
+free-coding-models --amp --tier S
+```
+
+## What FCM writes
+
+Config path: **`~/.config/amp/settings.json`**
+
+```json
+{
+  "amp.model": "groq/openai/gpt-oss-120b"
+}
+```
+
+The selected provider + model becomes Amp's default on next launch.
+
+## Install
+
+If the `amp` CLI isn't installed, FCM detects it, offers a one-line install (Amp's official global command), then resumes the same launch.

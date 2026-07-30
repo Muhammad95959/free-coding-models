@@ -1,24 +1,25 @@
 ---
 title: Introduction & Architecture
-description: Technical overview of free-coding-models — local gateway, ping engine, and auto-failover proxy for free AI coding models.
+description: Find the fastest free coding model in seconds — a real-time tracker for ~222 models across 20 providers, with a terminal dashboard, web dashboard, agent extensions, and a local auto-failover router.
 section: Getting started
 ---
 
-# Introduction & Architecture
+`free-coding-models` (FCM) pings every model in parallel, shows live latency, and computes a **live Stability Score (0–100)** so you know which free coding model is fastest *right now* — and which is actually reliable. Once you've picked a model, FCM writes it straight into your coding tool's config and launches it.
 
-`free-coding-models` is an open-source local gateway, health monitoring engine, and model router for free AI coding model endpoints.
+There are **~222 cataloged free or free-limited coding models** across 20 vetted providers (NVIDIA NIM, Groq, Cerebras, Google AI Studio, GitHub Models, Mistral, Cloudflare Workers AI, OpenRouter, SambaNova, OVHcloud, Scaleway, Alibaba DashScope, OpenCode Zen, Kilo, LLM7, Routeway, Novita, Ollama Cloud, and more).
 
-It aggregates models from providers including Google AI, Groq, Cerebras, NVIDIA NIM, GitHub Models, Mistral AI, Scaleway, Alibaba DashScope, Cloudflare AI, OVHcloud, OpenRouter, SambaNova, OpenCode Zen, Kilo, LLM7, Routeway, Novita, and Ollama Cloud.
+## Four surfaces, one engine
 
----
+FCM ships as **four surfaces**, all powered by the same engine:
 
-## Core Capabilities
+| Surface | What it is | When to use it |
+|---|---|---|
+| 🎛️ **TUI** | The interactive terminal dashboard | The default. Live ranking, pick + launch a model. |
+| 🌐 **Web Dashboard** | A browser control center | Browse from your browser, share filtered views, run headless in Docker. |
+| 🔌 **Extensions** | OpenCode & Pi agent plugins | Hot-swap models mid-session without leaving your agent. |
+| 🔀 **Router** | A local OpenAI-compatible daemon | One localhost endpoint that auto-fails-over between free models. |
 
-1. **Local OpenAI-Compatible Proxy**: Exposes `http://localhost:19280/v1` with model `"fcm"`.
-2. **Transparent Auto-Failover**: Automatically shifts requests to an alternative model in the active set when HTTP 429 (rate limit) or 5xx errors occur.
-3. **SWE-Bench Tiering**: Categorizes catalog entries into performance tiers (`S+`, `S`, `A+`, `A`, `A-`, `B+`, `B`, `C`) based on SWE-bench Verified scores.
-4. **Passive Quota Header Parsing**: Inspects `x-ratelimit-remaining` and reset headers on live responses to detect rate limits before requests fail.
-5. **Multi-Surface Interfaces**: Includes interactive terminal UI (ANSI), Tauri desktop tray utility, Web Dashboard, Docker image, and OpenCode/OpenClaw configuration tools.
+> The **TUI and Web Dashboard are the core** of the product — that's where most users live. Extensions and the Router build on top of the same engine and are covered later.
 
 ---
 
@@ -27,53 +28,65 @@ It aggregates models from providers including Google AI, Groq, Cerebras, NVIDIA 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        USER SURFACES & PLUGINS                         │
-│   CLI/TUI  │  Desktop Tray  │  Web UI  │  OpenCode  │  OpenClaw  │  IDE  │
+│   CLI/TUI  │  Web Dashboard  │  Desktop Tray  │  OpenCode  │  Pi  │ …   │
 └──────────────────────────────────┬─────────────────────────────────────┘
                                    │
 ┌──────────────────────────────────▼─────────────────────────────────────┐
-│                      FCM SMART ROUTER DAEMON                           │
-│               http://localhost:19280/v1 (model: "fcm")                 │
+│                        SHARED ENGINE & CONFIG                          │
+│  ~222 models · 20 providers · Stability Score · probe-cache · favorites │
 │                                                                        │
 │  ┌────────────────────┐  ┌───────────────────┐  ┌───────────────────┐  │
-│  │   Circuit Breaker  │  │  Passive Quota    │  │  System Pre-Prompt│  │
-│  │   Healthy/Down/   │  │  Header Tracker   │  │    Injection      │  │
-│  │   Auth Error      │  │ (x-ratelimit-rem) │  │                   │  │
+│  │   Smart Router     │  │  Passive Quota    │  │  Runtime          │  │
+│  │   + Circuit        │  │  Header Tracker   │  │  Telemetry        │  │
+│  │   Breaker          │  │ (x-ratelimit-*)   │  │ (real-world score)│  │
 │  └─────────┬──────────┘  └─────────┬─────────┘  └─────────┬─────────┘  │
 └────────────┼───────────────────────┼──────────────────────┼────────────┘
              │                       │                      │
 ┌────────────▼───────────────────────▼──────────────────────▼────────────┐
 │                       PROVIDER AGGREGATION CORE                        │
-│   Google AI  │  Groq  │  NVIDIA NIM  │  Alibaba DashScope  │  Ollama  │
+│   NVIDIA  │  Groq  │  Cerebras  │  Google AI  │  DashScope  │  Ollama  │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
+The TUI and Web Dashboard share the same catalog, config, probe-cache, and favorites — start a model in one surface and it shows up everywhere.
+
 ---
 
-## Key Modules
+## Core capabilities
+
+1. **Live ranking** — all models pinged in parallel via native `fetch`; real round-trip latency, not guesswork.
+2. **Stability Score** — a composite 0–100 score (p95 latency 30%, jitter 30%, spike rate 20%, uptime 20%) that reveals which models are *consistently* fast, not just lucky.
+3. **SWE-bench Tiering** — every model is tiered by its SWE-bench Verified score (`S+`, `S`, `A+`, `A`, `A-`, `B+`, `B`, `C`).
+4. **One-key launch** — `Enter` writes the model into your tool's config and launches it; pre-target a tool from the CLI or cycle it live with `Z`.
+5. **Smart Model Router** — an optional local OpenAI-compatible daemon (`http://localhost:19280/v1`) with automatic failover between free models when one 429s or 5xxs.
+
+---
+
+## Where to go next
 
 <CardGrid>
   <Card
     icon="terminal"
-    title="Terminal Dashboard"
-    description="ANSI escape TUI with real-time ping tracking, custom sorting, and keybindings."
+    title="Terminal Dashboard (TUI)"
+    description="The default surface — live ranking, full keybindings, sort & filter, pick + launch."
     href="/docs/integrations/cli-tui"
   />
   <Card
     icon="server"
-    title="Router Daemon & Proxy"
-    description="OpenAI-compatible server on port 19280 with circuit breaker state tracking."
-    href="/docs/integrations/docker-web"
+    title="Web Dashboard"
+    description="A browser control center with full parity to the TUI. Share filtered views, run headless."
+    href="/docs/integrations/web-dashboard"
   />
   <Card
     icon="zap"
-    title="OpenCode & OpenClaw"
-    description="Direct configuration injection for OpenCode CLI and OpenClaw agents."
+    title="Agent Extensions"
+    description="OpenCode & Pi plugins to hot-swap models mid-session without leaving your agent."
     href="/docs/integrations/opencode"
   />
   <Card
     icon="cpu"
-    title="Local & Cloud Models"
-    description="Support for local GGUF instances (Ollama / LM Studio) and cloud free endpoints."
-    href="/docs/integrations/local-ollama"
+    title="Smart Model Router"
+    description="One localhost endpoint that auto-fails-over between free models — the advanced surface."
+    href="/docs/core/router-daemon"
   />
 </CardGrid>

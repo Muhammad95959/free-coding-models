@@ -1,0 +1,40 @@
+---
+title: Qwen Code
+description: Launch Qwen Code with a free model from FCM — it writes ~/.qwen/settings.json + ~/.qwen/models.json with the selected model and launches qwen.
+section: Agent Integrations
+---
+
+[Qwen Code](https://github.com/QwenLM/qwen-code) is Alibaba's terminal coding agent (CLI wrapper around Qwen models). FCM writes the selected provider + model into Qwen Code's settings + models files and launches `qwen`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --qwen
+free-coding-models --qwen --tier A+
+```
+
+## What FCM writes
+
+| File | Purpose |
+|------|---------|
+| **`~/.qwen/models.json`** | Provider + model definitions |
+| **`~/.qwen/settings.json`** | Default model on next launch |
+
+```json
+// models.json
+{
+  "providers": {
+    "groq": {
+      "baseURL": "https://api.groq.com/openai/v1",
+      "apiKey": "{env:GROQ_API_KEY}"
+    }
+  },
+  "models": [
+    { "id": "groq/openai/gpt-oss-120b" }
+  ]
+}
+```
+
+## Install
+
+If the `qwen` CLI isn't installed, FCM detects it, offers a one-line install (`npm install -g @qwen-code/qwen-code`), then resumes the same launch.

@@ -2,13 +2,12 @@
  * @file src/routes/docs/$.tsx
  * @description Splat route for rendering documentation pages.
  */
-import { createFileRoute, notFound, Link } from '@tanstack/react-router'
+import { createFileRoute, notFound, Link, redirect } from '@tanstack/react-router'
 import { MDXProvider } from '@mdx-js/react'
 import { getDoc } from '~/lib/docs'
 import { flatDocs } from '~/content/nav'
 import { mdxComponents } from '~/components/MdxComponents'
 import { CopyPageButton } from '~/components/CopyPageButton'
-import { TableOfContents } from '~/components/TableOfContents'
 import { site } from '~/lib/site'
 
 const ARTICLE_ID = 'doc-article'
@@ -16,6 +15,14 @@ const ARTICLE_ID = 'doc-article'
 export const Route = createFileRoute('/docs/$')({
   loader: ({ params }) => {
     const slug = params._splat ?? 'introduction'
+    // 📖 Slug redirects: when pages are renamed, keep the old URL alive so external
+    // links don't 404. (The old MDX file is deleted; this redirect is the bridge.)
+    const SLUG_REDIRECTS: Record<string, string> = {
+      'integrations/pi-extension': 'integrations/pi',
+    }
+    if (SLUG_REDIRECTS[slug]) {
+      throw redirect({ to: '/docs/$', params: { _splat: SLUG_REDIRECTS[slug] } })
+    }
     const doc = getDoc(slug)
     if (!doc) throw notFound()
     return { slug, frontmatter: doc.frontmatter }
@@ -46,8 +53,7 @@ function DocPage() {
   const editUrl = `${site.repo}/edit/main/website/src/content/docs/${slug}.mdx`
 
   return (
-    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_13rem] xl:gap-10">
-      <article className="min-w-0 py-10 lg:py-16">
+    <article className="min-w-0 py-10 lg:py-16">
         <header className="mb-9 border-b border-border pb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <p className="label">{frontmatter.section ?? 'Docs'}</p>
@@ -109,12 +115,5 @@ function DocPage() {
           </a>
         </p>
       </article>
-
-      <aside className="hidden xl:block">
-        <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto py-14">
-          <TableOfContents containerId={ARTICLE_ID} />
-        </div>
-      </aside>
-    </div>
   )
 }

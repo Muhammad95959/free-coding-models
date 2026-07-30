@@ -1,21 +1,14 @@
 ---
 title: Troubleshooting & FAQ
-description: Diagnostics for PATH issues, HTTP 429 rate limits, HTTP 401 auth errors, port conflicts, and OpenCode sync.
+description: Fixes for PATH issues, HTTP 429 rate limits, HTTP 401 auth errors, port conflicts, probe-cache problems, and tool-config sync.
 section: Reference & Support
 ---
 
-# Troubleshooting & FAQ
+## `command not found: free-coding-models`
 
----
+**Cause:** npm's global bin directory is missing from your shell `$PATH`.
 
-## Common Issues & Diagnostics
-
-### 1. `command not found: free-coding-models`
-
-**Cause**: Global npm bin directory is missing from shell `$PATH`.
-
-**Fix**:
-Add npm global prefix to `$PATH` in `~/.zshrc` or `~/.bashrc`:
+**Fix:** Add the npm global prefix to `$PATH` in `~/.zshrc` or `~/.bashrc`:
 
 ```bash
 export PATH="$PATH:$(npm config get prefix)/bin"
@@ -24,53 +17,80 @@ source ~/.zshrc
 
 ---
 
-### 2. HTTP 429 (Rate Limit Exceeded)
+## HTTP 429 (Rate Limit Exceeded)
 
-**Cause**: Provider rate limit window exhausted (e.g. Groq 30 RPM limit).
+**Cause:** A provider's rate-limit window is exhausted. Rate-limited providers like **OpenRouter** (50 req/day free) are the most sensitive — one overloaded model re-pinged every cycle can burn your quota in minutes.
 
-**Fix**:
-1. Run background daemon (`free-coding-models --daemon-bg`). The router fails over to an alternative provider in the active set.
-2. Add keys for additional active providers (Google AI, Cerebras, DashScope, NVIDIA) in Settings (**`P`** in TUI).
+**Fix:**
+1. FCM **auto-pauses** a provider the moment its probe gets a `429` (it honors the `Retry-After` header) and shows a footer chip like `⏸ openrouter 14h`. Wait it out, or add another provider's key.
+2. Run the router (`free-coding-models --daemon-bg`) so requests fail over to an alternative provider in the active set.
+3. Add keys for additional providers (Google AI, Cerebras, DashScope, NVIDIA) in Settings (**`P`** in the TUI).
 
----
-
-### 3. HTTP 401 / 403 (Auth Error)
-
-**Cause**: Invalid or expired API key.
-
-**Fix**:
-1. Check keys in TUI Settings (**`P`**).
-2. Force-rebuild probe cache:
-   ```bash
-   free-coding-models --reprobe
-   ```
+> Leave a provider's key empty if you don't need authenticated probes — anonymous probes still work for liveness checks and won't burn your personal quota.
 
 ---
 
-### 4. `Port 19280 in use`
+## HTTP 401 / 403 (Auth Error)
 
-**Cause**: Another daemon process is already running.
+**Cause:** Invalid or expired API key.
 
-**Fix**:
-Stop running daemon:
+**Fix:**
+1. Check the key in TUI Settings (**`P`**) or the Web Dashboard **Settings** page (use the **Test key** button).
+2. Force-rebuild the probe cache so the bad state clears:
 
 ```bash
-free-coding-models --daemon-stop
+free-coding-models --reprobe
 ```
 
-Or check port listener:
+Keys are stored in `~/.free-coding-models.json`. The TUI reads env vars first; export a fresh key (`export GROQ_API_KEY=…`) if the config value is stale.
+
+---
+
+## `Port 19280 in use`
+
+**Cause:** Another daemon process is already running (or the port is occupied).
+
+**Fix:**
 
 ```bash
-lsof -i :19280
+free-coding-models --daemon-stop     # stop the running daemon
+lsof -i :19280                        # check what's listening
+```
+
+Note the daemon scans `19280`–`19289` if the preferred port is busy. The catalog-only `web` dashboard uses a different port (`3333`, `FCM_WEB_PORT`).
+
+---
+
+## Broken models keep showing up
+
+FCM auto-hides models that the probe cache marked broken (e.g. persistent 401s or offline endpoints) across sessions. To inspect them:
+
+```bash
+free-coding-models --show-broken       # CLI — don't auto-hide this run
+# …or press Shift+B in the TUI (footer: ⚡ N cached · 🔴 M broken)
+```
+
+To start completely fresh, nuke the cache:
+
+```bash
+free-coding-models --reprobe           # rebuild the 24h probe cache
 ```
 
 ---
 
-### 5. OpenCode CLI Model List Not Updating
+## OpenCode / Pi model list not updating
 
-**Fix**:
-Re-run injection:
+Re-run the tool launcher to re-inject the current model into the tool's config:
 
 ```bash
-free-coding-models --opencode
+free-coding-models --opencode          # OpenCode
+free-coding-models --pi                # Pi
 ```
+
+For the agent extensions, use `/fcm rescan` (OpenCode) or `/fcm` (Pi) to force a fresh scan.
+
+---
+
+## How accurate are the latency numbers?
+
+Real round-trip times measured by your machine. Results depend on your network and provider load at that moment. The **Stability Score** (0–100) is a better guide than a single ping — it folds in p95 latency, jitter, spike rate, and uptime.

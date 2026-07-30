@@ -1,0 +1,32 @@
+---
+title: OpenHands
+description: Launch OpenHands with a free model from FCM — FCM writes ~/.fcm-openhands-env and sets LLM_MODEL/LLM_API_KEY/LLM_BASE_URL, then launches openhands --override-with-envs.
+section: Agent Integrations
+---
+
+[OpenHands](https://github.com/All-Hands-AI/OpenHands) is an autonomous coding agent. FCM writes the provider + model selection into an env file that you source, and launches `openhands` with `--override-with-envs`.
+
+## Launch from FCM
+
+```bash
+free-coding-models --openhands
+free-coding-models --openhands --tier S
+```
+
+## What FCM sets
+
+**Env file written:** **`~/.fcm-openhands-env`** — back up this file (it's tracked in the config artifact list) so you can restore if needed.
+
+| Env var | Value |
+|---------|-------|
+| `LLM_MODEL` | The selected model ID |
+| `LLM_API_KEY` | The provider's API key (or inherits existing `LLM_API_KEY`) |
+| `LLM_BASE_URL` | The provider's base URL (when applicable) |
+
+The command `openhands --override-with-envs` tells OpenHands to use the env values instead of its own `config.toml`.
+
+## Install
+
+If the `openhands` CLI isn't installed, FCM detects it, offers a one-line install (`pip install openhands`), then resumes the same launch.
+
+> For OpenHands specifically, FCM writes the env to a file rather than passing it inline — OpenHands reads certain config from disk on startup, so the file is the reliable path.
