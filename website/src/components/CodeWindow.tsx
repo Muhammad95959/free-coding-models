@@ -44,7 +44,7 @@ export function CodeWindow({
                 onClick={() => setActiveId(tab.id)}
                 className={`rounded px-2.5 py-1 transition-colors ${
                   activeId === tab.id
-                    ? 'bg-bg-raised font-semibold text-fg'
+                    ? 'bg-accent/20 font-bold text-accent-fg border border-accent/30'
                     : 'text-fg-muted hover:text-fg'
                 }`}
               >

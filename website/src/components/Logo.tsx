@@ -23,7 +23,7 @@ export function Wordmark({ className = '' }: { className?: string }) {
       <span className="font-mono text-sm font-semibold tracking-tight text-fg">
         free-coding-models
       </span>
-      <span className="rounded bg-accent/15 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-accent-fg">
+      <span className="rounded bg-accent/20 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-accent-fg border border-accent/30 shadow-sm">
         v0.5.69
       </span>
     </div>

@@ -120,13 +120,13 @@ export function Badge({
 }) {
   const styles: Record<string, string> = {
     's-plus': 'bg-purple-950/60 text-purple-300 border-purple-500/40',
-    's': 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40',
+    's': 'bg-accent/20 text-accent-fg border-accent/40 font-bold',
     'a-plus': 'bg-cyan-950/60 text-cyan-300 border-cyan-500/40',
     'a': 'bg-blue-950/60 text-blue-300 border-blue-500/40',
     'b': 'bg-amber-950/60 text-amber-300 border-amber-500/40',
     'c': 'bg-zinc-900 text-zinc-400 border-zinc-700',
-    'tier': 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40',
-    'success': 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40',
+    'tier': 'bg-accent/20 text-accent-fg border-accent/40 font-bold',
+    'success': 'bg-accent/20 text-accent-fg border-accent/40 font-bold',
     'warning': 'bg-amber-950/60 text-amber-300 border-amber-500/40',
     'danger': 'bg-rose-950/60 text-rose-300 border-rose-500/40',
   }

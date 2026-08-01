@@ -1,12 +1,10 @@
 /**
  * @file src/components/SiteHeader.tsx
- * @description The sticky top bar shared by every page: wordmark, primary nav,
- * a docs search trigger, and GitHub / npm links.
- *
- * 📖 Dark-mode translucent sticky header with responsive mobile collapse.
+ * @description Sticky top bar with Tabler Icons for the hamburger menu.
  */
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { IconMenu2, IconX } from '@tabler/icons-react'
 import { Wordmark } from './Logo'
 import { SearchTrigger } from './DocSearch'
 import { GitHubStars } from './GitHubStars'
@@ -47,7 +45,7 @@ export function SiteHeader() {
               to={'slug' in item ? '/docs/$' : item.to}
               params={'slug' in item ? { _splat: item.slug } : undefined}
               className="label border-b-2 border-transparent py-1 transition-colors hover:text-fg"
-              activeProps={{ className: 'label border-b-2 border-accent py-1 text-fg' }}
+              activeProps={{ className: 'label border-b-2 border-accent py-1 text-accent-fg font-bold' }}
             >
               {item.label}
             </Link>
@@ -59,8 +57,6 @@ export function SiteHeader() {
             <SearchTrigger />
           </div>
 
-          {/* 📖 The metric pills need more horizontal room than mobile and tablet
-              headers provide; the menu keeps those destinations reachable. */}
           <div className="hidden items-center gap-4 lg:flex">
             <GitHubStars href={site.repo} />
             <NpmDownloads href={site.npm} />
@@ -73,9 +69,10 @@ export function SiteHeader() {
             aria-label="Toggle navigation"
             className="p-2 text-fg-muted transition-colors hover:text-fg md:hidden"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
-              {open ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M3 6h18M3 12h18M3 18h18" />}
-            </svg>
+            {open
+              ? <IconX size={20} stroke={1.75} aria-hidden="true" />
+              : <IconMenu2 size={20} stroke={1.75} aria-hidden="true" />
+            }
           </button>
         </div>
       </div>

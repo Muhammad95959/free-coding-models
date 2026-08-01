@@ -51,19 +51,19 @@
 }
 
 :root {
-  --fcm-accent: #10b981;
-  --fcm-accent-soft: rgba(16, 185, 129, 0.15);
-  --fcm-bg: #09090b;
-  --fcm-bg-subtle: #121215;
-  --fcm-bg-raised: #18181b;
-  --fcm-border: #27272a;
-  --fcm-border-strong: #3f3f46;
+  --fcm-accent: #c3ed06;
+  --fcm-accent-soft: rgba(195, 237, 6, 0.14);
+  --fcm-bg: #090d05;
+  --fcm-bg-subtle: #10160a;
+  --fcm-bg-raised: #151d0d;
+  --fcm-border: #212c14;
+  --fcm-border-strong: #34461f;
   --fcm-fg: #fafafa;
-  --fcm-fg-muted: #a1a1aa;
-  --fcm-fg-faint: #71717a;
-  --fcm-accent-fg: #34d399;
-  --fcm-code-bg: #0d0d11;
-  --fcm-ink: #04100c;
+  --fcm-fg-muted: #a3b395;
+  --fcm-fg-faint: #6c7a5f;
+  --fcm-accent-fg: #c3ed06;
+  --fcm-code-bg: #0b1006;
+  --fcm-ink: #0a0f02;
 
   color-scheme: dark;
 }
@@ -356,5 +356,5 @@
 }
 
 .hero-card-surface {
-  background-color: rgba(16, 185, 129, 0.08) !important;
+  background-color: rgba(195, 237, 6, 0.08) !important;
 }
