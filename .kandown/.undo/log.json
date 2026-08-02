@@ -1,6 +1,14 @@
 [
   {
     "type": "move",
+    "taskId": "t12",
+    "path": "/Users/vava/Documents/GitHub/free-coding-models/tasks/t12.md",
+    "previousContent": "---\nid: t12\ntitle: Website: dynamic /models catalog page sourced from sources.js\nstatus: Backlog\ncreated: 2026-08-02\nupdated: 2026-08-02T18:16:22Z\npriority: P2\nassignee: pi\n---\n\n\n",
+    "newContent": "---\nid: t12\ntitle: Website: dynamic /models catalog page sourced from sources.js\nstatus: In Progress\ncreated: 2026-08-02\nupdated: 2026-08-02T18:16:24Z\npriority: P2\nassignee: pi\n---\n\n\n",
+    "timestamp": 1785694584012
+  },
+  {
+    "type": "move",
     "taskId": "t11",
     "path": "/Users/vava/Documents/GitHub/free-coding-models/tasks/t11.md",
     "previousContent": "---\nid: t11\ntitle: Unify project icons from icon.png\nstatus: Backlog\ncreated: 2026-07-30\nupdated: 2026-07-30T15:53:03Z\npriority: P2\nassignee: codex\n---\n\n\n",
