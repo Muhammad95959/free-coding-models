@@ -14,6 +14,7 @@ import { Route as R404RouteImport } from './routes/404'
 import { Route as ChangelogsRouteRouteImport } from './routes/changelogs/route'
 import { Route as CreatorRouteImport } from './routes/creator'
 import { Route as DocsRouteRouteImport } from './routes/docs/route'
+import { Route as ModelsRouteImport } from './routes/models'
 import { Route as ChangelogsIndexRouteImport } from './routes/changelogs/index'
 import { Route as ChangelogsSplatRouteImport } from './routes/changelogs/$'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
@@ -44,6 +45,11 @@ const DocsRouteRoute = DocsRouteRouteImport.update({
   path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModelsRoute = ModelsRouteImport.update({
+  id: '/models',
+  path: '/models',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChangelogsIndexRoute = ChangelogsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteRouteWithChildren
   '/404': typeof R404Route
   '/creator': typeof CreatorRoute
+  '/models': typeof ModelsRoute
   '/changelogs/$': typeof ChangelogsSplatRoute
   '/docs/$': typeof DocsSplatRoute
   '/changelogs/': typeof ChangelogsIndexRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/404': typeof R404Route
   '/creator': typeof CreatorRoute
+  '/models': typeof ModelsRoute
   '/changelogs/$': typeof ChangelogsSplatRoute
   '/docs/$': typeof DocsSplatRoute
   '/changelogs': typeof ChangelogsIndexRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteRouteWithChildren
   '/404': typeof R404Route
   '/creator': typeof CreatorRoute
+  '/models': typeof ModelsRoute
   '/changelogs/$': typeof ChangelogsSplatRoute
   '/docs/$': typeof DocsSplatRoute
   '/changelogs/': typeof ChangelogsIndexRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/404'
     | '/creator'
+    | '/models'
     | '/changelogs/$'
     | '/docs/$'
     | '/changelogs/'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/'
     | '/404'
     | '/creator'
+    | '/models'
     | '/changelogs/$'
     | '/docs/$'
     | '/changelogs'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/404'
     | '/creator'
+    | '/models'
     | '/changelogs/$'
     | '/docs/$'
     | '/changelogs/'
@@ -137,6 +149,7 @@ export interface RootRouteChildren {
   DocsRouteRoute: typeof DocsRouteRouteWithChildren
   R404Route: typeof R404Route
   CreatorRoute: typeof CreatorRoute
+  ModelsRoute: typeof ModelsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -174,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/models': {
+      id: '/models'
+      path: '/models'
+      fullPath: '/models'
+      preLoaderRoute: typeof ModelsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/changelogs/': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRouteRoute: DocsRouteRouteWithChildren,
   R404Route: R404Route,
   CreatorRoute: CreatorRoute,
+  ModelsRoute: ModelsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

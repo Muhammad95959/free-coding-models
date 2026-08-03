@@ -53,17 +53,17 @@ function DocPage() {
   const editUrl = `${site.repo}/edit/main/website/src/content/docs/${slug}.mdx`
 
   return (
-    <article className="min-w-0 py-10 lg:py-16">
-        <header className="mb-9 border-b border-border pb-8">
+    <article className="min-w-0 py-8 sm:py-10 lg:py-16">
+        <header className="mb-8 sm:mb-9 border-b border-border pb-6 sm:pb-8">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <p className="label">{frontmatter.section ?? 'Docs'}</p>
             <CopyPageButton slug={slug} />
           </div>
-          <h1 className="max-w-3xl text-2xl font-semibold tracking-tight text-balance sm:text-4xl text-fg">
+          <h1 className="max-w-3xl text-2xl font-semibold tracking-tight sm:text-4xl text-fg">
             {frontmatter.title}
           </h1>
           {frontmatter.description && (
-            <p className="mt-4 max-w-2xl font-mono text-sm leading-relaxed text-fg-muted">
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-fg-muted sm:text-lg">
               {frontmatter.description}
             </p>
           )}

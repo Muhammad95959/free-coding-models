@@ -67,9 +67,9 @@ function ChangelogArticlePage() {
           </a>
         </div>
 
-        <h1 className="max-w-3xl text-2xl font-semibold tracking-tight sm:text-4xl text-fg leading-tight">
-          <span className="font-mono text-accent-fg text-xl sm:text-3xl font-bold mr-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-accent-soft/30 border border-accent/30">
-            <Tag className="w-4 h-4 sm:w-5 sm:h-5" />
+        <h1 className="max-w-3xl text-xl font-semibold tracking-tight sm:text-4xl text-fg leading-tight">
+          <span className="font-mono text-accent-fg text-base sm:text-3xl font-bold mr-2 sm:mr-3 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded bg-accent-soft/30 border border-accent/30 whitespace-nowrap">
+            <Tag className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             v{entry.version}
           </span>
           <span className="text-fg">{entry.name}</span>

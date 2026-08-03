@@ -12,6 +12,7 @@ import { NpmDownloads } from './NpmDownloads'
 import { site } from '~/lib/site'
 
 const NAV = [
+  { to: '/models', label: 'Models' },
   { slug: 'introduction', label: 'Docs' },
   { to: '/changelogs', label: 'Changelogs' },
 ] as const

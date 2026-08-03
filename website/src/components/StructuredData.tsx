@@ -55,3 +55,26 @@ export function CreatorStructuredData() {
     />
   )
 }
+
+/** 📖 ItemList schema for the /models catalog page — surfaces every model
+ *  entry in the Google "List" rich result and lets crawlers attribute the
+ *  catalog to the project's package + GitHub source. */
+export function ModelsStructuredData({ total, providers }: { total: number; providers: number }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `${site.name} — Free AI coding models catalog`,
+    description: `Live catalog of ${total} free AI coding models across ${providers} providers, sourced from sources.js.`,
+    url: `${site.url}/models`,
+    numberOfItems: total,
+    itemListOrder: 'https://schema.org/ItemListOrderDescending',
+    author: personSchema,
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  )
+}

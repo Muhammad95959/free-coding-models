@@ -495,109 +495,154 @@ export const ollamaCloud = [
 // 📖 Each source has: name (display), url (API endpoint), models (array of model tuples)
 // 📖 Providers ordered by generosity of free tier (most generous first)
 // 📖 See README for full tier-by-tier comparison
+// 📖 Each provider now carries a `quota` (human-readable summary) and a
+// 📖 `quotaCode` (machine code: 'free' | 'limited' | 'metered') so the website
+// 📖 can render a sortable, filterable catalog without re-typing the rules in
+// 📖 a second file. The CLI ignores these fields, so this is fully backward-
+// 📖 compatible with the existing TUI / router-daemon / OpenCode integration.
 export const sources = {
   nvidia: {
     name: 'NVIDIA NIM',
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
+    quota: 'Free · 1000 req/month',
+    quotaCode: 'free',
     models: nvidiaNim,
   },
   groq: {
     name: 'Groq',
     url: 'https://api.groq.com/openai/v1/chat/completions',
+    quota: 'Free · ~30-50 RPM per model',
+    quotaCode: 'free',
     models: groq,
   },
   cerebras: {
     name: 'Cerebras',
     url: 'https://api.cerebras.ai/v1/chat/completions',
+    quota: 'Free · generous dev tier',
+    quotaCode: 'free',
     models: cerebras,
   },
   googleai: {
     name: 'Google AI',
     url: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+    quota: 'Free · Gemini quotas vary by model',
+    quotaCode: 'free',
     models: googleai,
   },
   'github-models': {
     name: 'GitHub Models',
     url: 'https://models.github.ai/inference/chat/completions',
+    quota: 'GitHub / Copilot plan quota',
+    quotaCode: 'metered',
     models: githubModels,
   },
   mistral: {
     name: 'Mistral LP',
     url: 'https://api.mistral.ai/v1/chat/completions',
+    quota: 'Free Experiment plan',
+    quotaCode: 'free',
     models: mistral,
   },
   cloudflare: {
     name: 'Cloudflare AI',
     url: 'https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions',
+    quota: 'Free · 10k neurons/day',
+    quotaCode: 'limited',
     models: cloudflare,
   },
   openrouter: {
     name: 'OpenRouter',
     url: 'https://openrouter.ai/api/v1/chat/completions',
+    quota: '50 free req/day · 1000 with $10 credit',
+    quotaCode: 'limited',
     models: openrouter,
   },
   sambanova: {
     name: 'SambaNova',
     url: 'https://api.sambanova.ai/v1/chat/completions',
+    quota: 'Small dev tier · light use',
+    quotaCode: 'limited',
     models: sambanova,
   },
   ovhcloud: {
     name: 'OVHcloud AI',
     url: 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
+    quota: 'Free sandbox · 2 RPM no key · 400 RPM with key',
+    quotaCode: 'free',
     models: ovhcloud,
   },
   codestral: {
     name: 'Codestral',
     url: 'https://api.mistral.ai/v1/chat/completions',
+    quota: 'Free · 30 req/min, 2000/day',
+    quotaCode: 'free',
     models: codestral,
   },
   zai: {
     name: 'ZAI',
     url: 'https://api.z.ai/api/coding/paas/v4/chat/completions',
+    quota: 'Free · Flash models only',
+    quotaCode: 'free',
     models: zai,
   },
   scaleway: {
     name: 'Scaleway',
     url: 'https://api.scaleway.ai/v1/chat/completions',
+    quota: '1M free tokens',
+    quotaCode: 'limited',
     models: scaleway,
   },
   qwen: {
     name: 'Alibaba DashScope',
     url: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',
+    quota: '1M tokens/model · 90 days (Singapore)',
+    quotaCode: 'limited',
     models: qwen,
   },
 
   'opencode-zen': {
     name: 'OpenCode Zen',
     url: 'https://opencode.ai/zen/v1/chat/completions',
+    quota: 'Free · Zen key required',
+    quotaCode: 'free',
     models: opencodeZen,
     zenOnly: true,
   },
   kilo: {
     name: 'Kilo',
     url: 'https://api.kilo.ai/api/gateway/chat/completions',
+    quota: 'Free · no key needed',
+    quotaCode: 'free',
     models: kilo,
     noKeyNeeded: true,
   },
   llm7: {
     name: 'LLM7',
     url: 'https://api.llm7.io/v1/chat/completions',
+    quota: 'Free · no key needed',
+    quotaCode: 'limited',
     models: llm7,
     noKeyNeeded: true,
   },
   routeway: {
     name: 'Routeway',
     url: 'https://api.routeway.ai/v1/chat/completions',
+    quota: 'Free :free models only',
+    quotaCode: 'free',
     models: routeway,
   },
   novita: {
     name: 'Novita AI',
     url: 'https://api.novita.ai/openai/v1/chat/completions',
+    quota: 'Zero-price chat models only',
+    quotaCode: 'limited',
     models: novita,
   },
   'ollama-cloud': {
     name: 'Ollama Cloud',
     url: 'https://ollama.com/v1/chat/completions',
+    quota: 'Free plan · session + weekly caps',
+    quotaCode: 'free',
     models: ollamaCloud,
   },
 }

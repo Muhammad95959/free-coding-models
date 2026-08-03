@@ -14,17 +14,23 @@ import {
   IconUser,
   IconRocket,
   IconDownload,
+  IconServer2,
 } from '@tabler/icons-react'
 import { Wordmark } from './Logo'
 import { site } from '~/lib/site'
 
-const DOCS_LINKS = [
-  { label: 'Introduction',    slug: 'introduction',         icon: IconBook2 },
-  { label: 'Installation',    slug: 'installation',         icon: IconDownload },
-  { label: 'Quick Start',     slug: 'quick-start',          icon: IconRocket },
-  { label: 'Tier System',     slug: 'core/tier-system',     icon: IconTerminal2 },
-  { label: 'CLI Reference',   slug: 'reference/cli-flags',  icon: IconTerminal2 },
-] as const
+type FooterLink =
+  | { kind: 'route'; label: string; to: '/models'; icon: typeof IconServer2 }
+  | { kind: 'doc';    label: string; slug: string;          icon: typeof IconBook2 }
+
+const DOCS_LINKS: FooterLink[] = [
+  { kind: 'route', label: 'Models Catalog',  to: '/models',                 icon: IconServer2 },
+  { kind: 'doc',    label: 'Introduction',    slug: 'introduction',         icon: IconBook2 },
+  { kind: 'doc',    label: 'Installation',    slug: 'installation',         icon: IconDownload },
+  { kind: 'doc',    label: 'Quick Start',     slug: 'quick-start',          icon: IconRocket },
+  { kind: 'doc',    label: 'Tier System',     slug: 'core/tier-system',     icon: IconTerminal2 },
+  { kind: 'doc',    label: 'CLI Reference',   slug: 'reference/cli-flags',  icon: IconTerminal2 },
+]
 
 const PROJECT_LINKS = [
   { label: 'GitHub',        href: site.repo,    icon: IconBrandGithub,  external: true },
@@ -53,18 +59,22 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold text-fg mb-5 uppercase tracking-widest font-mono">Documentation</p>
             <ul className="space-y-3">
-              {DOCS_LINKS.map(({ label, slug, icon: Icon }) => (
-                <li key={slug}>
-                  <Link
-                    to="/docs/$"
-                    params={{ _splat: slug }}
-                    className="flex items-center gap-2.5 text-sm text-fg-muted transition-colors hover:text-fg group"
-                  >
-                    <Icon size={16} className="shrink-0 text-fg-faint group-hover:text-accent transition-colors" stroke={1.5} />
-                    {label}
-                  </Link>
-                </li>
-              ))}
+              {DOCS_LINKS.map((link) => {
+                const Icon = link.icon
+                return (
+                  <li key={link.kind === 'route' ? link.to : `${link.kind}-${link.slug}`}>
+                    <Link
+                      {...(link.kind === 'route'
+                        ? { to: link.to }
+                        : { to: '/docs/$', params: { _splat: link.slug } })}
+                      className="flex items-center gap-2.5 text-sm text-fg-muted transition-colors hover:text-fg group"
+                    >
+                      <Icon size={16} className="shrink-0 text-fg-faint group-hover:text-accent transition-colors" stroke={1.5} />
+                      {link.label}
+                    </Link>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 

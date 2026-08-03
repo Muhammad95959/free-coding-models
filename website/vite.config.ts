@@ -20,6 +20,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./src', import.meta.url)),
+      // 📖 Mirror the tsconfig `paths` entry so Vite can resolve the same
+      // 📖 alias at build/dev time. Lets the website pull `sources.js` from
+      // 📖 the project root without sprinkling relative paths everywhere.
+      'fcm-sources': fileURLToPath(new URL('../sources.js', import.meta.url)),
     },
   },
   plugins: [

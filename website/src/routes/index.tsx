@@ -14,6 +14,8 @@ import {
   IconBrandGithub,
   IconCheck,
   IconActivity,
+  IconTable,
+  IconArrowRight,
 } from '@tabler/icons-react'
 import { CopyCommand } from '~/components/CopyCommand'
 import { INSTALL_COMMAND, site } from '~/lib/site'
@@ -32,6 +34,7 @@ function Home() {
       <Hero />
       <MonitorSection />
       <TierSection />
+      <CatalogPreviewSection />
       <IntegrationsSection />
       <CtaSection />
     </>
@@ -58,13 +61,13 @@ function Hero() {
             </span>
           </div>
 
-          <h1 className="animate-rise text-[3rem] leading-[1.04] font-semibold tracking-[-0.04em] text-balance sm:text-[5rem] text-fg">
+          <h1 className="animate-rise text-[2.25rem] leading-[1.04] font-semibold tracking-[-0.04em] text-balance sm:text-[5rem] text-fg">
             Monitor 100+ free AI&nbsp;coding&nbsp;models.
             <br />
             <span className="text-fg-muted">Never&nbsp;hit&nbsp;a&nbsp;quota&nbsp;wall.</span>
           </h1>
 
-          <p className="animate-rise mt-8 max-w-2xl text-xl leading-relaxed text-fg-muted">
+          <p className="animate-rise mt-8 max-w-2xl text-base leading-relaxed text-fg-muted sm:text-xl">
             free-coding-models pings every free AI endpoint in real time, ranks them by benchmark score, and switches automatically when a provider cuts you off.
           </p>
 
@@ -190,6 +193,95 @@ function TierSection() {
                 <span className="font-mono text-sm text-fg-muted">{row.desc}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </Shell>
+    </section>
+  )
+}
+
+/* ── Catalog Preview Section ─────────────────────────────────────────────────── */
+
+function CatalogPreviewSection() {
+  return (
+    <section className="border-b border-[#1f2d0e] bg-[#0a1106] py-20 sm:py-28">
+      <Shell>
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <IconTable size={16} className="text-accent-fg" stroke={1.75} />
+              <span className="font-mono text-xs font-bold text-accent-fg uppercase tracking-wider">04 — Live catalog</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-semibold tracking-tight text-fg">
+              Browse every model, live.
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-fg-muted">
+              The full catalog is on the website too — every free model, every provider, with SWE-bench scores, context windows, and quota details. Filter by tier, sort by anything, copy a CLI launch command with one click.
+            </p>
+            <ul className="mt-6 space-y-2.5 text-sm text-fg-muted">
+              {[
+                'Auto-generated from sources.js — never out of date',
+                'Sortable columns: tier, SWE, context, quota',
+                'Filter by tier chip, quota, or provider',
+                'Copy a CLI launch command for any model',
+              ].map((feat) => (
+                <li key={feat} className="flex items-start gap-2.5">
+                  <IconCheck size={15} className="mt-0.5 shrink-0 text-accent-fg" stroke={2} />
+                  <span>{feat}</span>
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/models"
+              className="group mt-8 inline-flex items-center gap-2 rounded-md border border-accent/40 bg-accent/10 px-5 py-3 font-mono text-sm font-bold text-accent-fg transition-all hover:bg-accent/20 hover:shadow-[0_0_25px_rgba(195,237,6,0.2)]"
+            >
+              Open the catalog
+              <IconArrowRight size={16} stroke={2.5} className="transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+
+          {/* Static preview of the /models table so the user sees the real
+              look (lime sticky header, medal borders, gold SWE) without
+              leaving the homepage. Real data — top 5 from sources.js. */}
+          <div className="overflow-hidden rounded-xl border border-border bg-bg-card">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[480px] border-collapse text-sm">
+                <thead>
+                  <tr className="bg-accent text-left text-ink">
+                    <th className="px-3 py-2 text-center font-mono text-[10px] font-bold uppercase tracking-widest w-[10%]">#</th>
+                    <th className="px-3 py-2 text-center font-mono text-[10px] font-bold uppercase tracking-widest w-[10%]">Tier</th>
+                    <th className="px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-widest w-[40%]">Model</th>
+                    <th className="px-3 py-2 text-right font-mono text-[10px] font-bold uppercase tracking-widest w-[20%]">SWE%</th>
+                    <th className="px-3 py-2 text-right font-mono text-[10px] font-bold uppercase tracking-widest w-[20%]">CTX</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { rank: 1, tier: 'S+', label: 'GLM 5.1', id: 'z-ai/glm-5.2', swe: '82.8%', ctx: '128k', border: 'border-l-[3px] border-l-[#ffd700]' },
+                    { rank: 2, tier: 'S+', label: 'GLM 5.2', id: '@cf/zai-org/glm-5.2', swe: '82.8%', ctx: '262k', border: 'border-l-[3px] border-l-[#c0c0c0]' },
+                    { rank: 3, tier: 'S+', label: 'GLM 5.2', id: 'glm-5.2', swe: '82.8%', ctx: '1M', border: 'border-l-[3px] border-l-[#cd7f32]' },
+                    { rank: 4, tier: 'S+', label: 'GLM 5.1', id: 'glm-5.1', swe: '82.8%', ctx: '198k', border: 'border-l-[3px] border-l-transparent' },
+                    { rank: 5, tier: 'S+', label: 'Qwen3.6 Max Preview', id: 'qwen3.6-max-preview', swe: '80.9%', ctx: '256k', border: 'border-l-[3px] border-l-transparent' },
+                  ].map((row) => (
+                    <tr key={row.rank} className={`border-b border-border/60 last:border-b-0 ${row.border}`}>
+                      <td className="px-3 py-2 text-center font-mono text-[11px] font-bold text-fg-faint tabular-nums">{row.rank}</td>
+                      <td className="px-3 py-2 text-center">
+                        <span className="inline-flex items-center rounded border border-accent/40 bg-accent/15 px-1.5 py-0.5 font-mono text-[11px] font-bold text-[#c3ed06]">{row.tier}</span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <p className="truncate text-[12px] font-semibold text-fg">{row.label}</p>
+                        <p className="truncate font-mono text-[10px] text-fg-faint">{row.id}</p>
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-[12px] font-semibold tabular-nums text-[#ffd700]">{row.swe}</td>
+                      <td className="px-3 py-2 text-right font-mono text-[12px] tabular-nums text-fg-muted">{row.ctx}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-border bg-bg/60 px-3 py-2 font-mono text-[10px] text-fg-faint">
+              + 217 more models · live at /models
+            </div>
           </div>
         </div>
       </Shell>
