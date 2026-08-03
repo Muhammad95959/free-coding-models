@@ -70,3 +70,4 @@ task/reports/*.md
 #    long-form planning docs; this entry only blocks the temporary new-feat
 #    scratchpad used during competitive scans.
 ideas/new_feats_updates.md
+.vercel
