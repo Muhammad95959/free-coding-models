@@ -25,7 +25,7 @@ export function NpmDownloads({ href }: { href: string }) {
       target="_blank"
       rel="noreferrer noopener"
       aria-label="npm package"
-      className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-raised/70 px-3 py-1.5 font-mono text-[11.5px] text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border bg-bg-raised/70 px-3 py-1.5 font-mono text-[11.5px] text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="shrink-0 text-[#CB3837]">
         <path d="M0 0v24h24V0H0zm19.2 19.2H12v-9.6H9.6v9.6H4.8V4.8h14.4v14.4z" />

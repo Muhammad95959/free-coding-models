@@ -29,7 +29,9 @@
 }
 
 /**
- * 📖 Dark-mode only design system tokens for free-coding-models.
+ * 📖 Design tokens — borrowed from OpenRouter's visual language (HSL palette,
+ * subtle borders, lime primary, tight radii) and adapted to free-coding-models.
+ * Tailwind utility classes reference these via the `--color-*` mappings below.
  */
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
@@ -51,19 +53,25 @@
 }
 
 :root {
-  --fcm-accent: #c3ed06;
-  --fcm-accent-soft: rgba(195, 237, 6, 0.14);
-  --fcm-bg: #090d05;
-  --fcm-bg-subtle: #10160a;
-  --fcm-bg-raised: #151d0d;
-  --fcm-border: #212c14;
-  --fcm-border-strong: #34461f;
-  --fcm-fg: #fafafa;
-  --fcm-fg-muted: #a3b395;
-  --fcm-fg-faint: #6c7a5f;
-  --fcm-accent-fg: #c3ed06;
-  --fcm-code-bg: #0b1006;
-  --fcm-ink: #0a0f02;
+  /* 📖 OpenRouter-inspired palette — dark navy-black with a brighter lime accent */
+  --fcm-accent: #c8ff00;
+  --fcm-accent-soft: rgba(200, 255, 0, 0.12);
+
+  /* Very dark base — slight blue tint instead of green */
+  --fcm-bg: #03080a;
+  --fcm-bg-subtle: #070d11;
+  --fcm-bg-raised: #0b1218;
+
+  /* Subtle light borders, like OpenRouter's rgba(252, 252, 254, 0.08) */
+  --fcm-border: rgba(252, 252, 254, 0.08);
+  --fcm-border-strong: rgba(252, 252, 254, 0.16);
+
+  --fcm-fg: #fcfcfe;
+  --fcm-fg-muted: rgba(252, 252, 254, 0.62);
+  --fcm-fg-faint: rgba(252, 252, 254, 0.4);
+  --fcm-accent-fg: #c8ff00;
+  --fcm-code-bg: #060a0e;
+  --fcm-ink: #03080a;
 
   color-scheme: dark;
 }
@@ -83,6 +91,8 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: 0.875rem; /* 14px — matches OpenRouter's compact base */
+    line-height: 1.5;
     font-variant-numeric: tabular-nums;
   }
 
@@ -94,7 +104,7 @@
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   button,
@@ -105,7 +115,7 @@
   .badge,
   .card,
   [role="button"] {
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   ::-webkit-scrollbar {
@@ -145,8 +155,8 @@
 
 .prose {
   color: var(--color-fg-muted);
-  font-size: 1rem;
-  line-height: 1.72;
+  font-size: 0.95rem;
+  line-height: 1.7;
   max-width: 72ch;
 }
 
@@ -156,8 +166,8 @@
 @media (max-width: 639px) {
   .prose {
     max-width: none;
-    font-size: 0.95rem;
-    line-height: 1.7;
+    font-size: 0.9rem;
+    line-height: 1.65;
   }
 }
 
@@ -266,7 +276,7 @@
   font-family: var(--font-mono);
   font-size: 0.8125em;
   padding: 0.2em 0.4em;
-  border-radius: 3px;
+  border-radius: 4px;
   background: var(--color-bg-subtle);
   border: 1px solid var(--color-border);
   color: var(--color-fg);
@@ -278,7 +288,7 @@
   font-size: 0.8125rem;
   line-height: 1.7;
   padding: 1.1rem 1.2rem;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid var(--color-border);
   overflow-x: auto;
   tab-size: 2;
@@ -334,8 +344,6 @@
   border-bottom: 1px solid var(--color-border);
   color: var(--color-fg-muted);
   vertical-align: top;
-  /* Let long cell content (URLs, code tokens, long descriptions) wrap to the
-     next line instead of stretching the column — and the page — wider. */
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -366,6 +374,15 @@
   animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* 📖 ToolMarquee — infinite horizontal scroll. The row contains two copies
+   of the icon list; the animation translates by 50% (one full copy) so when
+   the first copy exits left, the second copy is exactly in place. Reversed
+   row uses `animation-direction: reverse` to scroll the other way. */
+@keyframes fcm-marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
 .hero-card-surface {
-  background-color: rgba(195, 237, 6, 0.08) !important;
+  background-color: rgba(200, 255, 0, 0.08) !important;
 }

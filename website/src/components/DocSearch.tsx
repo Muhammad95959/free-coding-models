@@ -11,7 +11,7 @@ export function SearchTrigger({ full = false }: { full?: boolean }) {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new CustomEvent('open-doc-search'))}
-      className={`group flex items-center justify-between gap-3 rounded-lg border border-border bg-bg-raised/80 px-3 py-1.5 font-mono text-xs text-fg-muted transition-colors hover:border-border-strong hover:text-fg ${
+      className={`group flex shrink-0 items-center justify-between gap-2 whitespace-nowrap rounded-lg border border-border bg-bg-raised/80 px-3 py-1.5 font-mono text-xs text-fg-muted transition-colors hover:border-border-strong hover:text-fg ${
         full ? 'w-full' : ''
       }`}
     >
@@ -20,7 +20,7 @@ export function SearchTrigger({ full = false }: { full?: boolean }) {
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
-        Search docs...
+        Search
       </span>
       <kbd className="rounded border border-border bg-bg-subtle px-1.5 py-0.5 text-[10px] text-fg-faint">
         ⌘K

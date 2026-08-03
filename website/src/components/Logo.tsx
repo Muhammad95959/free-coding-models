@@ -10,7 +10,7 @@ export function LogoMark({ size = 32, className = '' }: { size?: number; classNa
       alt=""
       width={size}
       height={size}
-      className={`rounded-[22%] object-cover ${className}`}
+      className={`rounded-[22%] object-cover border-[2px] border-accent ${className}`}
       aria-hidden="true"
     />
   )
@@ -19,7 +19,7 @@ export function LogoMark({ size = 32, className = '' }: { size?: number; classNa
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <LogoMark size={24} />
+      <LogoMark size={28} />
       <span className="font-mono text-sm font-semibold tracking-tight text-fg">
         free-coding-models
       </span>

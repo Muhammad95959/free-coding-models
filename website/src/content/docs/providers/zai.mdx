@@ -1,0 +1,37 @@
+---
+title: ZAI (z.ai)
+description: How to set up ZAI (z.ai) in free-coding-models — account, API key, free-tier limits, and provider-specific gotchas.
+section: Providers
+---
+
+
+> Free tier · Flash models only
+
+This page walks you through everything you need to start using **ZAI (z.ai)** with free-coding-models: creating an account, grabbing an API key, the free tier you’re entitled to, and the subtle gotchas that trip up first-time users.
+
+## Create an account
+
+Head over to the provider’s signup page and create a free account. You’ll typically need an email and to verify it. No credit card required for the free tier.
+
+## Grab an API key
+
+Once logged in, navigate to the API keys section of the dashboard and create a new key. Give it a descriptive name (e.g. `fcm-laptop`) so you can revoke it later if needed.
+
+## Configure FCM
+
+Set the provider’s env var to your new key:
+
+```bash
+# pick the right env var name from the table below
+export ZAI_API_KEY="sk-…"
+```
+
+The key is read on every CLI invocation, no need to restart anything.
+
+## Free-tier limits
+
+free-coding-models will only consume the quota you’re entitled to. Check the [provider’s live docs]({{provider.docs}}) for the most up-to-date numbers — limits change frequently as providers add capacity.
+
+## Gotchas
+
+Provider-specific subtleties that catch first-time users are rendered just below — they include rate-limit reset windows, what counts as a request, geographic blocks, and model retirements.

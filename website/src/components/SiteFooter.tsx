@@ -15,16 +15,18 @@ import {
   IconRocket,
   IconDownload,
   IconServer2,
+  IconBolt,
 } from '@tabler/icons-react'
 import { Wordmark } from './Logo'
 import { site } from '~/lib/site'
 
 type FooterLink =
-  | { kind: 'route'; label: string; to: '/models'; icon: typeof IconServer2 }
+  | { kind: 'route'; label: string; to: string; icon: typeof IconServer2 }
   | { kind: 'doc';    label: string; slug: string;          icon: typeof IconBook2 }
 
 const DOCS_LINKS: FooterLink[] = [
   { kind: 'route', label: 'Models Catalog',  to: '/models',                 icon: IconServer2 },
+  { kind: 'route', label: 'Providers',       to: '/docs/providers',         icon: IconBolt as any },
   { kind: 'doc',    label: 'Introduction',    slug: 'introduction',         icon: IconBook2 },
   { kind: 'doc',    label: 'Installation',    slug: 'installation',         icon: IconDownload },
   { kind: 'doc',    label: 'Quick Start',     slug: 'quick-start',          icon: IconRocket },
@@ -122,14 +124,17 @@ export function SiteFooter() {
           <p className="text-sm text-fg-faint">
             © {new Date().getFullYear()} free-coding-models contributors.
           </p>
-          <div className="flex items-center gap-5">
-            <Link
-              to="/creator"
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span className="font-mono text-xs text-fg-faint">credits</span>
+            <a
+              href={site.authorUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-sm text-fg-muted hover:text-fg transition-colors flex items-center gap-2"
             >
               <IconUser size={15} stroke={1.5} />
               Vanessa Depraute
-            </Link>
+            </a>
             <a
               href={site.twitter}
               target="_blank"
@@ -137,7 +142,7 @@ export function SiteFooter() {
               className="text-sm text-fg-muted hover:text-fg transition-colors flex items-center gap-2"
             >
               <IconBrandX size={15} stroke={1.5} />
-              @vavanessadev
+              follow me on twitter
             </a>
           </div>
         </div>

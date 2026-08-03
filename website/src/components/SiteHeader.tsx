@@ -1,6 +1,9 @@
 /**
  * @file src/components/SiteHeader.tsx
  * @description Sticky top bar with Tabler Icons for the hamburger menu.
+ *   The LobeHub-powered tool + provider marquee used to live below the
+ *   header, but it was moved to the home page hero (right under the npm
+ *   install command) so the brand row at the top stays compact.
  */
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
@@ -14,6 +17,7 @@ import { site } from '~/lib/site'
 const NAV = [
   { to: '/models', label: 'Models' },
   { slug: 'introduction', label: 'Docs' },
+  { to: '/docs/providers', label: 'Providers' },
   { to: '/changelogs', label: 'Changelogs' },
 ] as const
 
@@ -34,7 +38,7 @@ export function SiteHeader() {
         scrolled ? 'bg-bg/85 backdrop-blur-xl' : 'bg-bg'
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-7 px-5 sm:px-8">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-5 sm:px-8">
         <Link to="/" className="shrink-0" aria-label="free-coding-models home">
           <Wordmark />
         </Link>

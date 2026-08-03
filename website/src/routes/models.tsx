@@ -398,8 +398,8 @@ function ModelsPage() {
         <div className="overflow-hidden rounded-lg border border-border bg-bg-card">
           <div className="max-h-[72vh] overflow-auto">
             <table className="w-full min-w-[900px] border-collapse text-sm">
-              <thead className="sticky top-0 z-10 bg-accent">
-                <tr className="text-left text-ink">
+              <thead className="sticky top-0 z-10 bg-bg-subtle/80 backdrop-blur-sm">
+                <tr className="border-b border-border text-left text-fg-faint">
                   <Th
                     onClick={() => handleSort('rank')}
                     active={sort.key === 'rank'}

@@ -19,7 +19,7 @@ const modules = import.meta.glob<MdxModule>('../content/docs/**/*.mdx', { eager:
 
 const bySlug = new Map<string, MdxModule>(
   Object.entries(modules).map(([path, mod]) => [
-    path.replace('../content/docs/', '').replace(/\.mdx$/, ''),
+    path.replace('../content/docs/', '').replace(/\.mdx$/, '').replace(/\/index$/, ''),
     mod,
   ]),
 )
