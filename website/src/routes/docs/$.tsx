@@ -92,6 +92,18 @@ function DocPage() {
               </div>
             </div>
             <div className="flex shrink-0 items-start gap-2 sm:flex-col sm:items-end sm:gap-3">
+              {providerDoc && (
+                <a
+                  href={providerDoc.signup}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink transition-all hover:opacity-90"
+                  title={`Create a free ${providerDoc.name} account`}
+                >
+                  <IconExternalLink size={14} strokeWidth={2} />
+                  Create account
+                </a>
+              )}
               <CopyPageButton slug={slug} />
               {integrationTool && integrationTool.href !== '#' && (
                 <a

@@ -22,6 +22,7 @@ import { CopyCommand } from '~/components/CopyCommand'
 import { ToolMarquee } from '~/components/ToolMarquee'
 import { AllToolsSection } from '~/components/AllToolsSection'
 import { ProvidersGrid } from '~/components/ProviderSection'
+import { Testimonials } from '~/components/Testimonials'
 import { INSTALL_COMMAND, site } from '~/lib/site'
 import { HomeStructuredData } from '~/components/StructuredData'
 
@@ -40,6 +41,7 @@ function Home() {
       <IntegrationsSection />
       <AllToolsSection />
       <ProvidersGridSection />
+      <Testimonials />
       <CtaSection />
     </>
   )

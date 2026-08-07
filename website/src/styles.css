@@ -386,3 +386,34 @@
 .hero-card-surface {
   background-color: rgba(200, 255, 0, 0.08) !important;
 }
+
+/* 📖 Testimonials — X / Twitter embeds in a masonry grid.
+   The 3rd-party `<iframe>` (and the `<blockquote>` fallback before
+   `widgets.js` converts it) ship with a square white-ish frame that
+   clashes with the dark site. We round the card wrapper and paint it
+   with the site's dark surface so any edge that bleeds out blends in.
+   `overflow: hidden` + `border-radius` clip the iframe's display box
+   to a rounded shape, and the iframe's own `border-radius` rounds its
+   corners. `display: block` + `width: 100%` makes the card fill its
+   column in the CSS-columns masonry. */
+.testimonials-embed {
+  display: block;
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+}
+
+.testimonials-embed .twitter-tweet {
+  margin: 0 !important;
+  background: var(--color-bg-subtle) !important;
+  border-radius: 1rem;
+}
+
+.testimonials-embed iframe {
+  display: block;
+  border-radius: 1rem;
+  width: 100% !important;
+  max-width: 100% !important;
+}
