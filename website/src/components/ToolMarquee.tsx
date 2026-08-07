@@ -14,7 +14,7 @@
  *   registry is needed.
  */
 import { useMemo } from 'react'
-import { TOOLS as SHARED_TOOLS, type Tool } from '~/lib/tools'
+import { TOOLS as SHARED_TOOLS, shouldInvert, type Tool } from '~/lib/tools'
 
 type Item = Tool
 
@@ -32,15 +32,15 @@ const PROVIDERS: Item[] = [
   { slug: 'sambanova',    name: 'SambaNova',    tagline: 'Small dev tier',          icon: { kind: 'lobe', slug: 'sambanova',  color: true  } , href: '#', accent: '#ff6e00' },
   { slug: 'ovhcloud',     name: 'OVHcloud',     tagline: '2 RPM no key',            icon: { kind: 'simple', slug: 'ovh' }                          , href: '#', accent: '#123fbb' },
   { slug: 'codestral',    name: 'Codestral',    tagline: '30 RPM · 2000/day',       icon: null, accent: '#ff7000', href: 'https://mistral.ai/products/codestral' },
-  { slug: 'zai',          name: 'ZAI',          tagline: 'Flash models only',       icon: { kind: 'lobe', slug: 'zai',       color: false } , href: '#', accent: '#0066ff' },
+  { slug: 'zai',          name: 'ZAI',          tagline: 'Flash models only',       icon: { kind: 'raw', url: '/providers/zai/zai.webp' }, href: '#' },
   { slug: 'scaleway',     name: 'Scaleway',     tagline: '1M free tokens',          icon: { kind: 'simple', slug: 'scaleway' }                     , href: 'https://www.scaleway.com', accent: '#a78bfa' },
   { slug: 'alibaba',      name: 'Alibaba',      tagline: '1M tokens · 90 days',     icon: { kind: 'lobe', slug: 'alibaba',   color: true  } , href: 'https://www.alibabacloud.com', accent: '#615ced' },
   { slug: 'dashscope',    name: 'DashScope',    tagline: 'Qwen API',                icon: { kind: 'lobe', slug: 'qwen',      color: true  } , href: 'https://dashscope.aliyuncs.com', accent: '#615ced' },
   { slug: 'zen',          name: 'Zen',          tagline: 'OpenCode Zen gateway',    icon: { kind: 'iconify', prefix: 'arcticons', slug: 'zen' }, href: 'https://opencode.ai/auth', accent: '#8b5cf6' },
   { slug: 'novita',       name: 'Novita',       tagline: 'Free models',             icon: { kind: 'lobe', slug: 'novita',    color: true  } , href: 'https://novita.ai', accent: '#ffb978' },
   { slug: 'ollama-cloud', name: 'Ollama Cloud', tagline: 'Session + weekly caps',   icon: { kind: 'lobe', slug: 'ollama',    color: false } , href: 'https://ollama.com', accent: '#e6e6e6' },
-  { slug: 'llm7',         name: 'LLM7',         tagline: 'Free · no key needed',    icon: null, accent: '#b4ff8c', href: 'https://llm7.io' },
-  { slug: 'routeway',     name: 'Routeway',     tagline: 'Free :free models',       icon: null, accent: '#82d2ff', href: '#' },
+  { slug: 'llm7',         name: 'LLM7',         tagline: 'Free · no key needed',    icon: { kind: 'raw', url: '/providers/llm7/llm7.png' }, href: 'https://llm7.io' },
+  { slug: 'routeway',     name: 'Routeway',     tagline: 'Free :free models',       icon: { kind: 'raw', url: '/providers/routeway/routeway.svg' }, href: '#' },
 ]
 
 /** 📖 One logo tile + faded name. */
@@ -53,12 +53,7 @@ function Logo({ item }: { item: Item }) {
   //   - iconify default → currentColor → invert
   //   - raw SVG → unknown, render as-is
   //   - null → monogram fallback
-  const needsInvert =
-    !!item.icon && (
-      (item.icon.kind === 'lobe' && !item.icon.color) ||
-      item.icon.kind === 'simple' ||
-      item.icon.kind === 'iconify'
-    )
+  const needsInvert = shouldInvert(item.icon)
 
   if (item.icon) {
     const src =

@@ -40,15 +40,29 @@ const LOBEHUB_ICONS: Record<string, string> = {
 const LOBEHUB = 'https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1/icons'
 const SIMPLE_ICONS = 'https://cdn.jsdelivr.net/npm/simple-icons@latest/icons'
 
-/** 📖 Pick the best-available icon URL for a given provider. Tries the
- *  LobeHub colour variant first, then simple-icons, then a letter
- *  monogram. */
-function providerIconUrl(slug: string, name: string, ext: 'svg' | 'color' = 'color'): string | null {
+// 📖 Local overrides — providers that ship their own curated artwork in
+// `public/providers/<slug>/`. Wins over the LobeHub fallback so the
+// curated logos always render in the docs.
+const LOCAL_PROVIDER_ICONS: Record<string, string> = {
+  zai: '/providers/zai/zai.webp',
+  llm7: '/providers/llm7/llm7.png',
+  routeway: '/providers/routeway/routeway.svg',
+}
+
+/** 📖 LobeHub URL only — used as the final fallback when a local
+ *  override 404s. */
+function lobehubIconUrl(slug: string, ext: 'svg' | 'color' = 'color'): string | null {
   const lobe = LOBEHUB_ICONS[slug]
-  if (lobe) {
-    return `${LOBEHUB}/${lobe}${ext === 'color' ? '-color' : ''}.svg`
-  }
-  return null
+  if (!lobe) return null
+  return `${LOBEHUB}/${lobe}${ext === 'color' ? '-color' : ''}.svg`
+}
+
+/** 📖 Pick the best-available icon URL for a given provider. Local
+ *  override first, then LobeHub, then null (caller falls back to a
+ *  monogram). */
+function providerIconUrl(slug: string, ext: 'svg' | 'color' = 'color'): string | null {
+  if (LOCAL_PROVIDER_ICONS[slug]) return LOCAL_PROVIDER_ICONS[slug]
+  return lobehubIconUrl(slug, ext)
 }
 
 export type ProviderLogoProps = {
@@ -71,7 +85,7 @@ export function ProviderLogo(props: ProviderLogoProps) {
   const showLabel = props.showLabel ?? true
   const className = props.className ?? ''
 
-  const url = providerIconUrl(provider.slug, provider.name, 'color')
+  const url = providerIconUrl(provider.slug, 'color')
 
   let iconEl: React.ReactNode
   if (url) {
@@ -92,7 +106,7 @@ export function ProviderLogo(props: ProviderLogoProps) {
         // variant on the fly. Keeps the doc working even when LobeHub
         // removes or renames an asset.
         onError={(e) => {
-          const mono = providerIconUrl(provider.slug, provider.name, 'svg')
+          const mono = lobehubIconUrl(provider.slug, 'svg')
           if (mono && e.currentTarget.src !== mono) {
             e.currentTarget.src = mono
           }
@@ -159,7 +173,7 @@ export function ProviderHero({ provider }: { provider: Provider }) {
  *  their dashboard. */
 export function ProvidersGrid() {
   return (
-    <section className="border-b border-border py-20 sm:py-28">
+    <section className="border-b border-border/50 py-20 sm:py-28">
       <Shell>
         <div className="mb-10 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
@@ -196,7 +210,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
       params={{ _splat: `providers/${provider.slug}` }}
       className="block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
     >
-      <div className="group/provider relative flex h-full flex-col gap-3 rounded-xl border border-border bg-bg-subtle/40 p-4 transition-all duration-200 hover:border-border-strong hover:bg-bg-subtle/70">
+      <div className="group/provider relative flex h-full flex-col gap-3 rounded-xl bg-bg-subtle/40 p-4 transition-all duration-200 hover:bg-bg-subtle/70">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md p-1">
             <ProviderLogo provider={provider} size={32} showLabel={false} />

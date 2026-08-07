@@ -10,7 +10,7 @@ import { mdxComponents } from '~/components/MdxComponents'
 import { CopyPageButton } from '~/components/CopyPageButton'
 import { ToolLogo } from '~/components/AllToolsSection'
 import { ProviderLogo } from '~/components/ProviderSection'
-import { getToolBySlug, type Tool } from '~/lib/tools'
+import { getToolBySlug, shouldInvert, type Tool } from '~/lib/tools'
 import { getProviderBySlug, type Provider } from '~/lib/providers'
 import { site } from '~/lib/site'
 import { ExternalLink as IconExternalLink } from 'lucide-react'
@@ -117,6 +117,16 @@ function DocPage() {
                   <IconExternalLink size={11} strokeWidth={1.75} />
                 </a>
               )}
+              {integrationTool && (
+                <div className="rounded-md p-1.5 sm:mt-2">
+                  <ToolLogo
+                    tool={integrationTool}
+                    size={64}
+                    showLabel={false}
+                    invert={shouldInvert(integrationTool.icon)}
+                  />
+                </div>
+              )}
               {providerDoc && (
                 <div className="rounded-md p-1.5 sm:mt-2">
                   <ProviderLogo
@@ -198,6 +208,7 @@ function toolNeedsInvert(tool: Tool): boolean {
 const PROVIDER_COLOR_SLUGS = new Set([
   'nvidia', 'cerebras', 'mistral', 'cloudflare', 'openrouter',
   'sambanova', 'qwen', 'novita',
+  'zai', 'llm7', 'routeway',
 ])
 
 function providerHasColorIcon(slug: string): boolean {
