@@ -36,7 +36,7 @@ import { sleep } from './shared-helpers.js'
 // 📖 is not guaranteed to be accepted by their chat endpoint.
 export const PROVIDER_TEST_MODEL_OVERRIDES = {
   sambanova: ['MiniMax-M2.5', 'DeepSeek-V3.1', 'DeepSeek-V3.2'],
-  nvidia: ['deepseek-ai/deepseek-v4-flash', 'openai/gpt-oss-120b'],
+  nvidia: ['deepseek-ai/deepseek-v4-flash-0731', 'openai/gpt-oss-120b'],
   'github-models': ['openai/gpt-4.1-mini'],
   mistral: ['mistral-small-latest', 'devstral-small-latest'],
 }

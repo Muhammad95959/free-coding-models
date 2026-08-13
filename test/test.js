@@ -140,9 +140,9 @@ function mockResult(overrides = {}) {
 }
 
 const ROUTER_TEST_MODELS = Object.freeze({
-  groqFast: 'llama-3.3-70b-versatile',
+  groqFast: 'openai/gpt-oss-120b',
   groqBackup: 'openai/gpt-oss-120b',
-  nvidiaFast: 'deepseek-ai/deepseek-v4-flash',
+  nvidiaFast: 'deepseek-ai/deepseek-v4-flash-0731',
 })
 
 function listenOnRandomPort(server) {
@@ -1004,9 +1004,9 @@ describe('provider key test model discovery', () => {
 
   it('uses discovered repo-known ids before the static catalog head for NVIDIA', () => {
     assert.deepEqual(
-      listProviderTestModels('nvidia', sources.nvidia, ['openai/gpt-oss-120b', 'deepseek-ai/deepseek-v4-flash']).slice(0, 5),
+      listProviderTestModels('nvidia', sources.nvidia, ['openai/gpt-oss-120b', 'deepseek-ai/deepseek-v4-flash-0731']).slice(0, 5),
       [
-        'deepseek-ai/deepseek-v4-flash',
+        'deepseek-ai/deepseek-v4-flash-0731',
         'openai/gpt-oss-120b',
         'z-ai/glm-5.2',
         'moonshotai/kimi-k2.6',
@@ -1018,7 +1018,7 @@ describe('provider key test model discovery', () => {
   it('falls back to static models when no discovery data exists', () => {
     assert.equal(
       listProviderTestModels('groq', sources.groq)[0],
-      'llama-3.3-70b-versatile'
+      'openai/gpt-oss-120b'
     )
   })
 })
@@ -1048,12 +1048,12 @@ describe('classifyProviderTestOutcome', () => {
 describe('buildProviderTestDetail', () => {
   it('mentions auth rejection and attempt history', () => {
     const detail = buildProviderTestDetail('Groq', 'auth_error', [
-      { attempt: 1, model: 'llama-3.3-70b-versatile', code: '401' },
+      { attempt: 1, model: 'openai/gpt-oss-120b', code: '401' },
     ], 'Live model discovery returned HTTP 401; falling back to the repo catalog.')
 
     assert.match(detail, /Groq rejected the configured key/i)
     assert.match(detail, /invalid, expired, revoked, or truncated/i)
-    assert.match(detail, /#1 llama-3\.3-70b-versatile -> 401/)
+    assert.match(detail, /#1 openai\/gpt-oss-120b -> 401/)
   })
 
   it('explains rate limiting separately from auth failure', () => {
@@ -2222,7 +2222,7 @@ describe('telemetry', () => {
         session_id: 'session_test',
         tool_mode: 'openclaw',
         provider_key: 'nvidia',
-        model_id: 'deepseek-ai/deepseek-v4-flash',
+        model_id: 'deepseek-ai/deepseek-v4-flash-0731',
         action_type: 'launch_model',
         ignored: undefined,
       },
@@ -2233,7 +2233,7 @@ describe('telemetry', () => {
     assert.equal(properties.session_id, 'session_test')
     assert.equal(properties.tool_mode, 'openclaw')
     assert.equal(properties.provider_key, 'nvidia')
-    assert.equal(properties.model_id, 'deepseek-ai/deepseek-v4-flash')
+    assert.equal(properties.model_id, 'deepseek-ai/deepseek-v4-flash-0731')
     assert.equal(properties.action_type, 'launch_model')
     assert.equal('ignored' in properties, false)
   })
@@ -2273,7 +2273,7 @@ describe('telemetry', () => {
           action_type: 'launch_model',
           tool_mode: 'openclaw',
           provider_key: 'nvidia',
-          model_id: 'deepseek-ai/deepseek-v4-flash',
+          model_id: 'deepseek-ai/deepseek-v4-flash-0731',
           model_label: 'DeepSeek V4 Flash',
           model_tier: 'S+',
         },
@@ -2289,7 +2289,7 @@ describe('telemetry', () => {
       assert.equal(useBody.properties.session_id, 'session_test_user')
       assert.equal(useBody.properties.tool_mode, 'openclaw')
       assert.equal(useBody.properties.provider_key, 'nvidia')
-      assert.equal(useBody.properties.model_id, 'deepseek-ai/deepseek-v4-flash')
+      assert.equal(useBody.properties.model_id, 'deepseek-ai/deepseek-v4-flash-0731')
       assert.equal(useBody.properties.model_label, 'DeepSeek V4 Flash')
       assert.equal(useBody.properties.model_tier, 'S+')
     } finally {
@@ -2775,7 +2775,7 @@ describe('buildPersistedConfig', () => {
           providerKey: 'nvidia',
           toolMode: 'opencode',
           scope: 'selected',
-          modelIds: ['deepseek-ai/deepseek-v4-flash'],
+          modelIds: ['deepseek-ai/deepseek-v4-flash-0731'],
           lastSyncedAt: '2026-03-10T09:00:00.000Z',
         },
       ],
@@ -2789,7 +2789,7 @@ describe('buildPersistedConfig', () => {
         providerKey: 'nvidia',
         toolMode: 'opencode',
         scope: 'selected',
-        modelIds: ['deepseek-ai/deepseek-v4-flash'],
+        modelIds: ['deepseek-ai/deepseek-v4-flash-0731'],
         lastSyncedAt: '2026-03-10T09:00:00.000Z',
       },
     ])
@@ -2842,8 +2842,8 @@ describe('router config helpers', () => {
         'fast coding!': {
           name: 'fast coding!',
           models: [
-            { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 4 },
-            { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 9 },
+            { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 4 },
+            { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 9 },
             { provider: 'cerebras', model: 'gpt-oss-120b', priority: 1 },
           ],
         },
@@ -3574,7 +3574,7 @@ describe('router daemon integration hardening', () => {
 
   it('autoHealActiveSet is a no-op when the set is user-customized', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     config.router.userCustomized = true
     await withRouterTestServer(config, async ({ runtime }) => {
@@ -3586,7 +3586,7 @@ describe('router daemon integration hardening', () => {
 
   it('autoHealActiveSet is a no-op when autoHeal is disabled', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     config.router.autoHeal = false
     await withRouterTestServer(config, async ({ runtime }) => {
@@ -3598,7 +3598,7 @@ describe('router daemon integration hardening', () => {
 
   it('autoHealActiveSet reports no-op when there are no broken models', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ runtime }) => {
       const result = await runtime.autoHealActiveSet()
@@ -3609,7 +3609,7 @@ describe('router daemon integration hardening', () => {
 
   it('user edits to a set flip router.userCustomized and router.autoHeal to false', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ baseUrl, runtime }) => {
       // 📖 Mark the set as auto-healed (clean state).
@@ -3779,7 +3779,7 @@ describe('router daemon integration hardening', () => {
 
   it('appends a model to the active set via POST /sets/:name/models', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ baseUrl }) => {
       const response = await fetch(`${baseUrl}/sets/test-set/models`, {
@@ -3798,13 +3798,13 @@ describe('router daemon integration hardening', () => {
 
   it('rejects a duplicate add with 409', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ baseUrl }) => {
       const response = await fetch(`${baseUrl}/sets/test-set/models`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ provider: 'groq', model: 'llama-3.3-70b-versatile' }),
+        body: JSON.stringify({ provider: 'groq', model: 'openai/gpt-oss-120b' }),
       })
       assert.equal(response.status, 409)
       const payload = await response.json()
@@ -3814,14 +3814,14 @@ describe('router daemon integration hardening', () => {
 
   it('removes a model from the active set via DELETE /sets/:name/models', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
       { provider: 'cerebras', model: 'llama3.1-70b', priority: 2 },
     ])
     await withRouterTestServer(config, async ({ baseUrl }) => {
       const response = await fetch(`${baseUrl}/sets/test-set/models`, {
         method: 'DELETE',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ provider: 'groq', model: 'llama-3.3-70b-versatile' }),
+        body: JSON.stringify({ provider: 'groq', model: 'openai/gpt-oss-120b' }),
       })
       assert.equal(response.status, 200)
       const payload = await response.json()
@@ -3834,7 +3834,7 @@ describe('router daemon integration hardening', () => {
 
   it('rejects reorder when the order omits an existing model', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
       { provider: 'cerebras', model: 'llama3.1-70b', priority: 2 },
     ])
     await withRouterTestServer(config, async ({ baseUrl }) => {
@@ -3852,7 +3852,7 @@ describe('router daemon integration hardening', () => {
 
   it('reorders the active set via POST /sets/:name/reorder', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
       { provider: 'cerebras', model: 'llama3.1-70b', priority: 2 },
     ])
     await withRouterTestServer(config, async ({ baseUrl }) => {
@@ -3860,7 +3860,7 @@ describe('router daemon integration hardening', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          order: ['cerebras/llama3.1-70b', 'groq/llama-3.3-70b-versatile'],
+          order: ['cerebras/llama3.1-70b', 'groq/openai/gpt-oss-120b'],
         }),
       })
       assert.equal(response.status, 200)
@@ -3891,7 +3891,7 @@ describe('router daemon integration hardening', () => {
 
   it('serves Web Dashboard route aliases directly from the daemon for Docker mode', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ baseUrl }) => {
       const statusResp = await fetch(`${baseUrl}/api/router/status`)
@@ -3926,7 +3926,7 @@ describe('router daemon integration hardening', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           models: [
-            { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 }
+            { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 }
           ]
         }),
       })
@@ -3934,7 +3934,7 @@ describe('router daemon integration hardening', () => {
       const putPayload = await putResp.json()
       assert.equal(putPayload.set.models.length, 1)
       assert.equal(putPayload.set.models[0].provider, 'groq')
-      assert.equal(putPayload.set.models[0].model, 'llama-3.3-70b-versatile')
+      assert.equal(putPayload.set.models[0].model, 'openai/gpt-oss-120b')
 
       const forbiddenAddResp = await fetch(`${baseUrl}/api/router/sets/test-set/models`, {
         method: 'POST',
@@ -3964,7 +3964,7 @@ describe('router daemon integration hardening', () => {
 
   it('autoHealActiveSet is a no-op when the set is user-customized', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     config.router.userCustomized = true
     await withRouterTestServer(config, async ({ runtime }) => {
@@ -3976,7 +3976,7 @@ describe('router daemon integration hardening', () => {
 
   it('autoHealActiveSet is a no-op when autoHeal is disabled', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     config.router.autoHeal = false
     await withRouterTestServer(config, async ({ runtime }) => {
@@ -3988,7 +3988,7 @@ describe('router daemon integration hardening', () => {
 
   it('autoHealActiveSet reports no-op when there are no broken models', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ runtime }) => {
       const result = await runtime.autoHealActiveSet()
@@ -3999,7 +3999,7 @@ describe('router daemon integration hardening', () => {
 
   it('user edits to a set flip router.userCustomized and router.autoHeal to false', async () => {
     const config = buildRouterTestConfig([
-      { provider: 'groq', model: 'llama-3.3-70b-versatile', priority: 1 },
+      { provider: 'groq', model: 'openai/gpt-oss-120b', priority: 1 },
     ])
     await withRouterTestServer(config, async ({ baseUrl, runtime }) => {
       // 📖 Mark the set as auto-healed (clean state).
@@ -4386,20 +4386,20 @@ describe('tool launch preparation', () => {
     mkdirSync(dir, { recursive: true })
     const paths = createToolPaths(dir)
     const config = { apiKeys: { nvidia: 'nvapi-test' } }
-    const model = { providerKey: 'nvidia', modelId: 'deepseek-ai/deepseek-v4-flash', label: 'DeepSeek V4 Flash' }
+    const model = { providerKey: 'nvidia', modelId: 'deepseek-ai/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash' }
 
     try {
       const aiderPlan = prepareExternalToolLaunch('aider', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       assert.equal(aiderPlan.command, 'aider')
-      assert.deepEqual(aiderPlan.args, ['--model', 'openai/deepseek-ai/deepseek-v4-flash'])
+      assert.deepEqual(aiderPlan.args, ['--model', 'openai/deepseek-ai/deepseek-v4-flash-0731'])
       assert.match(readFileSync(paths.aiderConfigPath, 'utf8'), /model: openai\/deepseek-ai\/deepseek-v4-flash/)
 
       const crushPlan = prepareExternalToolLaunch('crush', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const crushConfig = JSON.parse(readFileSync(paths.crushConfigPath, 'utf8'))
       assert.equal(crushPlan.command, 'crush')
-      assert.equal(crushConfig.models.large.model, 'deepseek-ai/deepseek-v4-flash')
+      assert.equal(crushConfig.models.large.model, 'deepseek-ai/deepseek-v4-flash-0731')
       assert.equal(crushConfig.models.large.provider, 'freeCodingModels')
-      assert.equal(crushConfig.models.small.model, 'deepseek-ai/deepseek-v4-flash')
+      assert.equal(crushConfig.models.small.model, 'deepseek-ai/deepseek-v4-flash-0731')
 
       const goosePlan = prepareExternalToolLaunch('goose', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const gooseConfig = readFileSync(paths.gooseConfigPath, 'utf8')
@@ -4410,28 +4410,28 @@ describe('tool launch preparation', () => {
       const qwenPlan = prepareExternalToolLaunch('qwen', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const qwenConfig = JSON.parse(readFileSync(paths.qwenConfigPath, 'utf8'))
       assert.equal(qwenPlan.command, 'qwen')
-      assert.equal(qwenConfig.model, 'deepseek-ai/deepseek-v4-flash')
-      assert.equal(qwenConfig.modelProviders.openai[0].id, 'deepseek-ai/deepseek-v4-flash')
+      assert.equal(qwenConfig.model, 'deepseek-ai/deepseek-v4-flash-0731')
+      assert.equal(qwenConfig.modelProviders.openai[0].id, 'deepseek-ai/deepseek-v4-flash-0731')
 
       const openHandsPlan = prepareExternalToolLaunch('openhands', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const openHandsEnv = readFileSync(paths.openHandsEnvPath, 'utf8')
       assert.equal(openHandsPlan.command, 'openhands')
       assert.deepEqual(openHandsPlan.args, ['--override-with-envs'])
-      assert.match(openHandsEnv, /OPENAI_MODEL="deepseek-ai\/deepseek-v4-flash"/)
-      assert.match(openHandsEnv, /LLM_MODEL="openai\/deepseek-ai\/deepseek-v4-flash"/)
+      assert.match(openHandsEnv, /OPENAI_MODEL="deepseek-ai\/deepseek-v4-flash-0731"/)
+      assert.match(openHandsEnv, /LLM_MODEL="openai\/deepseek-ai\/deepseek-v4-flash-0731"/)
 
       const ampPlan = prepareExternalToolLaunch('amp', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const ampConfig = JSON.parse(readFileSync(paths.ampConfigPath, 'utf8'))
       assert.equal(ampPlan.command, 'amp')
-      assert.equal(ampConfig['amp.model'], 'deepseek-ai/deepseek-v4-flash')
+      assert.equal(ampConfig['amp.model'], 'deepseek-ai/deepseek-v4-flash-0731')
 
       const piPlan = prepareExternalToolLaunch('pi', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const piModels = JSON.parse(readFileSync(paths.piModelsPath, 'utf8'))
       const piSettings = JSON.parse(readFileSync(paths.piSettingsPath, 'utf8'))
       assert.equal(piPlan.command, 'pi')
-      assert.deepEqual(piPlan.args, ['--provider', 'nvidia', '--model', 'deepseek-ai/deepseek-v4-flash', '--api-key', piPlan.apiKey])
-      assert.equal(piModels.providers.nvidia.models[0].id, 'deepseek-ai/deepseek-v4-flash')
-      assert.equal(piSettings.defaultModel, 'deepseek-ai/deepseek-v4-flash')
+      assert.deepEqual(piPlan.args, ['--provider', 'nvidia', '--model', 'deepseek-ai/deepseek-v4-flash-0731', '--api-key', piPlan.apiKey])
+      assert.equal(piModels.providers.nvidia.models[0].id, 'deepseek-ai/deepseek-v4-flash-0731')
+      assert.equal(piSettings.defaultModel, 'deepseek-ai/deepseek-v4-flash-0731')
 
       // 📖 ZCode writes provider + model configurations to its config.json and model cache.
       const zcodePlan = prepareExternalToolLaunch('zcode', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
@@ -4493,7 +4493,7 @@ describe('endpoint install tracking', () => {
         providerKey: 'nvidia',
         toolMode: 'opencode',
         scope: 'selected',
-        modelIds: ['deepseek-ai/deepseek-v4-flash', '', 'deepseek-ai/deepseek-v4-flash'],
+        modelIds: ['deepseek-ai/deepseek-v4-flash-0731', '', 'deepseek-ai/deepseek-v4-flash-0731'],
         lastSyncedAt: '2026-03-09T12:00:00.000Z',
       },
       null,
@@ -4505,7 +4505,7 @@ describe('endpoint install tracking', () => {
         providerKey: 'nvidia',
         toolMode: 'opencode',
         scope: 'selected',
-        modelIds: ['deepseek-ai/deepseek-v4-flash'],
+        modelIds: ['deepseek-ai/deepseek-v4-flash-0731'],
         lastSyncedAt: '2026-03-09T12:00:00.000Z',
       },
     ])
@@ -4552,7 +4552,7 @@ describe('endpoint installer', () => {
       const expectedApiKey = getApiKey(config, 'nvidia')
       const result = installProviderEndpoints(config, 'nvidia', 'opencode-desktop', {
         scope: 'selected',
-        modelIds: ['deepseek-ai/deepseek-v4-flash'],
+        modelIds: ['deepseek-ai/deepseek-v4-flash-0731'],
         paths,
       })
 
@@ -4561,7 +4561,7 @@ describe('endpoint installer', () => {
       assert.equal(result.modelCount, 1)
       assert.equal(written.provider['fcm-nvidia'].options.apiKey, expectedApiKey)
       assert.deepEqual(written.provider['fcm-nvidia'].models, {
-        'deepseek-ai/deepseek-v4-flash': { name: 'DeepSeek V4 Flash' },
+        'deepseek-ai/deepseek-v4-flash-0731': { name: 'DeepSeek V4 Flash' },
       })
       assert.deepEqual(config.endpointInstalls.map((entry) => ({
         providerKey: entry.providerKey,
@@ -4573,7 +4573,7 @@ describe('endpoint installer', () => {
           providerKey: 'nvidia',
           toolMode: 'opencode',
           scope: 'selected',
-          modelIds: ['deepseek-ai/deepseek-v4-flash'],
+          modelIds: ['deepseek-ai/deepseek-v4-flash-0731'],
         },
       ])
     } finally {
@@ -4649,7 +4649,7 @@ describe('legacy proxy cleanup', () => {
         proxySettings: { enabled: true },
         endpointInstalls: [
           { providerKey: 'nvidia', toolMode: 'claude-code', scope: 'all', modelIds: [] },
-          { providerKey: 'nvidia', toolMode: 'opencode', scope: 'selected', modelIds: ['deepseek-ai/deepseek-v4-flash'] },
+          { providerKey: 'nvidia', toolMode: 'opencode', scope: 'selected', modelIds: ['deepseek-ai/deepseek-v4-flash-0731'] },
         ],
       }, null, 2))
 
@@ -4678,7 +4678,7 @@ describe('legacy proxy cleanup', () => {
       assert.equal('proxy' in nextConfig.settings, false)
       assert.equal(nextConfig.settings.preferredToolMode, 'opencode')
       assert.deepEqual(nextConfig.endpointInstalls, [
-        { providerKey: 'nvidia', toolMode: 'opencode', scope: 'selected', modelIds: ['deepseek-ai/deepseek-v4-flash'] },
+        { providerKey: 'nvidia', toolMode: 'opencode', scope: 'selected', modelIds: ['deepseek-ai/deepseek-v4-flash-0731'] },
       ])
       assert.equal(Boolean(nextOpencode.provider['fcm-proxy']), false)
       assert.equal(Boolean(nextOpencode.provider['fcm-nvidia']), true)

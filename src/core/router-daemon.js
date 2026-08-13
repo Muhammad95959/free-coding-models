@@ -3300,13 +3300,13 @@ class RouterRuntime {
 // 📖 identical (tier, sweScore, latency) - never a hard requirement, so
 // 📖 a user whose NVIDIA key is dead still gets a working set.
 const PREFERRED_DEFAULT_MODELS = [
-  { provider: 'groq',     model: 'llama-3.3-70b-versatile' },
   { provider: 'groq',     model: 'openai/gpt-oss-120b' },
+  { provider: 'groq',     model: 'qwen/qwen3.6-27b' },
   { provider: 'cerebras', model: 'llama3.1-70b' },
-  { provider: 'nvidia',   model: 'deepseek-ai/deepseek-v4-flash' },
+  { provider: 'nvidia',   model: 'deepseek-ai/deepseek-v4-flash-0731' },
   { provider: 'cerebras', model: 'qwen-3-235b-a7b' },
   { provider: 'nvidia',   model: 'openai/gpt-oss-120b' },
-  { provider: 'groq',     model: 'llama-3.1-8b-instant' },
+  { provider: 'groq',     model: 'openai/gpt-oss-20b' },
   { provider: 'nvidia',   model: 'minimaxai/minimax-m2.7' },
 ]
 
@@ -3424,6 +3424,12 @@ export async function buildDefaultRouterSet(config = {}, maxModels, options = {}
   // 📖 Build the final order: proven-working models first, then the static
   // 📖 fallback, then pinned popular models as a safety net so the user
   // 📖 always sees a populated set on first start.
+  // 📖 When no probeFn is available AND the user has keys, fall back to the
+  // 📖 sync behaviour (keyed providers only) so we don't leak models the
+  // 📖 user can't actually call.
+  const fallbackPool = (probeFn == null && keyedProviders.size > 0)
+    ? entries.filter((e) => e.hasKey)
+    : entries
   const used = new Set()
   const ordered = []
   for (const { entry } of working) {
@@ -3433,6 +3439,7 @@ export async function buildDefaultRouterSet(config = {}, maxModels, options = {}
     ordered.push(entry)
   }
   for (const entry of failing) {
+    if (!fallbackPool.includes(entry)) continue
     const key = `${entry.provider}/${entry.model}`
     if (used.has(key)) continue
     used.add(key)
