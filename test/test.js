@@ -3704,6 +3704,40 @@ describe('router daemon integration hardening', () => {
     })
   })
 
+  it('broadcasts full models state over SSE after a probe result (issue #147)', async () => {
+    const config = buildRouterTestConfig([])
+    await withRouterTestServer(config, async ({ baseUrl, runtime }) => {
+      const controller = new AbortController()
+      const response = await fetch(`${baseUrl}/api/events`, { signal: controller.signal })
+      assert.equal(response.status, 200)
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      const collected = (async () => {
+        for (;;) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+        }
+      })()
+
+      // 📖 Wait for the initial `: connected` + state payload to flush, then
+      // 📖 record a probe result — the daemon must broadcast a `models` event
+      // 📖 so the dashboard updates (the front only listens for `models`).
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      runtime.recordProbeResult('groq/model-x', { ok: true, latencyMs: 42, code: 200 })
+
+      // 📖 Give the 250ms debounced broadcast time to fire.
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      controller.abort()
+      try { await collected } catch {}
+
+      assert.match(buffer, /event: models/, 'SSE must emit a models event after a probe result')
+      assert.ok(buffer.includes('groq/model-x'), 'models payload must include the probed model')
+    })
+  })
+
   it('blocks path traversal in static file serving', async () => {
     const config = buildRouterTestConfig([])
     await withRouterTestServer(config, async ({ baseUrl }) => {

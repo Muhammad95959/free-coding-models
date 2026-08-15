@@ -1101,6 +1101,12 @@ class RouterRuntime {
       circuit_state: this.circuit.get(key)?.state || 'UNKNOWN',
     })
 
+    // 📖 Issue #147: the web dashboard (web/src/hooks/useSocket.js) only listens
+    // 📖 for `models` events — it never consumes the lightweight `probe` event.
+    // 📖 Broadcast the full models payload (debounced) so live stats actually
+    // 📖 update in the Docker/daemon-served dashboard.
+    this.scheduleWebStateBroadcast()
+
     // 📖 Probe-cache (t1): mirror the result into the persistent cross-session
     // 📖 cache so the CLI TUI can skip fresh healthy models and auto-hide broken
     // 📖 ones. key is `provider/modelId` — split on the first slash.
@@ -1413,6 +1419,20 @@ class RouterRuntime {
 
   broadcastWebState() {
     this.broadcast('models', getWebStatePayload(this))
+  }
+
+  /**
+   * 📖 scheduleWebStateBroadcast — debounced full-state broadcast so a probe
+   * 📖 burst doesn't serialize the whole ~200-model payload once per result.
+   * 📖 Fires at most once per 250ms window; unref'd so it never blocks exit.
+   */
+  scheduleWebStateBroadcast() {
+    if (this.webStateBroadcastTimer) return
+    this.webStateBroadcastTimer = setTimeout(() => {
+      this.webStateBroadcastTimer = null
+      this.broadcastWebState()
+    }, 250)
+    if (typeof this.webStateBroadcastTimer.unref === 'function') this.webStateBroadcastTimer.unref()
   }
 
   async runWebBenchmark(providerKey, modelId) {
