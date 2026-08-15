@@ -3024,6 +3024,55 @@ describe('router daemon integration hardening', () => {
     })
   })
 
+  it('fails over non-streaming HTTP 529 (overloaded) to the next model (issue #148)', async () => {
+    await withMockProvider(() => ({ status: 529, body: { error: { message: 'overloaded' } } }), async (groqProvider) => {
+      await withMockProvider(() => ({ body: { id: 'chatcmpl-failover-529', choices: [] } }), async (nvidiaProvider) => {
+        await withSourceUrls({ groq: groqProvider.url, nvidia: nvidiaProvider.url }, async () => {
+          const config = buildRouterTestConfig([
+            { provider: 'groq', model: ROUTER_TEST_MODELS.groqFast, priority: 1 },
+            { provider: 'nvidia', model: ROUTER_TEST_MODELS.nvidiaFast, priority: 2 },
+          ])
+          await withRouterTestServer(config, async ({ baseUrl }) => {
+            const response = await postRouterChat(baseUrl)
+            const payload = await response.json()
+
+            assert.equal(response.status, 200)
+            assert.equal(response.headers.get('x-fcm-router-model'), `nvidia/${ROUTER_TEST_MODELS.nvidiaFast}`)
+            assert.equal(payload.id, 'chatcmpl-failover-529')
+            assert.equal(groqProvider.requests.length, 1)
+            assert.equal(nvidiaProvider.requests.length, 1)
+          })
+        })
+      })
+    })
+  })
+
+  it('fails over streaming HTTP 529 (overloaded) before the first byte (issue #148)', async () => {
+    await withMockProvider(() => ({ status: 529, body: { error: { message: 'overloaded' } } }), async (groqProvider) => {
+      await withMockProvider(() => ({
+        headers: { 'content-type': 'text/event-stream' },
+        chunks: ['data: {"choices":[{"delta":{"content":"ok"}}]}\n\n', 'data: [DONE]\n\n'],
+      }), async (nvidiaProvider) => {
+        await withSourceUrls({ groq: groqProvider.url, nvidia: nvidiaProvider.url }, async () => {
+          const config = buildRouterTestConfig([
+            { provider: 'groq', model: ROUTER_TEST_MODELS.groqFast, priority: 1 },
+            { provider: 'nvidia', model: ROUTER_TEST_MODELS.nvidiaFast, priority: 2 },
+          ])
+          await withRouterTestServer(config, async ({ baseUrl }) => {
+            const response = await postRouterChat(baseUrl, { stream: true })
+            const text = await response.text()
+
+            assert.equal(response.status, 200)
+            assert.equal(response.headers.get('x-fcm-router-model'), `nvidia/${ROUTER_TEST_MODELS.nvidiaFast}`)
+            assert.match(text, /"ok"/)
+            assert.equal(groqProvider.requests.length, 1)
+            assert.equal(nvidiaProvider.requests.length, 1)
+          })
+        })
+      })
+    })
+  })
+
   it('fails over streaming errors before the first byte', async () => {
     await withMockProvider(() => ({ status: 503, body: { error: { message: 'warming up' } } }), async (groqProvider) => {
       await withMockProvider(() => ({
