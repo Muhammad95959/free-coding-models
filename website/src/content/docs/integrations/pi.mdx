@@ -70,8 +70,8 @@ Restart Pi. The extension loads automatically. Requires Pi + `free-coding-models
 
 Models are ranked by: **SWE-bench (60%) + Latency (20%) + TPS (10%) + Stability (10%)**.
 
-### Cerebras 8k caveat
+### Cerebras free-tier context caveat
 
-Cerebras free-tier API has a strict **~8k total token limit** (prompt + tools + completion). Tiny-context models can pass a `hi` probe but fail real agent prompts, so FCM hides 8k Cerebras models from the picker.
+Cerebras free-tier API caps context at **~64-65k total tokens** (prompt + tools + completion); the paid tier gets 131k. Tiny-context models can pass a `hi` probe but fail real agent prompts, so FCM hides them from the picker.
 
 → Full architecture: [`packages/fcm-pi/README.md`](https://github.com/vava-nessa/free-coding-models/blob/main/packages/fcm-pi/README.md)

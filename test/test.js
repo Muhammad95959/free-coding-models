@@ -4386,7 +4386,7 @@ describe('tool launch preparation', () => {
     mkdirSync(dir, { recursive: true })
     const paths = createToolPaths(dir)
     const config = { apiKeys: { nvidia: 'nvapi-test' } }
-    const model = { providerKey: 'nvidia', modelId: 'deepseek-ai/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash' }
+    const model = { providerKey: 'nvidia', modelId: 'deepseek-ai/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash', ctx: '1M' }
 
     try {
       const aiderPlan = prepareExternalToolLaunch('aider', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
@@ -4406,6 +4406,9 @@ describe('tool launch preparation', () => {
       assert.equal(goosePlan.command, 'goose')
       assert.match(gooseConfig, /GOOSE_PROVIDER: fcm-nvidia/)
       assert.match(gooseConfig, /GOOSE_MODEL: deepseek-ai\/deepseek-v4-flash/)
+      // 📖 Context limit must come from the model's ctx, not a hardcoded 128k (issue #153)
+      const gooseProvider = JSON.parse(readFileSync(join(paths.gooseProvidersDir, 'fcm-nvidia.json'), 'utf8'))
+      assert.equal(gooseProvider.models[0].context_limit, 1_000_000)
 
       const qwenPlan = prepareExternalToolLaunch('qwen', model, config, { paths, inheritedEnv: { PATH: process.env.PATH || '' } })
       const qwenConfig = JSON.parse(readFileSync(paths.qwenConfigPath, 'utf8'))

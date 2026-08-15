@@ -484,7 +484,7 @@ Then restart Pi. The extension loads automatically. Requires Pi + `free-coding-m
 | `/fcm-router` | Connect Pi to the local FCM Smart Router daemon |
 | `/fcm-status` | Diagnostics: active model, last scan source, daemon state |
 
-**Composite ranking** — SWE-bench (60%) + Latency (20%) + TPS (10%) + Stability (10%). Tiny-context Cerebras models (~8k total tokens) are hidden from Pi/OpenCode pickers since they pass a `hi` probe but fail real agent prompts.
+**Composite ranking** — SWE-bench (60%) + Latency (20%) + TPS (10%) + Stability (10%). Cerebras free-tier models are capped at ~64-65k total tokens (paid tier gets 131k) and are hidden from Pi/OpenCode pickers when they fail real agent prompts.
 
 → Full architecture: [`packages/fcm-pi/README.md`](./packages/fcm-pi/README.md)
 

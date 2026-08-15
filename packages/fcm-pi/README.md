@@ -56,5 +56,5 @@ packages/fcm-pi/
 
 ## Provider Notes
 
-- **Cerebras**: Strict token limits (~8k) on free tier; small context models are auto-filtered out from Pi agent prompts.
+- **Cerebras**: Free-tier context is capped at ~64-65k tokens (paid tier gets 131k); small context models are auto-filtered out from Pi agent prompts.
 - **NVIDIA NIM**: ~40 RPM rate limit on no-card tier; initial parallel scan caches metrics to `~/.pi/agent/fcm-cache.json` for 10 minutes.

@@ -147,7 +147,7 @@ function getManagedProviderLabel(providerKey) {
   return `FCM ${getProviderLabel(providerKey)}`
 }
 
-function parseContextWindow(ctx) {
+export function parseContextWindow(ctx) {
   if (typeof ctx !== 'string' || !ctx.trim()) return 128000
   const trimmed = ctx.trim().toLowerCase()
   const multiplier = trimmed.endsWith('m') ? 1_000_000 : trimmed.endsWith('k') ? 1_000 : 1

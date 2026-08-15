@@ -49,6 +49,7 @@ import { getToolMeta, TOOL_METADATA } from './tool-metadata.js'
 import { PROVIDER_METADATA } from './provider-metadata.js'
 import { resolveToolBinaryPath } from './tool-bootstrap.js'
 import { ensureDir, readJson, writeJson } from './shared-helpers.js'
+import { parseContextWindow } from './endpoint-installer.js'
 
 const OPENAI_COMPAT_ENV_KEYS = [
   'OPENAI_API_KEY',
@@ -338,7 +339,7 @@ function writeGooseConfig(model, apiKey, baseUrl, providerKey, paths = getDefaul
     description: `Managed by free-coding-models for ${providerLabel}`,
     api_key_env: secretEnvName,
     base_url: baseUrl?.endsWith('/chat/completions') ? baseUrl : (baseUrl || ''),
-    models: [{ name: model.modelId, context_limit: 128000 }],
+    models: [{ name: model.modelId, context_limit: parseContextWindow(model.ctx) }],
     supports_streaming: true,
     requires_auth: true,
   }
