@@ -3155,9 +3155,10 @@ describe('router daemon integration hardening', () => {
             assert.equal(response.status, 200)
             // 📖 Partial data from the first model is visible to the client.
             assert.match(text, /partial-/)
-            // 📖 The router emits a synthetic SSE error event so the client knows
+            // 📖 The router emits a synthetic SSE caution message so the client knows
             // 📖 the stream was truncated and a failover is happening.
-            assert.match(text, /fcm_stream_failover/)
+            assert.match(text, /CAUTION/)
+            assert.match(text, /Stream truncated by router/)
             // 📖 Fallback stream from nvidia was appended.
             assert.match(text, /fallback/)
             assert.equal(groqProvider.requests.length, 1)

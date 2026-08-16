@@ -105,6 +105,7 @@ export const ROUTER_TOKENS_PATH = join(homedir(), `.free-coding-models-tokens${_
 export function getRouterPidPath() { return join(homedir(), `.free-coding-models-daemon${_isDev() ? '-dev' : ''}.pid`) }
 export function getRouterPortPath() { return join(homedir(), `.free-coding-models-daemon${_isDev() ? '-dev' : ''}.port`) }
 export function getRouterLogPath() { return join(homedir(), `.free-coding-models-daemon${_isDev() ? '-dev' : ''}.log`) }
+export function getRouterTokensPath() { return join(homedir(), `.free-coding-models-tokens${_isDev() ? '-dev' : ''}.json`) }
 
 // 📖 Returns effective port range for current mode (dev vs production)
 export function getRouterPortRange() {
@@ -124,7 +125,7 @@ const MAX_PROBE_WINDOW = 20
 const TOKEN_FLUSH_INTERVAL_MS = 60000
 const CONFIG_RELOAD_INTERVAL_MS = 10000
 const STATS_RETENTION_DAYS = 90
-const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 529])
+const RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504, 529])
 const AUTH_STATUS_CODES = new Set([401, 403])
 const RATE_LIMIT_HEADER_NAMES = [
   'retry-after',
@@ -889,6 +890,7 @@ class RouterRuntime {
     this.probeWindows = new Map()
     this.circuit = new Map()
     this.requestLog = []
+    this.activeRequests = new Map()
     this.sseClients = new Set()
     this.lastProbeAt = null
     this.totalRequestsRouted = 0
@@ -1608,6 +1610,15 @@ class RouterRuntime {
         completed: this.webGlobalBenchmarkCompleted || 0,
       },
       requestLog: this.requestLog.slice(0, 20),
+      activeRequests: Array.from(this.activeRequests.values()).map(r => ({
+        requestId: r.requestId,
+        at: r.at,
+        model: r.model,
+        current_model: r.current_model,
+        attempts: r.attempts,
+        tokens: r.tokens,
+        stalled: r.stalled
+      })),
       circuitBreakers: Object.fromEntries([...this.circuit.entries()].map(([key, value]) => [key, {
         state: value.authError ? 'AUTH_ERROR' : value.stale ? 'STALE' : value.unsupported ? 'UNSUPPORTED' : value.state,
         consecutiveFailures: value.consecutiveFailures,
@@ -1963,6 +1974,15 @@ class RouterRuntime {
   }
 
   async routeRequest({ req, res, body, setName, requestId }) {
+    this.activeRequests.set(requestId, {
+      requestId,
+      at: Date.now(),
+      model: body?.model || 'fcm',
+      current_model: null,
+      attempts: 0,
+      tokens: 0,
+      stalled: false
+    })
     if (this.shuttingDown) {
       sendError(res, 503, 'Daemon is shutting down', 'service_unavailable', 'daemon_shutting_down', requestId)
       return
@@ -1988,7 +2008,7 @@ class RouterRuntime {
 
     const candidates = this.getRoutingCandidates(set)
     const maxRetries = this.routerConfig().failover.maxRetries
-    const maxAttempts = Math.max(1, maxRetries)
+    const maxAttempts = 1 + maxRetries
     if (candidates.length === 0) {
       const health = this.getModelHealth(set)
       const quotaExhausted = [...this.quotaExhausted].filter((key) => set.models.some((model) => modelKey(model.provider, model.model) === key))
@@ -2042,6 +2062,13 @@ class RouterRuntime {
       for (const candidate of candidates) {
         if (attemptIndex >= maxAttempts) break
         if (blockedProviders.has(candidate.provider)) continue
+
+        const activeReq = this.activeRequests.get(requestId)
+        if (activeReq) {
+          activeReq.current_model = candidate.key
+          activeReq.attempts = attemptIndex + 1
+        }
+
         tried.push(candidate.key)
         const result = body.stream === true
           ? await this.proxyStreamingRequest({ req, res, body, candidate, requestId, attemptIndex })
@@ -2101,6 +2128,7 @@ class RouterRuntime {
       })
     } finally {
       this.inFlight -= 1
+      this.activeRequests.delete(requestId)
     }
   }
 
@@ -2269,6 +2297,11 @@ class RouterRuntime {
 
   async proxyStreamingRequest({ req, res, body, candidate, requestId, attemptIndex }) {
     const key = candidate.key
+    const activeReq = this.activeRequests.get(requestId)
+    if (activeReq) {
+      activeReq.current_model = key
+      if (activeReq.last_activity_at) activeReq.last_activity_at = Date.now()
+    }
     const apiKey = this.getApiKeyForProvider(candidate.provider)
     // 📖 Guard: bail early if provider URL cannot be resolved
     const providerUrl = resolveProviderUrl(candidate.provider)
@@ -2397,6 +2430,10 @@ class RouterRuntime {
         // 📖 Guard: ensure chunk value is safe for Buffer conversion
         const buf = Buffer.isBuffer(chunk.value) ? chunk.value : Buffer.from(chunk.value)
         res.write(buf)
+        if (activeReq) {
+          if (activeReq.last_activity_at) activeReq.last_activity_at = Date.now()
+          activeReq.tokens += 1 // Increment a counter to show progress
+        }
       }
 
       this.markSuccess(key, latencyMs)
@@ -2443,15 +2480,18 @@ class RouterRuntime {
           this.logger.warn(`Stream stall after partial response from ${key}, attempting failover`, { request_id: requestId, reason })
           if (!res.writableEnded) {
             try {
-              const errorPayload = JSON.stringify({
-                error: {
-                  message: `Stream truncated by router due to upstream ${reason}; failing over to next model.`,
-                  type: 'stream_error',
-                  code: 'fcm_stream_failover',
-                  reason,
-                },
+              // 📖 Issue #137: failover even after a partial response.
+              // 📖 We use a regular chat delta instead of an error payload so
+              // 📖 that clients (which often abort on "error") stay connected.
+              const failoverMsg = `\n\n> [!CAUTION]\n> Stream truncated by router due to upstream ${reason}; failing over to next model.\n\n`
+              const deltaPayload = JSON.stringify({
+                choices: [{
+                  index: 0,
+                  delta: { content: failoverMsg },
+                  finish_reason: null,
+                }],
               })
-              res.write(`data: ${errorPayload}\n\n`)
+              res.write(`data: ${deltaPayload}\n\n`)
             } catch { /* best-effort */ }
           }
           return { done: false, failoverToNext: true, reason: `stream_stall_${reason}` }
@@ -3301,8 +3341,8 @@ class RouterRuntime {
     flushProbeCache()  // 📖 t1: persist any pending probe-cache deltas before exit
     if (this.runtimeTelemetryDirty) flushRuntimeTelemetryStore()  // 📖 t3
     try { this.server?.close() } catch {}
-    try { unlinkSync(ROUTER_PID_PATH) } catch {}
-    try { unlinkSync(ROUTER_PORT_PATH) } catch {}
+    try { unlinkSync(getRouterPidPath()) } catch {}
+    try { unlinkSync(getRouterPortPath()) } catch {}
     void sendUsageTelemetry(this.config, {}, {
       event: 'app_daemon_stop',
       mode: 'daemon',
@@ -3846,16 +3886,28 @@ export async function startRouterDaemonBackground() {
 }
 
 export async function stopRouterDaemon() {
-  const pid = readNumberFile(ROUTER_PID_PATH)
-  if (!pid) return { ok: false, stopped: false, error: 'No daemon PID file found' }
+  const pidPath = getRouterPidPath()
+  let pid = readNumberFile(pidPath)
+
+  // 📖 Fallback: if the PID file is missing or invalid, try to discover the
+  // 📖 running daemon via its health port and get the PID from there.
+  if (!pid) {
+    const status = await getRouterDaemonStatus()
+    if (status.ok && status.pid) pid = status.pid
+  }
+
+  if (!pid) return { ok: false, stopped: false, error: 'No daemon PID found' }
   if (!isProcessAlive(pid)) {
-    try { unlinkSync(ROUTER_PID_PATH) } catch {}
+    try { unlinkSync(pidPath) } catch {}
     return { ok: true, stopped: false, stalePid: pid }
   }
   process.kill(pid, 'SIGTERM')
   for (let i = 0; i < 60; i += 1) {
     await sleep(250)
-    if (!isProcessAlive(pid)) return { ok: true, stopped: true, pid }
+    if (!isProcessAlive(pid)) {
+      try { unlinkSync(pidPath) } catch {}
+      return { ok: true, stopped: true, pid }
+    }
   }
   return { ok: false, stopped: false, pid, error: 'Daemon did not stop before timeout' }
 }

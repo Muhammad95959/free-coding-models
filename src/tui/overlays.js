@@ -336,6 +336,8 @@ export function createOverlayRenderers(state, deps) {
       themeColors.dim('  ') +
       themeColors.footerLove('Made with 💖 & ☕ by ') +
       themeColors.link('\x1b]8;;https://github.com/vava-nessa\x1b\\vava-nessa\x1b]8;;\x1b\\') +
+      themeColors.dim('  •  ⭐ ') +
+      themeColors.link('\x1b]8;;https://github.com/vava-nessa/free-coding-models/graphs/contributors\x1b\\Contributors\x1b]8;;\x1b\\') +
       themeColors.dim('  •  💬 ') +
       themeColors.footerDiscord('\x1b]8;;https://discord.gg/ZTNFHvvCkU\x1b\\Join the Discord\x1b]8;;\x1b\\') +
       themeColors.dim('  •  ☕ ') +

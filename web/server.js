@@ -51,7 +51,7 @@ import { benchmarkModel, BENCHMARK_TIMEOUT_MS, BENCHMARK_PROMPT } from '../src/c
 import { getInstallTargetModes, installProviderEndpoints, getConfiguredInstallableProviders, getProviderCatalogModels } from '../src/core/endpoint-installer.js'
 import { isModelCompatibleWithTool } from '../src/core/tool-metadata.js'
 import { sendUsageTelemetry } from '../src/core/telemetry.js'
-import { getRouterDaemonStatus, startRouterDaemonBackground, stopRouterDaemon, ROUTER_TOKENS_PATH, getRouterPortPath } from '../src/core/router-daemon.js'
+import { getRouterDaemonStatus, startRouterDaemonBackground, stopRouterDaemon, getRouterTokensPath, getRouterPortPath } from '../src/core/router-daemon.js'
 import { scanAllToolConfigs, softDeleteModel } from '../src/core/installed-models-manager.js'
 import {
   TASK_TYPES,
@@ -607,8 +607,9 @@ async function proxyToDaemon(path, options = {}) {
 
 function readTokenFile() {
   try {
-    if (!existsSync(ROUTER_TOKENS_PATH)) return null
-    return JSON.parse(readFileSync(ROUTER_TOKENS_PATH, 'utf8'))
+    const tokensPath = getRouterTokensPath()
+    if (!existsSync(tokensPath)) return null
+    return JSON.parse(readFileSync(tokensPath, 'utf8'))
   } catch { return null }
 }
 

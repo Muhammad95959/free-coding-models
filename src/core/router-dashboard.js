@@ -301,6 +301,7 @@ export function normalizeRouterDashboardSnapshot(healthPayload, statsPayload) {
     models,
     routingOrder,
     requestLog,
+    activeRequests: Array.isArray(merged.activeRequests) ? merged.activeRequests : [],
   }
 }
 
@@ -1034,12 +1035,29 @@ export function renderRouterDashboard(state, deps = {}) {
   // ── Token Summary (compact, visual) ─────────────────────────────────────────
   lines.push(`  ${themeColors.textBold('📊 Tokens')}  ${themeColors.dim('Today:')} ${themeColors.info(formatTokenTotalCompact(snapshot.tokens.today.total_tokens))} ${themeColors.dim(`(${snapshot.tokens.today.requests} req)`)}  ${themeColors.dim('Lifetime:')} ${themeColors.info(formatTokenTotalCompact(snapshot.tokens.all_time.total_tokens))} ${themeColors.dim(`(${snapshot.tokens.all_time.requests} req)`)}`)
 
+  // ── Active Requests ────────────────────────────────────────────────────────
+  lines.push('')
+  lines.push(`  ${themeColors.warningBold('⚡ Active Requests')} ${themeColors.dim(`(${snapshot.activeRequests?.length || 0})`)}`)
+  if (snapshot.activeRequests?.length > 0) {
+    for (const req of snapshot.activeRequests) {
+      const model = compactText(req.model, 24)
+      const current = compactText(req.current_model || 'Routing...', 24)
+      const duration = formatRouterDuration(Math.floor((Date.now() - req.started_at) / 1000))
+      const status = req.stalled ? themeColors.errorBold('STALLED?') : themeColors.success('Processing...')
+      const tokens = req.stream ? ` ${themeColors.dim(`(${req.tokens} tok)`)}` : ''
+      const shortId = req.request_id ? themeColors.dim(`[${req.request_id.slice(-4)}] `) : ''
+      lines.push(`  ${themeColors.dim('•')} ${shortId}${model} → ${themeColors.info(current)} ${status}${tokens} ${themeColors.dim(duration)}`)
+    }
+  } else {
+    lines.push(`  ${themeColors.dim('No active requests')}`)
+  }
+
   // ── Live Request Log (compact) ──────────────────────────────────────────────
   const requestRows = requestLogRows(state, snapshot)
   lines.push('')
   lines.push(`  ${themeColors.textBold('Recent Requests')}`)
   if (requestRows.length > 0) {
-    const header = `  ${padEndDisplay('Time', 10)} ${padEndDisplay('Model', 34)} ${padEndDisplay('Status', 8)} ${padEndDisplay('Latency', 9)} Detail`
+    const header = `  ${padEndDisplay('ID', 5)} ${padEndDisplay('Time', 10)} ${padEndDisplay('Model', 34)} ${padEndDisplay('Status', 8)} ${padEndDisplay('Latency', 9)} Detail`
     lines.push(themeColors.dim(header))
     for (const row of requestRows.slice(0, 6)) {
       const atMs = Date.parse(row.at)
@@ -1052,12 +1070,14 @@ export function renderRouterDashboard(state, deps = {}) {
         row.stream ? 'stream' : '',
         row.error || '',
       ].filter(Boolean).join(', ') || '—'
+      const shortId = row.request_id ? row.request_id.slice(-4) : '—'
       lines.push(
-        `  ${padEndDisplay(time, 10)} ` +
+        `  ${padEndDisplay(shortId, 5)} ` +
+        `${padEndDisplay(time, 10)} ` +
         `${compactText(row.model, 34)} ` +
         `${padEndDisplay(statusColor(statusText), 8)} ` +
         `${padEndDisplay(latency, 9)} ` +
-        `${compactText(detail, Math.max(10, width - 68)).trimEnd()}`
+        `${compactText(detail, Math.max(10, width - 74)).trimEnd()}`
       )
     }
   } else {

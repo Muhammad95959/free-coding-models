@@ -893,6 +893,7 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
     <td align="center" width="120"><a href="https://github.com/stgreenb"><img src="https://avatars.githubusercontent.com/u/18483964?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="stgreenb"></a></td>
     <td align="center" width="120"><a href="https://github.com/MoriDanWork"><img src="https://avatars.githubusercontent.com/u/55363096?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="MoriDanWork"></a></td>
     <td align="center" width="120"><a href="https://github.com/fan92rus"><img src="https://avatars.githubusercontent.com/u/13201333?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="fan92rus"></a></td>
+    <td align="center" width="120"><a href="https://github.com/lehneres"><img src="https://avatars.githubusercontent.com/u/7437288?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="lehneres"></a></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/vava-nessa"><sub><b>vava-nessa</b></sub></a></td>
@@ -905,9 +906,13 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
     <td align="center"><a href="https://github.com/stgreenb"><sub><b>stgreenb</b></sub></a></td>
     <td align="center"><a href="https://github.com/MoriDanWork"><sub><b>MoriDanWork</b></sub></a></td>
     <td align="center"><a href="https://github.com/fan92rus"><sub><b>fan92rus</b></sub></a></td>
+    <td align="center"><a href="https://github.com/lehneres"><sub><b>lehneres</b></sub></a></td>
   </tr>
   <tr>
-    <td align="center" colspan="10"><sub>🛡️ <b>fan92rus</b> — Windows path traversal fix (<code>path.sep</code>)</sub></td>
+    <td align="center" colspan="11"><sub>🛡️ <b>fan92rus</b> — Windows path traversal fix (<code>path.sep</code>)</sub></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="11"><sub>🚀 <b>lehneres</b> — Proxmox VE installation scripts</sub></td>
   </tr>
 </table>
 

@@ -355,6 +355,95 @@
 .circuitAuth { background: rgba(255, 140, 0, 0.15); color: #ff8c00; }
 .circuitUnknown { background: rgba(128, 128, 128, 0.15); color: #888; }
 
+.pulse {
+  color: #fbbf24;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+.activeList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.activeRow {
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.activeMain {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.activeModel {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary, #e0e0e0);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activeId {
+  color: var(--text-muted, #666);
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: 'SF Mono', monospace;
+  font-weight: normal;
+}
+
+.activeStatus {
+  font-size: 12px;
+}
+
+.processingText {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.stalledText {
+  color: #ef4444;
+  font-weight: 700;
+  animation: flash 1s infinite;
+}
+
+@keyframes flash {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.activeDetails {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-muted, #888);
+}
+
+.activeCurrentModel {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+.activeTokens {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
 /* Request Log */
 .logList {
   display: flex;
@@ -371,11 +460,31 @@
   font-family: 'SF Mono', monospace;
 }
 
+.logTime { color: var(--text-muted, #555); min-width: 60px; }
+.logId {
+  color: var(--text-muted, #666);
+  font-size: 9px;
+  min-width: 32px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1px 3px;
+  border-radius: 3px;
+  text-align: center;
+  font-family: 'SF Mono', monospace;
+}
 .logOk { color: #00c864; min-width: 28px; }
 .logErr { color: #dc3545; min-width: 28px; }
 .logModel { color: var(--text-secondary, #aaa); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .logLatency { color: var(--text-muted, #888); min-width: 50px; text-align: right; }
 .logTokens { color: var(--text-muted, #888); min-width: 60px; text-align: right; }
+.logDetail {
+  color: var(--text-muted, #666);
+  font-size: 10px;
+  flex: 1;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .logFailover {
   font-size: 9px;
   padding: 1px 4px;
