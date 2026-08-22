@@ -1,6 +1,6 @@
 {
   "name": "free-coding-models",
-  "version": "0.5.75",
+  "version": "0.5.76",
   "description": "Find the fastest coding LLM models in seconds — ping free models from multiple providers, pick the best one for OpenCode, Cursor, or any AI coding assistant.",
   "keywords": [
     "nvidia",
@@ -83,7 +83,7 @@
   },
   "packageManager": "pnpm@10.33.2",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.2",

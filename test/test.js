@@ -2373,9 +2373,9 @@ describe('package.json sanity', () => {
     assert.equal(pkg.type, 'module')
   })
 
-  it('engines requires node >= 18', () => {
+  it('engines requires node >= 22', () => {
     assert.ok(pkg.engines?.node, 'engines.node should be set')
-    assert.match(pkg.engines.node, /18/)
+    assert.match(pkg.engines.node, /22/)
   })
 
   it('builds the web dashboard during prepack so npm releases include web/dist', () => {
