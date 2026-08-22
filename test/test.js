@@ -844,9 +844,14 @@ describe('sources.js data integrity', () => {
   })
 
   it('MODELS flat array matches sources count', () => {
+    const today = new Date().toISOString().split('T')[0]
     let totalFromSources = 0
     for (const s of Object.values(sources)) {
-      totalFromSources += s.models.length
+      for (const m of s.models) {
+        const deprecatedAfter = m[6]
+        if (deprecatedAfter && today > deprecatedAfter) continue
+        totalFromSources += 1
+      }
     }
     assert.equal(MODELS.length, totalFromSources, 'MODELS length should match sum of all source models')
   })

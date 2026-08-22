@@ -1,0 +1,36 @@
+# 📖 Dependabot auto-merge — safely merge patch + minor updates without human review.
+# 📖 Only the `patch-and-minor` group is auto-merged (low risk). Major updates stay manual.
+# 📖 Triggers when dependabot opens/updates a PR, waits for required checks to be green,
+# 📖 then squash-merges via the GITHUB_TOKEN. Uses `gh` + PAT-safe `contents: write` + `pull-requests: write`.
+# 📖 Why squash: keeps main linear and avoids merge commits from bots.
+
+name: Dependabot Auto-Merge
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    # 📖 Only run for dependabot PRs in the patch-and-minor group (safe, reviewable in bulk)
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.title, 'patch-and-minor')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 📖 Auto-merge will wait for all required checks (branch protection) to be green.
+      # 📖 No need to manually wait — GitHub holds the merge until audit/lockfile-lint/Vercel/semgrep pass.
+      - name: Enable auto-merge (squash)
+        if: steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
