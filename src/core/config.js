@@ -103,8 +103,23 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync, renameSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, resolve, dirname } from 'node:path'
 import { syncShellEnv } from './shell-env.js'
+
+// 📖 Expand leading ~/ or bare ~ to homedir so --config-dir ~/.config/... works.
+// 📖 resolve() alone does NOT expand tilde, it would treat ~ as a literal folder.
+function expandTilde(input) {
+  if (input === '~') return homedir()
+  if (input.startsWith('~/')) return join(homedir(), input.slice(2))
+  return input
+}
+
+// 📖 Resolve a raw config dir string to an absolute path with tilde support.
+function resolveConfigDir(raw) {
+  if (typeof raw !== 'string' || !raw.trim()) return null
+  const expanded = expandTilde(raw.trim())
+  return resolve(expanded)
+}
 
 // 📖 getConfigDir: Resolve the user-chosen config directory — set via the
 // 📖 `--config-dir <dir>` CLI flag or via FCM_CONFIG_DIR directly (Docker).
@@ -117,9 +132,7 @@ import { syncShellEnv } from './shell-env.js'
 export function getConfigDir() {
   const fromArgv = configDirFromArgv()
   if (fromArgv) return fromArgv
-  const raw = process.env.FCM_CONFIG_DIR
-  if (typeof raw !== 'string' || !raw.trim()) return null
-  return resolve(raw.trim())
+  return resolveConfigDir(process.env.FCM_CONFIG_DIR)
 }
 
 // 📖 Scan process.argv for `--config-dir <dir>` — the raw value before any
@@ -130,7 +143,7 @@ function configDirFromArgv() {
   if (idx === -1) return null
   const raw = argv[idx + 1]
   if (typeof raw !== 'string' || !raw.trim() || raw.startsWith('--')) return null
-  return resolve(raw.trim())
+  return resolveConfigDir(raw)
 }
 
 // 📖 New JSON config path — stores all providers' API keys + enabled state.
@@ -721,6 +734,11 @@ export function loadConfig() {
  * @returns {{ success: boolean, error?: string, backupCreated?: boolean }}
  */
 export function saveConfig(config, options = {}) {
+  // 📖 Ensure the config directory exists before first write (XDG first-run would otherwise ENOENT)
+  try {
+    const parentDir = dirname(CONFIG_PATH)
+    if (!existsSync(parentDir)) mkdirSync(parentDir, { mode: 0o700, recursive: true })
+  } catch { /* best-effort, write will surface the error */ }
   // 📖 Create backup of existing config before overwriting
   const backupCreated = createBackup()
   const tempPath = `${CONFIG_PATH}.tmp-${process.pid}-${Date.now()}`

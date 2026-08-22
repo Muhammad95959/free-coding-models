@@ -102,6 +102,11 @@ export function loadCache() {
 // 📖 providerTier: Current ping cadence ("fast" | "normal" | "slow")
 export function saveCache(results, providerTier = 'normal') {
   const cachePath = getCachePath()
+  // 📖 Ensure parent dir exists (XDG first-run would otherwise ENOENT when cache lives in --config-dir)
+  try {
+    const parentDir = path.dirname(cachePath)
+    if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir, { mode: 0o700, recursive: true })
+  } catch { /* best-effort */ }
 
   try {
     const models = {}

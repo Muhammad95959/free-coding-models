@@ -13,6 +13,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { homedir } from 'node:os'
 if (process.argv.includes('--dev') || (!process.env.FCM_DEV && existsSync(join(dirname(fileURLToPath(import.meta.url)), '..', '.git')))) {
   process.env.FCM_DEV = '1'
 }
@@ -23,7 +24,9 @@ if (process.argv.includes('--dev') || (!process.env.FCM_DEV && existsSync(join(d
 // 📖 FCM_CONFIG_DIR (e.g. Docker) is preserved when the flag is absent.
 const _configDirIdx = process.argv.indexOf('--config-dir')
 if (_configDirIdx !== -1 && process.argv[_configDirIdx + 1] && !process.argv[_configDirIdx + 1].startsWith('--')) {
-  process.env.FCM_CONFIG_DIR = resolve(process.argv[_configDirIdx + 1])
+  const _raw = process.argv[_configDirIdx + 1].trim()
+  const _expanded = _raw === '~' ? homedir() : _raw.startsWith('~/') ? join(homedir(), _raw.slice(2)) : _raw
+  process.env.FCM_CONFIG_DIR = resolve(_expanded)
 }
 
 import chalk from 'chalk';
