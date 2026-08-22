@@ -332,6 +332,54 @@ The content of `changelog/vX.Y.Z.md` (minus the `# Changelog vX.Y.Z - YYYY-MM-DD
 
 **Critical:** Never skip versions — consolidate all changes into the next sequential version number.
 
+## Tweet after Bump (MANDATORY — propose after every version bump)
+
+After every successful `bump` (npm publish verified + `free-coding-models --help` works), the agent MUST propose a ready-to-post tweet for vava.
+
+**Goal:** simple, funny, high-reach. Keep it under 280 chars for the hook line, then a clean structured block.
+
+**Structure to propose (copy-paste ready):**
+
+```
+🚀 free-coding-models vX.Y.Z is live! [one funny hook, 1 line, AI keywords]
+
+⭐ 2,272 stars — https://github.com/vava-nessa/free-coding-models
+📦 npm: https://www.npmjs.com/package/free-coding-models
+
+✨ What's new in vX.Y.Z:
+- 🛠️ emoji short feature (1 line)
+- ⚡ emoji short feature
+- 🐛 emoji short fix
+- 📦 emoji deps/docs
+
+#AI #Coding #OpenSource #DevTools #FreeModels #BuildInPublic #JavaScript #NodeJS #AICoding
+```
+
+**Rules:**
+- Funny hook in first line (self-deprecating or playful, never corporate). Include at least 3 of these reach keywords somewhere: `free AI`, `coding models`, `open source`, `vibe coding`, `AI devtools`, `local router`, `free LLM`.
+- List 3 to 6 items max, each 1 line, each starts with a distinct emoji, plain language, no jargon.
+- Always include exact version `vX.Y.Z`, repo link `https://github.com/vava-nessa/free-coding-models`, npm link, and current star count (fetch via `gh api repos/vava-nessa/free-coding-models --jq .stargazers_count`).
+- Keep total tweet + block under ~600 chars so it fits in one X post with line breaks. No em dash "—" ever.
+- Propose it automatically, don't wait for vava to ask. Show it in a code block ready to copy.
+
+**Example for v0.5.77:**
+
+```
+🚀 free-coding-models v0.5.77 is live! your free LLM router now deploys on Proxmox and watches itself live 👀
+
+⭐ 2,272 stars — https://github.com/vava-nessa/free-coding-models
+📦 npm: https://www.npmjs.com/package/free-coding-models
+
+✨ What's new in v0.5.77:
+- 🚀 Proxmox VE one-click LXC deploy
+- ⚡ Live router request tracking (TUI + web)
+- 📁 --config-dir fix for XDG + tilde
+- 🐛 Build fix for tanstack/chalk majors (reverted)
+- 📦 deps: vite 8.2.1, kandown 0.50.0
+
+#AI #Coding #OpenSource #VibeCoding #FreeLLM #DevTools #BuildInPublic
+```
+
 
 <!-- kandown:agent-ref -->
 ## Task management
