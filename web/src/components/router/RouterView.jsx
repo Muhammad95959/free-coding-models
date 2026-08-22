@@ -25,6 +25,16 @@ function formatUptime(seconds) {
   return `${s}s`
 }
 
+function formatTime(isoString) {
+  if (!isoString) return '—'
+  try {
+    const d = new Date(isoString)
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+  } catch {
+    return '—'
+  }
+}
+
 function formatNumber(n) {
   if (typeof n !== 'number' || !Number.isFinite(n)) return '0'
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -119,7 +129,7 @@ export default function RouterView({ onClose, onToast, favorites }) {
     const interval = setInterval(() => {
       void fetchStatus()
       void fetchSets()
-    }, 5000)
+    }, 2000)
     return () => clearInterval(interval)
   }, [fetchStatus, fetchSets, fetchCatalog])
 
@@ -528,6 +538,7 @@ export default function RouterView({ onClose, onToast, favorites }) {
   const running = status?.ok
   const circuitBreakers = stats?.circuitBreakers || {}
   const requestLog = stats?.requestLog || []
+  const activeRequests = status?.activeRequests || []
 
   // 📖 routingOrder — the exact attempt order the daemon will use for the next
   // 📖 request (priority-first among healthy models). routingOrder[0] is the
@@ -957,6 +968,46 @@ export default function RouterView({ onClose, onToast, favorites }) {
             </div>
           )}
 
+          {/* Active Requests */}
+          {running && (
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <IconBolt size={14} className={activeRequests.length > 0 ? styles.pulse : ''} />
+                Active Requests ({activeRequests.length})
+              </h3>
+              {activeRequests.length > 0 ? (
+                <div className={styles.activeList}>
+                  {activeRequests.map((req) => (
+                    <div key={req.request_id} className={styles.activeRow}>
+                      <div className={styles.activeMain}>
+                        <span className={styles.activeModel}>
+                          <span className={styles.activeId} title={`Request ID: ${req.request_id}`}>
+                            {req.request_id.slice(-4)}
+                          </span>
+                          {req.model}
+                        </span>
+                        <span className={styles.activeStatus}>
+                          {req.stalled ? (
+                            <span className={styles.stalledText}>Stalled?</span>
+                          ) : (
+                            <span className={styles.processingText}>Processing...</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className={styles.activeDetails}>
+                        <span className={styles.activeCurrentModel}>{req.current_model || 'Routing...'}</span>
+                        {req.stream && <span className={styles.activeTokens}>{req.tokens} tokens</span>}
+                        <span className={styles.activeUptime}>{formatUptime(Math.floor((Date.now() - req.started_at) / 1000))}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.logEmpty}>No active requests.</div>
+              )}
+            </div>
+          )}
+
           {/* Request Log — always visible when running */}
           {running && (
             <div className={styles.section}>
@@ -972,6 +1023,12 @@ export default function RouterView({ onClose, onToast, favorites }) {
                   <div className={styles.logList}>
                     {requestLog.map((entry, i) => (
                       <div key={i} className={styles.logRow}>
+                        <span className={styles.logId} title={`Request ID: ${entry.request_id || '—'}`}>
+                          {entry.request_id ? entry.request_id.slice(-4) : '—'}
+                        </span>
+                        <span className={styles.logTime}>
+                          {formatTime(entry.at)}
+                        </span>
                         <span className={entry.error ? styles.logErr : styles.logOk}>
                           {entry.status || '—'}
                         </span>
@@ -982,7 +1039,13 @@ export default function RouterView({ onClose, onToast, favorites }) {
                         <span className={styles.logTokens}>
                           {entry.tokens > 0 ? formatNumber(entry.tokens) + ' tok' : ''}
                         </span>
-                        {entry.failover && <span className={styles.logFailover}>failover</span>}
+                        <span className={styles.logDetail}>
+                          {[
+                            entry.failover ? 'failover' : '',
+                            entry.stream ? 'stream' : '',
+                            entry.error || '',
+                          ].filter(Boolean).join(', ')}
+                        </span>
                       </div>
                     ))}
                   </div>

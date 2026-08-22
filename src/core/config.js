@@ -342,12 +342,30 @@ function normalizeTelemetrySection(telemetry) {
   }
 }
 
+function normalizeSyncSection(sync) {
+  const safeSync = isPlainObject(sync) ? { ...sync } : {}
+  return {
+    enabled: typeof safeSync.enabled === 'boolean' ? safeSync.enabled : false,
+    lastSyncedAt: typeof safeSync.lastSyncedAt === 'string' ? safeSync.lastSyncedAt : null,
+  }
+}
+
+function normalizeUpdaterSection(updater) {
+  const safeUpdater = isPlainObject(updater) ? { ...updater } : {}
+  return {
+    lastCheckedAt: typeof safeUpdater.lastCheckedAt === 'string' ? safeUpdater.lastCheckedAt : null,
+    lastNotificationAt: typeof safeUpdater.lastNotificationAt === 'string' ? safeUpdater.lastNotificationAt : null,
+    skippedVersions: Array.isArray(safeUpdater.skippedVersions) ? safeUpdater.skippedVersions.filter(v => typeof v === 'string') : [],
+  }
+}
+
 function normalizeRouterName(value, fallback = '') {
   if (typeof value !== 'string') return fallback
   return value.trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 64) || fallback
 }
 
 function normalizePositiveInteger(value, fallback, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
+  if (value === null || value === undefined || value === '') return fallback
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) return fallback
   return Math.max(min, Math.min(max, Math.round(numeric)))
@@ -413,12 +431,21 @@ function normalizeRouterCircuitBreaker(circuitBreaker) {
   }
 }
 
-function normalizeRouterFailover(failover) {
+function normalizeRouterFailover(failover, routerFallback = {}) {
   const safeFailover = isPlainObject(failover) ? failover : {}
+  const numberOrNull = (val) => {
+    const n = Number(val)
+    return (val !== null && val !== '' && Number.isFinite(n)) ? n : null
+  }
+
+  const rawMaxRetries = numberOrNull(safeFailover.maxRetries) ?? numberOrNull(routerFallback.maxRetries)
+  const rawStreamStall = numberOrNull(safeFailover.streamStallTimeoutMs) ?? numberOrNull(routerFallback.streamStallTimeoutMs)
+  const rawRequestTimeout = numberOrNull(safeFailover.requestTimeoutMs) ?? numberOrNull(routerFallback.requestTimeoutMs)
+
   return {
-    maxRetries: normalizePositiveInteger(safeFailover.maxRetries, DEFAULT_ROUTER_SETTINGS.failover.maxRetries, { min: 1, max: 10 }),
-    streamStallTimeoutMs: normalizePositiveInteger(safeFailover.streamStallTimeoutMs, DEFAULT_ROUTER_SETTINGS.failover.streamStallTimeoutMs, { min: 1000, max: 120000 }),
-    requestTimeoutMs: normalizePositiveInteger(safeFailover.requestTimeoutMs, DEFAULT_ROUTER_SETTINGS.failover.requestTimeoutMs, { min: 1000, max: 300000 }),
+    maxRetries: normalizePositiveInteger(rawMaxRetries, DEFAULT_ROUTER_SETTINGS.failover.maxRetries, { min: 1, max: 20 }),
+    streamStallTimeoutMs: normalizePositiveInteger(rawStreamStall, DEFAULT_ROUTER_SETTINGS.failover.streamStallTimeoutMs, { min: 1000, max: 120000 }),
+    requestTimeoutMs: normalizePositiveInteger(rawRequestTimeout, DEFAULT_ROUTER_SETTINGS.failover.requestTimeoutMs, { min: 1000, max: 300000 }),
   }
 }
 
@@ -470,7 +497,7 @@ export function normalizeRouterConfig(router) {
     probeMode,
     probeIntervals: normalizeRouterIntervals(router.probeIntervals),
     circuitBreaker: normalizeRouterCircuitBreaker(router.circuitBreaker),
-    failover: normalizeRouterFailover(router.failover),
+    failover: normalizeRouterFailover(router.failover, router),
     scoring: normalizeRouterScoring(router.scoring),
     logLevel,
     prePrompt: normalizeRouterPrePrompt(router.prePrompt),
@@ -528,6 +555,8 @@ function normalizeConfigShape(config) {
     settings: normalizeSettingsSection(safeConfig.settings),
     favorites: normalizeFavoriteList(safeConfig.favorites),
     telemetry: normalizeTelemetrySection(safeConfig.telemetry),
+    sync: normalizeSyncSection(safeConfig.sync),
+    updater: normalizeUpdaterSection(safeConfig.updater),
     endpointInstalls: normalizeEndpointInstalls(safeConfig.endpointInstalls),
     // 📖 hiddenModels: Set of "provider/modelId" keys auto-hidden by the 404 probe (Ctrl+Shift+P).
     // 📖 Only populated when settings.autoHideBrokenModels is true (default).
@@ -595,10 +624,15 @@ export function buildPersistedConfig(incomingConfig, diskConfig = _emptyConfig()
     favorites: options.replaceFavorites === true
       ? [...normalizedIncoming.favorites]
       : mergeOrderedUniqueStrings(normalizedIncoming.favorites, normalizedDisk.favorites),
-    telemetry: {
-      ...normalizedDisk.telemetry,
-      ...normalizedIncoming.telemetry,
-    },
+    telemetry: isPlainObject(incomingConfig.telemetry)
+      ? { ...normalizedDisk.telemetry, ...normalizedIncoming.telemetry }
+      : cloneConfigValue(normalizedDisk.telemetry),
+    sync: isPlainObject(incomingConfig.sync)
+      ? { ...normalizedDisk.sync, ...normalizedIncoming.sync }
+      : cloneConfigValue(normalizedDisk.sync),
+    updater: isPlainObject(incomingConfig.updater)
+      ? { ...normalizedDisk.updater, ...normalizedIncoming.updater }
+      : cloneConfigValue(normalizedDisk.updater),
     // 📖 Managed endpoint installs sometimes need an exact snapshot so stale disk
     // 📖 records do not come back after a fresh install/refresh pass.
     endpointInstalls: options.replaceEndpointInstalls === true
@@ -606,7 +640,32 @@ export function buildPersistedConfig(incomingConfig, diskConfig = _emptyConfig()
       : mergeEndpointInstalls(normalizedDisk.endpointInstalls, normalizedIncoming.endpointInstalls),
     // 📖 Profile system removed - always null
   }
-  if (Object.prototype.hasOwnProperty.call(normalizedIncoming, 'router')) {
+  if (isPlainObject(incomingConfig.router) && isPlainObject(normalizedDisk.router)) {
+    // 📖 Deep merge router settings so partial updates (e.g. from telemetry auto-save)
+    // 📖 do not reset custom failover/scoring/intervals to defaults.
+    merged.router = {
+      ...normalizedDisk.router,
+      ...normalizedIncoming.router,
+      failover: {
+        ...normalizedDisk.router.failover,
+        ...(isPlainObject(incomingConfig.router.failover) ? normalizedIncoming.router.failover : {}),
+        // 📖 Also support top-level maxRetries/timeout overrides from incoming RAW config
+        ...(typeof incomingConfig.router.maxRetries === 'number' ? { maxRetries: incomingConfig.router.maxRetries } : {}),
+      },
+      probeIntervals: {
+        ...normalizedDisk.router.probeIntervals,
+        ...(isPlainObject(incomingConfig.router.probeIntervals) ? normalizedIncoming.router.probeIntervals : {}),
+      },
+      circuitBreaker: {
+        ...normalizedDisk.router.circuitBreaker,
+        ...(isPlainObject(incomingConfig.router.circuitBreaker) ? normalizedIncoming.router.circuitBreaker : {}),
+      },
+      scoring: {
+        ...normalizedDisk.router.scoring,
+        ...(isPlainObject(incomingConfig.router.scoring) ? normalizedIncoming.router.scoring : {}),
+      },
+    }
+  } else if (Object.prototype.hasOwnProperty.call(incomingConfig, 'router')) {
     merged.router = cloneConfigValue(normalizedIncoming.router)
   } else if (Object.prototype.hasOwnProperty.call(normalizedDisk, 'router')) {
     merged.router = cloneConfigValue(normalizedDisk.router)
@@ -1244,6 +1303,8 @@ function _emptyConfig() {
     providers: {},
     favorites: [],
     telemetry: { enabled: null, consentVersion: 0, anonymousId: null },
+    sync: { enabled: false, lastSyncedAt: null },
+    updater: { lastCheckedAt: null, lastNotificationAt: null, skippedVersions: [] },
     endpointInstalls: [],
     settings: _emptyProfileSettings(),
     hiddenModels: new Set(),

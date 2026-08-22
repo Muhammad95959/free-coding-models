@@ -87,6 +87,9 @@ export function createTuiState({
 }) {
   const now = Date.now()
 
+  // 📖 Dynamic normal interval from config (default 10s)
+  const normalInterval = config.settings?.pingInterval ?? PING_MODE_INTERVALS.normal
+
   return {
     // 📖 Core data: model results (mutated in-place by ping loop)
     results,
@@ -107,6 +110,10 @@ export function createTuiState({
     pingInterval: PING_MODE_INTERVALS.speed,
     pingMode: 'speed',
     pingModeSource: 'startup',
+    pingModeIntervals: {
+      ...PING_MODE_INTERVALS,
+      normal: normalInterval,
+    },
     speedModeUntil: now + SPEED_MODE_DURATION_MS,
     lastPingTime: now,
     lastUserActivityAt: now,

@@ -219,12 +219,29 @@ const BASE_COMMAND_TREE = [
 /**
  * 📖 Build the command palette tree with dynamic model filters.
  * @param {Array} visibleModels - Optional list of visible models to create model filter entries
+ * @param {object} config - Optional FCM config to customize dynamic labels
  * @returns {Array} The command tree with model filters added
  */
-export function buildCommandPaletteTree(visibleModels = []) {
+export function buildCommandPaletteTree(visibleModels = [], config = null) {
   // 📖 Clone the base tree
   const tree = JSON.parse(JSON.stringify(BASE_COMMAND_TREE))
-  
+
+  // 📖 Update Normal mode label if config is provided
+  if (config) {
+    const normalInterval = config.settings?.pingInterval ?? 10000
+    const normalSec = Math.round(normalInterval / 1000)
+    const actionsNode = tree.find(n => n.id === 'actions')
+    const pingNode = actionsNode?.children.find(n => n.id === 'action-ping-mode')
+    const normalCommand = pingNode?.children.find(n => n.id === 'action-set-ping-normal')
+    if (normalCommand) {
+      normalCommand.label = `Normal mode (${normalSec}s)`
+      if (Array.isArray(normalCommand.keywords)) {
+        normalCommand.keywords = normalCommand.keywords.filter(k => !k.endsWith('s'))
+        normalCommand.keywords.push(`${normalSec}s`)
+      }
+    }
+  }
+
   // 📖 Find the filter-model category and add dynamic model entries
   const filterModelCategory = tree.find(cat => cat.id === 'filters')
     ?.children.find(sub => sub.id === 'filter-model')
