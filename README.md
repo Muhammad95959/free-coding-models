@@ -894,6 +894,8 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
     <td align="center" width="120"><a href="https://github.com/stgreenb"><img src="https://avatars.githubusercontent.com/u/18483964?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="stgreenb"></a></td>
     <td align="center" width="120"><a href="https://github.com/MoriDanWork"><img src="https://avatars.githubusercontent.com/u/55363096?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="MoriDanWork"></a></td>
     <td align="center" width="120"><a href="https://github.com/fan92rus"><img src="https://avatars.githubusercontent.com/u/13201333?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="fan92rus"></a></td>
+    <td align="center" width="120"><a href="https://github.com/Muhammad95959"><img src="https://avatars.githubusercontent.com/u/75130655?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="Muhammad95959"></a></td>
+    <td align="center" width="120"><a href="https://github.com/FaintFlower"><img src="https://avatars.githubusercontent.com/u/310248465?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="FaintFlower"></a></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/vava-nessa"><sub><b>vava-nessa</b></sub></a></td>
@@ -906,9 +908,17 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
     <td align="center"><a href="https://github.com/stgreenb"><sub><b>stgreenb</b></sub></a></td>
     <td align="center"><a href="https://github.com/MoriDanWork"><sub><b>MoriDanWork</b></sub></a></td>
     <td align="center"><a href="https://github.com/fan92rus"><sub><b>fan92rus</b></sub></a></td>
+    <td align="center"><a href="https://github.com/Muhammad95959"><sub><b>Muhammad95959</b></sub></a></td>
+    <td align="center"><a href="https://github.com/FaintFlower"><sub><b>FaintFlower</b></sub></a></td>
   </tr>
   <tr>
-    <td align="center" colspan="10"><sub>🛡️ <b>fan92rus</b> — Windows path traversal fix (<code>path.sep</code>)</sub></td>
+    <td align="center" colspan="12"><sub>🛡️ <b>fan92rus</b> — Windows path traversal fix (<code>path.sep</code>)</sub></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="12"><sub>📁 <b>Muhammad95959</b> — <code>--config-dir</code> flag & XDG support</sub></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="12"><sub>⭐ <b>FaintFlower</b> — Star History chart mirror fix</sub></td>
   </tr>
 </table>
 
