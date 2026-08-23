@@ -41,8 +41,7 @@
 // 📖 NIM source - https://build.nvidia.com
 export const nvidiaNim = [
   // ── S+ tier — SWE-bench Verified ≥70% ──
-  ['z-ai/glm-5.2', 'GLM 5.1', 'S+', '82.8%', '128k'],
-  // Removed (2026-07-27): minimaxai/minimax-m2.7 (MiniMax M2.7) — EOL 2026-07-27 (HTTP 410 Gone)
+  // Removed (2026-08-23): z-ai/glm-5.2 (GLM 5.1) — no longer in integrate.api.nvidia.com/v1/models (102 models live)
   ['moonshotai/kimi-k2.6', 'Kimi K2.6', 'S+', '80.2%', '262k'],
   ['deepseek-ai/deepseek-v4-pro', 'DeepSeek V4 Pro', 'S+', '80.6%', '1M'], // ⚠️ Page-only / partner-routed (2026-08-13): listed on build.nvidia.com but NOT in integrate.api.nvidia.com/v1/models; served via Fireworks/DeepInfra/Together/OpenRouter
   ['deepseek-ai/deepseek-v4-flash-0731', 'DeepSeek V4 Flash', 'S+', '79.0%', '1M'], // Fixed (2026-08-13): id 'deepseek-ai/deepseek-v4-flash' → 'deepseek-ai/deepseek-v4-flash-0731' (NIM /v1/models only exposes the -0731 suffix)
@@ -52,7 +51,7 @@ export const nvidiaNim = [
   // ── S tier — SWE-bench Verified 60–70% ──
   ['openai/gpt-oss-120b', 'GPT OSS 120B', 'S', '62.4%', '128k'],
   // Removed (2026-07-27): meta/llama-4-maverick-17b-128e-instruct (Llama 4 Maverick) — EOL 2026-07-27 (HTTP 410 Gone)
-  ['mistralai/mistral-medium-3.5-128b', 'Mistral Medium 3.5', 'S+', '77.6%', '256k'],
+  // Removed (2026-08-23): mistralai/mistral-medium-3.5-128b (Mistral Medium 3.5) — no longer in integrate.api.nvidia.com/v1/models (still on Mistral LP directly)
   // Removed (2026-07-27): mistralai/mistral-small-4-119b-2603 (Mistral Small 4) — EOL 2026-07-27 (HTTP 410 Gone)
   ['minimaxai/minimax-m3', 'MiniMax M3', 'S+', '78.4%', '1M'],
   ['mistralai/mistral-nemotron', 'Mistral Nemotron', 'S', '-', '128k'], // Fixed ID (2026-07-27): nvidia/mistral-nemotron → mistralai/mistral-nemotron
@@ -105,9 +104,7 @@ export const groq = [
 // 📖 Cerebras source - https://cloud.cerebras.ai
 // 📖 Free API keys available at https://cloud.cerebras.ai
 export const cerebras = [
-  // ── S+ tier — SWE-bench Verified ≥70% ──
-  // ⚠️ DEPRECATED — shutdown 2026-08-17 (Cerebras official notice)
-  ['zai-glm-4.7', 'GLM 4.7', 'S+', '73.8%', '64k', null, '2026-08-17'], // Fixed (2026-07-27): ctx '128k' → '64k' (free tier per official docs)
+  // Removed (2026-08-23): zai-glm-4.7 (GLM 4.7) — shutdown 2026-08-17 per Cerebras official notice
   // ── S tier — SWE-bench Verified 60–70% ──
   ['gpt-oss-120b', 'GPT OSS 120B', 'S', '62.4%', '65k'], // Fixed (2026-07-27): ctx '128k' → '65k' (free tier per official docs)
   // ── A tier — SWE-bench Verified 40–50% ──
@@ -168,7 +165,7 @@ export const openrouter = [
   // Removed (2026-07-27): qwen/qwen3-next-80b-a3b-instruct:free (Qwen3 Next 80B A3B) — no longer on free tier
   // ── B+ tier — SWE-bench Verified 30–35% ──
   ['nvidia/nemotron-nano-9b-v2:free', 'Nemotron Nano 9B', 'B+', '18.0%', '128k'],
-  ['openai/gpt-oss-20b:free', 'GPT OSS 20B', 'A-', '-', '131k'], // Added (2026-07-27)
+  // Removed (2026-08-23): openai/gpt-oss-20b:free (GPT OSS 20B) — :free variant removed from OpenRouter catalog; only paid variant remains ($0.03/$0.13)
   // ── B tier — SWE-bench Verified 20–30% ──
   // Removed (2026-07-27): openrouter/free (OpenRouter Free) — no longer on free tier
   // Removed (2026-07-27): meta-llama/llama-3.2-3b-instruct:free (Llama 3.2 3B Instruct) — no longer on free tier
@@ -213,8 +210,7 @@ export const mistral = [
 export const codestral = [
   // ── A tier — SWE-bench Verified 40–50% ──
   ['codestral-2508', 'Codestral', 'A', '40.0%', '128k'], // Fixed (2026-07-27): ctx '256k' → '128k' per official Mistral model card
-  ['codestral-2501', 'Codestral 2501', 'B+', '34.0%', '256k'], // Added (2026-08-13)
-  ['codestral-2405', 'Codestral 2405', 'B', '30.0%', '32k'], // Added (2026-08-13)
+  // Removed (2026-08-23): codestral-2501 (Codestral 2501), codestral-2405 (Codestral 2405) — retired from Mistral API; only codestral-2508 / codestral-latest remain
   // Removed (2026-08-13): codestral-2 (Codestral 2) — fabricated ID, never existed in Mistral catalog (Mistral uses date-stamped versioning)
 ]
 
@@ -263,6 +259,8 @@ export const googleai = [
 
 // 📖 ZAI source - https://open.z.ai
 // 📖 Free tier is limited to Flash models; paid GLM models are intentionally excluded.
+// 📖 Verified live (2026-08-23) via ping test: glm-4.5-flash and glm-4.6v-flash still serve free;
+// 📖 glm-4.7-flash is free but was returning "overloaded" 429s; API /models lists only 9 text models.
 export const zai = [
   // ── S+ tier — SWE-bench Verified ≥70% ──
   ['zai/glm-5.2', 'GLM-5.2', 'S+', '-', '1M'], // Added (2026-08-13)
@@ -270,13 +268,11 @@ export const zai = [
   ['zai/glm-4.7-flash', 'GLM-4.7-Flash', 'A+', '59.2%', '200k'], // Fixed (2026-07-27): ctx '203k' → '200k' per official docs
   ['zai/glm-4.5-flash', 'GLM-4.5-Flash', 'S', '59.2%', '128k'],
   ['zai/glm-5-turbo', 'GLM-5-Turbo', 'S', '-', '200k'], // Added (2026-08-13)
-  ['zai/glm-5v-turbo', 'GLM-5V-Turbo', 'S', '-', '200k'], // Added (2026-08-13)
   ['zai/glm-4.7', 'GLM-4.7', 'S', '-', '200k'], // Added (2026-08-13)
   ['zai/glm-4.6', 'GLM-4.6', 'S', '-', '200k'], // Added (2026-08-13)
-  ['zai/glm-4.7-flashx', 'GLM-4.7-FlashX', 'A+', '-', '200k'], // Added (2026-08-13)
+  // Removed (2026-08-23): zai/glm-4.7-flashx, zai/glm-5v-turbo, zai/glm-4.6v — now paid-only ("Insufficient balance or no resource package" per ping test)
   // ── A tier — SWE-bench Verified 40–50% ──
   ['zai/glm-4.6v-flash', 'GLM-4.6V-Flash', 'A', '-', '128k'],
-  ['zai/glm-4.6v', 'GLM-4.6V', 'A', '-', '128k'], // Added (2026-08-13)
 ]
 
 // 📖 Alibaba Cloud (DashScope) source - https://dashscope-intl.aliyuncs.com
@@ -381,11 +377,11 @@ export const ovhcloud = [
 // 📖 Config: set provider to opencode/<model-id> in OpenCode config
 export const opencodeZen = [
   ['big-pickle',                       'Big Pickle',              'S+', '72.0%', '200k'],
-  ['deepseek-v4-flash-free',           'DeepSeek V4 Flash Free',  'S+', '79.0%', '200k'],
+  // Removed (2026-08-23): deepseek-v4-flash-free (DeepSeek V4 Flash Free) — dropped from Zen free-tier docs/pricing; only paid DeepSeek V4 Flash remains
   ['mimo-v2.5-free',                   'MiMo-V2.5 Free',          'S+', '-',     '200k'],
   ['nemotron-3-ultra-free',            'Nemotron 3 Ultra Free',   'S+', '71.9%', '200k'],
   // Removed (2026-08-13): north-mini-code-free (North Mini Code Free) — no longer in OpenCode Zen free-tier API
-  ['laguna-s-2.1-free',                'Laguna S 2.1 Free',       'S+', '-',     '262k'], // Fixed (2026-08-13): ID 'poolside/laguna-s-2.1-free' → 'laguna-s-2.1-free' (poolside/ prefix dropped)
+  // Removed (2026-08-23): laguna-s-2.1-free (Laguna S 2.1 Free) — dropped from Zen free-tier docs/pricing (still on /models but no longer free)
   // Removed (2026-08-13): ling-3.0-flash-free (Ling-3.0-flash Free) — no longer in OpenCode Zen free-tier API
   ['hy3-free',                         'Tencent Hy3 Free',        'S',  '-',     '200k'], // Added (2026-08-13) — brought back after July removal
   ['nemotron-3.5-lightning-free',      'Nemotron 3.5 Lightning Free','S+','-',    '200k'], // Added (2026-08-13)
@@ -464,22 +460,22 @@ export const ollamaCloud = [
   ['glm-5.2', 'GLM 5.2', 'S+', '82.8%', '1M'], // Fixed (2026-07-27): ctx '128k' → '1M'
   ['minimax-m2.7', 'MiniMax M2.7', 'S+', '78.0%', '200k'],
   ['minimax-m3', 'MiniMax M3', 'S+', '78.4%', '1M'], // Fixed (2026-07-27): ctx '512k' → '1M'
-  ['minimax-m2.5', 'MiniMax M2.5', 'S+', '80.2%', '198k'], // Fixed (2026-07-27): ctx '200k' → '198k'
+  // Removed (2026-08-23): minimax-m2.5 (MiniMax M2.5) — no longer in ollama.com/v1/models (19 models live)
   ['kimi-k2.6', 'Kimi K2.6', 'S+', '80.2%', '256k'], // Fixed (2026-07-27): ctx '262k' → '256k'
-  ['deepseek-v4-flash', 'DeepSeek V4 Flash', 'S+', '79.0%', '1M'], // Fixed (2026-07-27): ctx '256k' → '1M'
-  ['deepseek-v4-pro', 'DeepSeek V4 Pro', 'S+', '80.6%', '1M'], // Fixed (2026-07-27): ctx '256k' → '1M'
+  ['deepseek-v4-flash:0731', 'DeepSeek V4 Flash', 'S+', '79.0%', '1M'], // Fixed (2026-08-23): ID 'deepseek-v4-flash' → 'deepseek-v4-flash:0731' (renamed upstream)
+  ['deepseek-v4-pro:0813', 'DeepSeek V4 Pro', 'S+', '80.6%', '1M'], // Fixed (2026-08-23): ID 'deepseek-v4-pro' → 'deepseek-v4-pro:0813' (renamed upstream)
   // ── S tier — SWE-bench Verified 60–70% ──
   ['kimi-k2.7-code', 'Kimi K2.7 Code', 'S', '60.4%', '256k'], // Fixed (2026-07-27): ctx '262k' → '256k'
   ['gpt-oss:120b', 'GPT OSS 120B', 'S', '62.4%', '128k'],
   ['nemotron-3-super', 'Nemotron 3 Super', 'S', '60.5%', '256k'],
   ['kimi-k3', 'Kimi K3', 'S+', '-', '1M'], // Added (2026-07-27)
-  ['gemini-3-flash-preview', 'Gemini 3 Flash Preview', 'S+', '-', '1M'], // Added (2026-07-27)
+  // Removed (2026-08-23): gemini-3-flash-preview (Gemini 3 Flash Preview) — no gemini models left in Ollama Cloud API
   // ── A+ tier — SWE-bench Verified 50–60% ──
-  ['kimi-k2.5', 'Kimi K2.5', 'A+', '-', '200k'],
+  // Removed (2026-08-23): kimi-k2.5 (Kimi K2.5) — no longer in ollama.com/v1/models
   ['gemma4:31b', 'Gemma 4 31B', 'A+', '52.0%', '128k'], // Fixed (2026-07-27): ctx '256k' → '128k'
   ['gpt-oss:20b', 'GPT OSS 20B', 'A+', '50.3%', '128k'],
-  ['mistral-large-3:675b-cloud', 'Mistral Large 3 675B Cloud', 'A+', '-', '256k'], // Added (2026-07-27)
-  ['qwen3.5', 'Qwen 3.5 Cloud', 'A+', '-', '256k'], // Added (2026-07-27)
+  ['mistral-large-3:675b', 'Mistral Large 3 675B Cloud', 'A+', '-', '256k'], // Fixed (2026-08-23): ID 'mistral-large-3:675b-cloud' → 'mistral-large-3:675b' (tag renamed upstream)
+  ['qwen3.5:397b', 'Qwen 3.5 Cloud', 'A+', '-', '256k'], // Fixed (2026-08-23): ID 'qwen3.5' → 'qwen3.5:397b' (tag renamed upstream)
   ['nemotron-3-nano:30b', 'Nemotron 3 Nano 30B', 'A-', '38.8%', '1M'],
 ]
 
