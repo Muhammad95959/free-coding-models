@@ -118,6 +118,32 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const CLI_ENTRY_PATH = join(__dirname, '..', '..', 'bin', 'free-coding-models.js')
 const LOCAL_VERSION = JSON.parse(readFileSync(join(__dirname, '..', '..', 'package.json'), 'utf8')).version
 const MAX_BODY_BYTES = 10 * 1024 * 1024
+/**
+ * 📖 normalizeToolCallsResponse — fix malformed tool_calls from upstream.
+ * Some providers return finish_reason: "tool_calls" but message has no tool_calls array,
+ * which hangs OpenAI-compatible clients (pi agent waits for tool_calls that never arrives).
+ * Normalize to finish_reason: "stop" when tool_calls is missing/empty per OpenAI spec.
+ * This is defensive: it makes the router spec-compliant regardless of upstream quirks.
+ * @param {object} data - parsed JSON response object
+ * @returns {boolean} true if mutated
+ */
+function normalizeToolCallsResponse(data) {
+  if (!data || typeof data !== 'object' || !Array.isArray(data.choices)) return false
+  let mutated = false
+  for (const choice of data.choices) {
+    if (!choice || typeof choice !== 'object') continue
+    if (choice.finish_reason !== 'tool_calls') continue
+    const msg = choice.message
+    if (!msg || typeof msg !== 'object') continue
+    const tc = msg.tool_calls
+    if (!Array.isArray(tc) || tc.length === 0) {
+      choice.finish_reason = 'stop'
+      mutated = true
+    }
+  }
+  return mutated
+}
+
 const MAX_REQUEST_LOG = 200
 const MAX_SSE_CLIENTS = 10
 const MAX_CONCURRENT_REQUESTS = 50
@@ -2226,13 +2252,20 @@ class RouterRuntime {
           failover: attemptIndex > 0,
         })
         this.logger.info(`Routed to ${key} - ${latencyMs}ms`, { request_id: requestId, status: response.status })
+        // 📖 Fix #124: normalize malformed tool_calls (finish_reason tool_calls without tool_calls array)
+        let responseText = text
+        try {
+          if (normalizeToolCallsResponse(parsed.value)) {
+            responseText = JSON.stringify(parsed.value)
+          }
+        } catch {}
         if (!res.writableEnded) {
           res.writeHead(response.status, {
             ...headerEntries(response.headers),
             'x-fcm-router-model': key,
             'x-request-id': requestId,
           })
-          res.end(text)
+          res.end(responseText)
         }
         return { done: true }
       }
