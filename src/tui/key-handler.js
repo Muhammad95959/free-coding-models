@@ -278,9 +278,7 @@ export function createKeyHandler(ctx) {
     userSelected = { modelId: selected.modelId, label: selected.label, tier: selected.tier, providerKey: selected.providerKey, ctx: selected.ctx }
 
     if (!uiAlreadyStopped) {
-      readline.emitKeypressEvents(process.stdin)
-      if (process.stdin.isTTY) process.stdin.setRawMode(true)
-      stopUi()
+      stopUi({ resetRawMode: true })
     }
 
     // 📖 If router is enabled, push [selected, ...favorites] to daemon as the active set

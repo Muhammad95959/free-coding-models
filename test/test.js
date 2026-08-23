@@ -4576,7 +4576,7 @@ describe('openclaw selected model persistence', () => {
 describe('endpoint install tracking', () => {
   it('exposes only persisted-config install targets in the Y install list', () => {
     const installTargets = getInstallTargetModes()
-    assert.deepEqual(installTargets, ['opencode', 'opencode-desktop', 'opencode-web', 'openclaw', 'crush', 'goose', 'pi', 'aider', 'qwen', 'openhands', 'amp', 'forgecode', 'fcm_router', 'zcode'])
+    assert.deepEqual(installTargets, ['opencode', 'pi', 'jcode', 'opencode-desktop', 'opencode-web', 'openclaw', 'crush', 'goose', 'aider', 'qwen', 'openhands', 'amp', 'forgecode', 'fcm_router', 'zcode'])
   })
 
   it('normalizes tracked installs to canonical shape', () => {

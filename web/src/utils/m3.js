@@ -11,12 +11,13 @@
 
 export const INSTALL_ENDPOINT_TOOL_MODES = [
   'opencode',
+  'pi',
+  'jcode',
   'opencode-desktop',
   'opencode-web',
   'openclaw',
   'crush',
   'goose',
-  'pi',
   'aider',
   'qwen',
   'openhands',

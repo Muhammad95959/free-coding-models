@@ -61,7 +61,7 @@ export function useToolMode({ onToast } = {}) {
   }, [onToast])
 
   const cycleToolMode = useCallback(() => {
-    const currentIndex = TOOL_MODE_ORDER.indexOf(toolModeState)
+    const currentIndex = INSTALL_ENDPOINT_TOOL_MODES.indexOf(toolModeState)
     const next = INSTALL_ENDPOINT_TOOL_MODES[(currentIndex + 1) % INSTALL_ENDPOINT_TOOL_MODES.length] || DEFAULT_TOOL_MODE
     return persistToolMode(next)
   }, [persistToolMode, toolModeState])

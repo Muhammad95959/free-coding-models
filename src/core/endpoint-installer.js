@@ -53,8 +53,8 @@ import { ensureDir, readJson as sharedReadJson } from './shared-helpers.js'
 // 📖 zai and opencode-zen ARE OpenAI-compatible and CAN be installed into any tool.
 const DIRECT_INSTALL_UNSUPPORTED_PROVIDERS = new Set(['replicate'])
 // 📖 Install Endpoints only lists tools whose persisted config shape is actually supported here.
-// 📖 Launch-only tools stay out: the Web dashboard configures endpoints, it never starts CLIs.
-const INSTALL_TARGET_MODES = ['opencode', 'opencode-desktop', 'opencode-web', 'openclaw', 'crush', 'goose', 'pi', 'aider', 'qwen', 'openhands', 'amp', 'forgecode', 'fcm_router', 'zcode']
+// 📖 jcode is CLI-only and uses an env-file helper (same as openhands) — selectable in both CLI and Web.
+const INSTALL_TARGET_MODES = ['opencode', 'pi', 'jcode', 'opencode-desktop', 'opencode-web', 'openclaw', 'crush', 'goose', 'aider', 'qwen', 'openhands', 'amp', 'forgecode', 'fcm_router', 'zcode']
 
 function getDefaultPaths() {
   const home = homedir()
@@ -839,6 +839,8 @@ export function installProviderEndpoints(config, providerKey, toolMode, options 
     installResult = installIntoAmp(providerKey, models, apiKey, paths)
   } else if (canonicalToolMode === 'qwen') {
     installResult = installIntoQwen(providerKey, models, apiKey, paths)
+  } else if (canonicalToolMode === 'jcode') {
+    installResult = installIntoEnvBasedTool(providerKey, models, apiKey, canonicalToolMode, paths)
   } else if (canonicalToolMode === 'openhands') {
     installResult = installIntoEnvBasedTool(providerKey, models, apiKey, canonicalToolMode, paths)
   } else if (canonicalToolMode === 'fcm_router') {

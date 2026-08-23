@@ -209,6 +209,12 @@ const JCODE_NATIVE_PROVIDERS = {
 }
 
 function spawnCommand(command, args, env) {
+  // 📖 Defensive: ensure stdin is back in cooked mode before handing the TTY to
+  // 📖 an interactive child (jcode REPL etc). The TUI leaves raw mode enabled;
+  // 📖 if the caller forgot to reset it the child will appear to hang.
+  try {
+    if (process.stdin.isTTY && process.stdin.isRaw) process.stdin.setRawMode(false)
+  } catch {}
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       stdio: 'inherit',
