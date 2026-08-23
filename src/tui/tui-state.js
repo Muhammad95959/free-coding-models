@@ -89,6 +89,13 @@ export function createTuiState({
 
   // 📖 Dynamic normal interval from config (default 10s)
   const normalInterval = config.settings?.pingInterval ?? PING_MODE_INTERVALS.normal
+  // 📖 Respect config.settings.pingInterval at startup (issue #155).
+  // 📖 CLI override is already merged into config.settings.pingInterval in app.js.
+  const configuredInterval = config.settings?.pingInterval
+  const hasConfiguredInterval =
+    typeof configuredInterval === 'number' && Number.isFinite(configuredInterval) && configuredInterval > 0
+  const initialInterval = hasConfiguredInterval ? configuredInterval : PING_MODE_INTERVALS.speed
+  const initialMode = intervalToPingMode(initialInterval)
 
   return {
     // 📖 Core data: model results (mutated in-place by ping loop)
@@ -107,14 +114,14 @@ export function createTuiState({
     sortDirection: (config.settings?.sortAsc ?? true) ? 'asc' : 'desc',
 
     // 📖 Ping cadence — drives the interval between background ping cycles
-    pingInterval: PING_MODE_INTERVALS.speed,
-    pingMode: 'speed',
-    pingModeSource: 'startup',
+    pingInterval: initialInterval,
+    pingMode: initialMode,
+    pingModeSource: hasConfiguredInterval ? 'config' : 'startup',
     pingModeIntervals: {
       ...PING_MODE_INTERVALS,
       normal: normalInterval,
     },
-    speedModeUntil: now + SPEED_MODE_DURATION_MS,
+    speedModeUntil: initialMode === 'speed' ? now + SPEED_MODE_DURATION_MS : null,
     lastPingTime: now,
     lastUserActivityAt: now,
     resumeSpeedOnActivity: false,
