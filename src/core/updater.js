@@ -111,6 +111,25 @@ export function isPackageDevMode() {
 }
 
 /**
+ * 📖 isRunningInDocker: detect Docker/container environment where global npm writes fail.
+ * In Docker the app lives at /app (not /usr/local/lib/node_modules) and runs as non-root `fcm`.
+ * Mandatory updates would always EACCES, so we skip them gracefully.
+ * @returns {boolean}
+ */
+export function isRunningInDocker() {
+  // 📖 Standard Docker marker file, plus explicit env override for testing
+  if (process.env.FCM_DOCKER === '1' || process.env.DOCKER_CONTAINER === '1') return true
+  try {
+    if (existsSync('/.dockerenv')) return true
+  } catch {}
+  // 📖 Fallback: check if package is at /app (Docker COPY) vs global prefix
+  try {
+    if (String(PACKAGE_ROOT) === '/app' || String(PACKAGE_ROOT).startsWith('/app/')) return true
+  } catch {}
+  return false
+}
+
+/**
  * 📖 getUpdateInstallFailureCount: sanitized persistent failure counter.
  * @param {object} config
  * @returns {number}
@@ -265,6 +284,11 @@ export async function enforceMandatoryStartupUpdate(config, options = {}) {
   }
 
   if (devMode) return base
+  if (isRunningInDocker()) {
+    // 📖 In Docker, global npm install as non-root always EACCES. Skip mandatory update
+    // 📖 and let the container run with the baked-in version. User can rebuild image for updates.
+    return base
+  }
 
   const { latestVersion, error } = await checkForUpdateDetailed()
   base.checked = true
