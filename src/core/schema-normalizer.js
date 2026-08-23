@@ -30,8 +30,9 @@
  *   → `clampTemperature` — clamps `temperature` to the provider's accepted range
  *   → `normalizeZai` — for `zai` (GLM) provider
  *   → `normalizeMistral` — for `mistral` and `codestral` providers
+ *   → `normalizeNvidia` — for `nvidia` provider (strips unsupported params like prompt_cache_key)
  *
- * @exports normalizeRequestBody, normalizeZai, normalizeMistral, PROVIDER_NORMALIZERS
+ * @exports normalizeRequestBody, normalizeZai, normalizeMistral, normalizeNvidia, PROVIDER_NORMALIZERS
  *
  * @see src/core/router-daemon.js — calls `normalizeRequestBody` before forwarding upstream
  */
@@ -48,6 +49,7 @@ const STRIP_PARAMS = [
   'echo',                 // not in OpenAI spec
   'user',                 // PII risk; not used by FCM
   'metadata',             // not always supported
+  'prompt_cache_key',     // OpenAI prompt-caching hint; NVIDIA rejects with 400
   'store',                // GLM rejects
 ]
 
@@ -146,6 +148,20 @@ export function normalizeMistral(body) {
   return result
 }
 
+/**
+ * 📖 `normalizeNvidia` — transforms a request body for the `nvidia` provider.
+ *
+ *   1. Strips parameters NVIDIA rejects with 400 (e.g. prompt_cache_key)
+ *   2. Removes orphan `tool` messages that lack a matching assistant tool_call
+ *   3. Strips `stream_options` when not streaming
+ */
+export function normalizeNvidia(body) {
+  if (!body || typeof body !== 'object') return body
+  let result = stripUnsupportedParams(body)
+  result = dropOrphanToolMessages(result)
+  return result
+}
+
 // 📖 Map of provider key → normalizer function. Providers that don't need
 // 📖 any tweak (most OpenAI-compat ones like Groq, Cerebras, etc.) are not
 // 📖 listed and pass through `normalizeRequestBody` unchanged.
@@ -153,6 +169,7 @@ export const PROVIDER_NORMALIZERS = {
   zai: normalizeZai,
   mistral: normalizeMistral,
   codestral: normalizeMistral,
+  nvidia: normalizeNvidia,
 }
 
 /**
