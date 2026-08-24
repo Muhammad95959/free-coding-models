@@ -56,12 +56,17 @@ const DISABLED_THINKING_RETRY_STATUSES = new Set([400, 422])
 const disabledThinkingUnsupportedProviders = new Set()
 
 // 📖 resolveCloudflareUrl: Cloudflare's OpenAI-compatible endpoint is account-scoped.
-// 📖 We resolve {account_id} from env so provider setup can stay simple in config.
+// 📖 We resolve the placeholder from the CLOUDFLARE_ACCOUNT_ID env var so provider
+// 📖 setup can stay simple in config. Supports both the `{account_id}` placeholder
+// 📖 and the explicit `{$CLOUDFLARE_ACCOUNT_ID}` form used in sources.js.
 export function resolveCloudflareUrl(url) {
   const accountId = (process.env.CLOUDFLARE_ACCOUNT_ID || '').trim()
-  if (!url.includes('{account_id}')) return url
-  if (!accountId) return url.replace('{account_id}', 'missing-account-id')
-  return url.replace('{account_id}', encodeURIComponent(accountId))
+  const hasPlaceholder = url.includes('{$CLOUDFLARE_ACCOUNT_ID}') || url.includes('{account_id}')
+  if (!hasPlaceholder) return url
+  const replacement = accountId ? encodeURIComponent(accountId) : 'missing-account-id'
+  return url
+    .replace(/\{\$CLOUDFLARE_ACCOUNT_ID\}/g, replacement)
+    .replace(/\{account_id\}/g, replacement)
 }
 
 // 📖 buildChatCompletionPingBody: Use the smallest useful chat-completion probe.
