@@ -62,6 +62,9 @@ export const ENV_VAR_NAMES = {
   routeway:   'ROUTEWAY_API_KEY',
   novita:     'NOVITA_API_KEY',
   'ollama-cloud': 'OLLAMA_API_KEY',
+  pollinations: 'POLLINATIONS_API_KEY',
+  siliconflow: 'SILICONFLOW_API_KEY',
+  requesty:   'REQUESTY_API_KEY',
 }
 
 // 📖 OPENCODE_MODEL_MAP: sparse table of model IDs that differ between sources.js and OpenCode's
@@ -201,13 +204,6 @@ export const PROVIDER_METADATA = {
     signupHint: 'Get API key',
     rateLimits: 'Gemini free quotas vary by model and region',
   },
-  siliconflow: {
-    label: 'SiliconFlow',
-    color: chalk.rgb(178, 235, 242),
-    signupUrl: 'https://cloud.siliconflow.cn/account/ak',
-    signupHint: 'API Keys → Create',
-    rateLimits: 'Free models: usually 100 RPM, varies by model',
-  },
   together: {
     label: 'Together AI',
     color: chalk.rgb(255, 241, 118),
@@ -311,6 +307,28 @@ export const PROVIDER_METADATA = {
     signupHint: 'Settings → Key Management → Create API key',
     rateLimits: 'Only zero-price live chat models are listed; other Novita models are paid/trial-credit',
     paidProviderNote: 'paid — 3 free models',
+  },
+  pollinations: {
+    label: 'Pollinations AI ⚠️ experimental',
+    color: chalk.rgb(255, 105, 180),
+    signupUrl: 'https://enter.pollinations.ai',
+    signupHint: 'enter.pollinations.ai → API Keys (free Pollen daily; star github.com/pollinations/pollinations to earn Pollen; 0 Pollen = 402; no purchase needed)',
+    rateLimits: 'Free via Pollen (daily grants; ~0.0001-0.003 Pollen/req; 0 Pollen = 402; experimental, system may change)',
+    detailedLimits: 'Pollen ≈ $1. Daily free Pollen via tier (seed/flower/nectar) + quests (star repo, help issue). No purchase required. Cost per request 0.0001-0.003 Pollen. If balance is 0.0000, every MISS returns 402 PAYMENT_REQUIRED and the TUI shows 402; HIT (Cloudflare cache) may still return 200 but is not reliable. Check balance at enter.pollinations.ai → API Keys. Grants reset daily at midnight UTC. Integration is experimental and not yet confirmed as stable.',
+  },
+  siliconflow: {
+    label: 'SiliconFlow',
+    color: chalk.rgb(178, 235, 242),
+    signupUrl: 'https://cloud.siliconflow.cn/account/ak',
+    signupHint: 'API Keys → Create (phone SMS verification required)',
+    rateLimits: 'Free · 3 models @ $0 · 1000 RPM · 1M tokens/day per model',
+  },
+  requesty: {
+    label: 'Requesty',
+    color: chalk.rgb(100, 149, 255),
+    signupUrl: 'https://app.requesty.ai/api-keys',
+    signupHint: 'API Keys → Create (200 req/day free, no card)',
+    rateLimits: 'Free · 200 req/day on free models (20 req/min) · no card',
   },
   'ollama-cloud': {
     label: 'Ollama Cloud',

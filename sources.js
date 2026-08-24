@@ -29,7 +29,7 @@
  *   📖 Secondary: https://swe-rebench.com (independent evals, scores are lower)
  *   📖 Leaderboard tracker: https://www.marc0.dev/en/leaderboard
  *
- *   @exports nvidiaNim, groq, cerebras, sambanova, openrouter, githubModels, mistral, codestral, scaleway, googleai, zai, qwen, cloudflare, ovhcloud, opencodeZen, kilo, llm7, routeway, novita, ollamaCloud — model arrays per active provider
+ *   @exports nvidiaNim, groq, cerebras, sambanova, openrouter, githubModels, mistral, codestral, scaleway, googleai, zai, qwen, cloudflare, ovhcloud, opencodeZen, kilo, llm7, routeway, novita, ollamaCloud, pollinations, siliconflow, requesty — model arrays per active provider
  *   @exports sources — map of active free/free-limited providers, each with { name, url, models }
 
  *   @exports MODELS — flat array of [modelId, label, tier, sweScore, ctx, providerKey]
@@ -450,6 +450,68 @@ export const novita = [
   // Removed (2026-07-27): qwen/qwen3.5-plus (Qwen3.5 Plus) — no longer in novita catalog
 ]
 
+// 📖 Pollinations AI source - https://gen.pollinations.ai
+// 📖 OpenAI-compatible endpoint: https://gen.pollinations.ai/v1/chat/completions
+// 📖 Free tier: anonymous without key or free API key from https://enter.pollinations.ai
+// 📖 Daily Pollen grants per tier (seed/flower/nectar) — free models cost Pollen but grants renew daily; anonymous tier has rate limits.
+// 📖 Verified live 2026-08-23 via GET /v1/models (319 models); IDs below are live and coding-relevant.
+export const pollinations = [
+  // ── S+ tier — SWE-bench Verified ≥70% ──
+  ['laguna', 'Laguna XS.2', 'S+', '70.9%', '1M'],
+  ['minimax-m2.7', 'MiniMax M2.7', 'S+', '78.0%', '200k'],
+  // ── S tier — SWE-bench Verified 60–70% ──
+  ['qwen-coder', 'Qwen3 Coder', 'S', '69.6%', '262k'],
+  ['deepseek', 'DeepSeek V3', 'S', '66.0%', '1M'],
+  ['kimi-code', 'Kimi K2 Code', 'S', '60.4%', '262k'],
+  ['openai', 'OpenAI GPT', 'S', '62.4%', '400k'],
+  // ── A+ tier — SWE-bench Verified 50–60% ──
+  ['gemma-4-31b', 'Gemma 4 31B', 'A+', '52.0%', '262k'],
+  ['gpt-oss', 'GPT OSS 20B', 'A+', '50.3%', '131k'],
+  ['qwen3.7-flash', 'Qwen3.7 Flash', 'A+', '-', '1M'],
+  // ── B+ tier ──
+  ['nemotron-3.5-lightning', 'Nemotron 3.5 Lightning', 'B+', '-', '262k'],
+]
+
+// 📖 SiliconFlow source - https://api.siliconflow.cn/v1/chat/completions
+// 📖 OpenAI-compatible endpoint: https://api.siliconflow.cn/v1
+// 📖 Free tier: permanently free models at $0 (no card needed beyond phone SMS verification).
+// 📖 Verified 2026-08-23 via pricing page + docs: THUDM/GLM-Z1-9B-0414 is 免费; Qwen3-8B and DeepSeek-R1-Distill-Qwen-7B
+// 📖 documented as free in SiliconFlow guide 2026-06-05 ("Three models are completely free: Qwen3-8B, DeepSeek-R1-Distill-Qwen-7B, DeepSeek-OCR")
+// 📖 and still reachable with free-tier rate limits (1000 RPM). Keep only the chat text models here.
+export const siliconflow = [
+  // ── A tier — SWE-bench Verified 40–50% ──
+  ['THUDM/GLM-Z1-9B-0414', 'GLM-Z1 9B', 'A', '-', '32k'],
+  // ── B+ tier ──
+  ['Qwen/Qwen3-8B', 'Qwen3 8B', 'B+', '30.0%', '32k'],
+  ['deepseek-ai/DeepSeek-R1-Distill-Qwen-7B', 'DeepSeek R1 Distill Qwen 7B', 'A', '-', '32k'],
+]
+
+// 📖 Requesty source - https://router.requesty.ai/v1
+// 📖 OpenAI-compatible gateway: https://router.requesty.ai/v1/chat/completions
+// 📖 Free tier: 200 req/day on zero-price free models (4× OpenRouter), no card, EU residency, routing/caching included.
+// 📖 Verified live 2026-08-23 via GET /v1/models (676 models, 12 with input_price=0 & output_price=0).
+export const requesty = [
+  // ── S+ tier — SWE-bench Verified ≥70% ──
+  ['nvidia/nemotron-3-ultra-550b-a55b', 'Nemotron 3 Ultra', 'S+', '71.9%', '1M'],
+  ['poolside/laguna-xs.2', 'Laguna XS.2', 'S+', '70.9%', '32k'],
+  // ── S tier — SWE-bench Verified 60–70% ──
+  ['nvidia/nemotron-3-super-120b-a12b', 'Nemotron 3 Super', 'S', '60.5%', '1M'],
+  ['poolside/laguna-m.1', 'Laguna M.1', 'S', '-', '32k'],
+  // ── A+ tier — SWE-bench Verified 50–60% ──
+  ['google/gemma-4-31b-it', 'Gemma 4 31B', 'A+', '52.0%', '262k'],
+  ['nvidia/nemotron-3-nano-omni-30b-a3b-reasoning', 'Nemotron 3 Omni', 'A+', '52.0%', '131k'],
+  // ── A tier — SWE-bench Verified 40–50% ──
+  ['nvidia/nemotron-3-nano-30b-a3b', 'Nemotron Nano 30B', 'A-', '38.8%', '262k'],
+  // ── B+ tier — SWE-bench Verified 30–35% ──
+  ['nvidia/nemotron-3.5-lightning-30b-a3b', 'Nemotron 3.5 Lightning', 'B+', '-', '1M'],
+  // ── B tier — SWE-bench Verified 20–30% ──
+  ['mistral/leanstral-1-5', 'Leanstral 1.5', 'B', '-', '262k'],
+  ['novita/inclusionai/ling-3.0-tiny', 'Ling 3.0 Tiny', 'B', '-', '262k'],
+  // ── C tier — other zero-price models (kept for breadth) ──
+  ['nvidia/nemotron-3.5-content-safety', 'Nemotron Content Safety', 'C', '-', '131k'],
+  ['nvidia/muse-glimmer-30b', 'Muse Glimmer 30B', 'C', '-', '131k'],
+]
+
 // 📖 Ollama Cloud source - https://ollama.com/pricing and https://ollama.com/search?c=cloud
 // 📖 Free plan includes cloud model access with session/weekly limits. This list keeps coding-relevant cloud models only.
 // 📖 Catalog verified 2026-07-18 against official Ollama cloud model search page.
@@ -628,6 +690,27 @@ export const sources = {
     quota: 'No zero-price models as of 2026-08-13',
     quotaCode: 'limited',
     models: novita, // Empty — kept for backward compat in user configs
+  },
+  pollinations: {
+    name: 'Pollinations AI',
+    url: 'https://gen.pollinations.ai/v1/chat/completions',
+    quota: 'Free · daily Pollen grants · key at enter.pollinations.ai',
+    quotaCode: 'free',
+    models: pollinations,
+  },
+  siliconflow: {
+    name: 'SiliconFlow',
+    url: 'https://api.siliconflow.cn/v1/chat/completions',
+    quota: 'Free · 3 models @ $0 · 1000 RPM',
+    quotaCode: 'free',
+    models: siliconflow,
+  },
+  requesty: {
+    name: 'Requesty',
+    url: 'https://router.requesty.ai/v1/chat/completions',
+    quota: 'Free · 200 req/day · no card',
+    quotaCode: 'free',
+    models: requesty,
   },
   'ollama-cloud': {
     name: 'Ollama Cloud',

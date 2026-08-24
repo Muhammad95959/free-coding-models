@@ -183,6 +183,9 @@ const ENV_VARS = {
   routeway:   'ROUTEWAY_API_KEY',
   novita:     'NOVITA_API_KEY',
   'ollama-cloud': 'OLLAMA_API_KEY',
+  pollinations: ['POLLINATIONS_API_KEY', 'POLLINATIONS_TOKEN'],
+  siliconflow: 'SILICONFLOW_API_KEY',
+  requesty:   'REQUESTY_API_KEY',
 }
 
 // 📖 Smart Router defaults are intentionally conservative: balanced probing,

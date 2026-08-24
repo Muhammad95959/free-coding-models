@@ -1,10 +1,10 @@
 ---
 title: Provider Ecosystem & Keys
-description: All 20 active providers in the catalog — model counts, tier ranges, free tiers, base endpoints, and env vars. One key is enough to start.
+description: All active providers in the catalog — model counts, tier ranges, free tiers, base endpoints, and env vars. One key is enough to start.
 section: Core concepts & advanced
 ---
 
-`free-coding-models` tracks **~222 models across 20 active providers**. You only need **one key** to start — sign up on any provider, grab a key, paste it into the TUI (`P` → Settings) or export it as an env var.
+`free-coding-models` tracks a large catalog of models from 20+ active providers. You only need **one key** to start — sign up on any provider, grab a key, paste it into the TUI (`P` → Settings) or export it as an env var.
 
 ## The fastest sign-ups
 
@@ -14,30 +14,32 @@ The fastest providers to start with (no credit card, instant key):
 - **Cerebras** → [cloud.cerebras.ai](https://cloud.cerebras.ai) — the lowest latency in the whole catalog
 - **NVIDIA NIM** → [build.nvidia.com](https://build.nvidia.com) — 27 models, the biggest free variety
 
-## All 20 providers
+## All providers
 
 | # | Provider | Models | Tier range | Free tier | Env var |
 |---|----------|--------|-----------|-----------|--------|
-| 1 | [NVIDIA NIM](https://build.nvidia.com) | 27 | S+ → C | ~40 RPM (no credit card) | `NVIDIA_API_KEY` |
-| 2 | [Groq](https://console.groq.com/keys) | 8 | S → B | 30 RPM, 1K–14.4K req/day (no credit card) | `GROQ_API_KEY` |
+| 1 | [NVIDIA NIM](https://build.nvidia.com) | 25 | S+ → C | ~40 RPM (no credit card) | `NVIDIA_API_KEY` |
+| 2 | [Groq](https://console.groq.com/keys) | 5 | S → B | 30 RPM, 1K–14.4K req/day (no credit card) | `GROQ_API_KEY` |
 | 3 | [Cerebras](https://cloud.cerebras.ai) | 2 | S+ → S | 30 RPM, 1M tokens/day (no credit card) | `CEREBRAS_API_KEY` |
-| 4 | [Google AI Studio](https://aistudio.google.com/apikey) | 7 | S+ → A | Gemini free quotas vary by model/region | `GOOGLE_API_KEY` |
-| 5 | [GitHub Models](https://models.github.ai) | 15 | S+ → C | Quota depends on GitHub/Copilot tier | `GITHUB_TOKEN` |
-| 6 | [Mistral La Plateforme](https://console.mistral.ai/api-keys) | 5 | S+ → A | Experiment plan, free evaluation tier | `MISTRAL_API_KEY` |
-| 7 | [Cloudflare Workers AI](https://dash.cloudflare.com) | 16 | S+ → B | 10K neurons/day, 300 RPM (no credit card) | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
-| 8 | [OpenRouter](https://openrouter.ai/keys) | 24 | S+ → C | 50 req/day free, 1K/day with $10 spend | `OPENROUTER_API_KEY` |
-| 9 | [SambaNova](https://cloud.sambanova.ai/apis) | 7 | S+ → B+ | Small developer quota, useful for light usage | `SAMBANOVA_API_KEY` |
-| 10 | [OVHcloud AI Endpoints](https://endpoints.ai.cloud.ovh.net) | 10 | S → B | 2 req/min/IP free, 400 RPM with key | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
-| 11 | [Codestral](https://console.mistral.ai/api-keys) | 1 | B+ | 30 RPM, 2K req/day | `MISTRAL_API_KEY` |
-| 12 | [ZAI](https://z.ai) | 2 | S | Free Flash models only | `ZAI_API_KEY` |
-| 13 | [Scaleway](https://console.scaleway.com/iam/api-keys) | 10 | S+ → B | 1M free tokens | `SCALEWAY_API_KEY` |
-| 14 | [Alibaba DashScope](https://modelstudio.console.alibabacloud.com) | 11 | S+ → A+ | 1M free tokens/model, Singapore, 90 days | `DASHSCOPE_API_KEY` |
-| 15 | [OpenCode Zen](https://opencode.ai/zen) | 5 | S+ → A | Free with OpenCode account | `OPENCODE_ZEN_API_KEY` (Zen models ✨) |
-| 16 | [Kilo](https://kilo.ai) | 1 | A+ | Free auto-router works without a key | `KILO_API_KEY` *(optional)* |
-| 17 | [LLM7](https://llm7.io) | 4 | S+ → B+ | Shared free tier, optional free token | `LLM7_API_KEY` *(optional)* |
-| 18 | [Routeway](https://routeway.ai) | 15 | S+ → C | Explicit `:free` zero-price models | `ROUTEWAY_API_KEY` |
-| 19 | [Novita AI](https://novita.ai) | 4 | S+ → S | Only zero-price live chat models included | `NOVITA_API_KEY` |
-| 20 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
+| 4 | [Google AI Studio](https://aistudio.google.com/apikey) | 10 | S+ → A | Gemini free quotas vary by model/region | `GOOGLE_API_KEY` |
+| 5 | [Mistral La Plateforme](https://console.mistral.ai/api-keys) | 6 | S+ → A | Experiment plan, free evaluation tier | `MISTRAL_API_KEY` |
+| 6 | [Cloudflare Workers AI](https://dash.cloudflare.com) | 19 | S+ → B | 10K neurons/day, 300 RPM (no credit card) | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
+| 7 | [OpenRouter](https://openrouter.ai/keys) | 14 | S+ → C | 50 req/day free, 1K/day with $10 spend | `OPENROUTER_API_KEY` |
+| 8 | [SambaNova](https://cloud.sambanova.ai/apis) | 6 | S+ → B+ | Small developer quota, useful for light usage | `SAMBANOVA_API_KEY` |
+| 9 | [OVHcloud AI Endpoints](https://endpoints.ai.cloud.ovh.net) | 10 | S → B | 2 req/min/IP free, 400 RPM with key | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
+| 10 | [Codestral](https://console.mistral.ai/api-keys) | 1 | B+ | 30 RPM, 2K req/day | `MISTRAL_API_KEY` |
+| 11 | [ZAI](https://z.ai) | 7 | S | Free Flash models only | `ZAI_API_KEY` |
+| 12 | [Scaleway](https://console.scaleway.com/iam/api-keys) | 15 | S+ → B | 1M free tokens | `SCALEWAY_API_KEY` |
+| 13 | [Alibaba DashScope](https://modelstudio.console.alibabacloud.com) | 23 | S+ → A+ | 1M free tokens/model, Singapore, 90 days | `DASHSCOPE_API_KEY` |
+| 14 | [OpenCode Zen](https://opencode.ai/zen) | 5 | S+ → A | Free with OpenCode account | `OPENCODE_ZEN_API_KEY` (Zen models ✨) |
+| 15 | [Kilo](https://kilo.ai) | 2 | A+ | Free auto-router works without a key | `KILO_API_KEY` *(optional)* |
+| 16 | [LLM7](https://llm7.io) | 5 | S+ → B+ | Shared free tier, optional free token | `LLM7_API_KEY` *(optional)* |
+| 17 | [Routeway](https://routeway.ai) | 10 | S+ → C | Explicit `:free` zero-price models | `ROUTEWAY_API_KEY` |
+| 18 | [Novita AI](https://novita.ai) | 0 | - | No zero-price models currently | `NOVITA_API_KEY` |
+| 19 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
+| 20 | [Pollinations AI](https://enter.pollinations.ai) ⚠️ experimental | 10 | S+ → B+ | Daily Pollen grants, free tier via Pollen (see README, not yet confirmed stable) | `POLLINATIONS_API_KEY` |
+| 21 | [SiliconFlow](https://cloud.siliconflow.cn/account/ak) | 3 | A → B+ | 3 models @ $0, 1000 RPM (phone SMS required) | `SILICONFLOW_API_KEY` |
+| 22 | [Requesty](https://app.requesty.ai/api-keys) | 12 | S+ → C | 200 req/day free, no card (4x OpenRouter) | `REQUESTY_API_KEY` |
 
 > A few providers (**Kilo**, **LLM7**, the OVHcloud sandbox) can answer *without* a key, with tighter shared limits.
 

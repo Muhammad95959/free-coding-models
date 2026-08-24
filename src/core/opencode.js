@@ -478,7 +478,7 @@ export async function startOpenCode(model, fcmConfig) {
       config.provider.siliconflow = {
         npm: '@ai-sdk/openai-compatible',
         name: 'SiliconFlow',
-        options: { baseURL: 'https://api.siliconflow.com/v1', apiKey: '{env:SILICONFLOW_API_KEY}' },
+        options: { baseURL: 'https://api.siliconflow.cn/v1', apiKey: '{env:SILICONFLOW_API_KEY}' },
         models: {}
       }
     } else if (providerKey === 'together') {
@@ -846,7 +846,7 @@ export async function startOpenCodeDesktop(model, fcmConfig) {
       config.provider.siliconflow = {
         npm: '@ai-sdk/openai-compatible',
         name: 'SiliconFlow',
-        options: { baseURL: 'https://api.siliconflow.com/v1', apiKey: '{env:SILICONFLOW_API_KEY}' },
+        options: { baseURL: 'https://api.siliconflow.cn/v1', apiKey: '{env:SILICONFLOW_API_KEY}' },
         models: {}
       }
     } else if (providerKey === 'together') {

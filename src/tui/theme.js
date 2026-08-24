@@ -192,6 +192,8 @@ const PROVIDER_PALETTES = {
     llm7: [180, 255, 140],
     routeway: [130, 210, 255],
     novita: [255, 185, 120],
+    pollinations: [255, 105, 180],
+    requesty: [100, 149, 255],
     'ollama-cloud': [230, 230, 230],
   },
   light: {
@@ -222,6 +224,8 @@ const PROVIDER_PALETTES = {
     llm7: [73, 130, 0],
     routeway: [0, 105, 180],
     novita: [173, 84, 0],
+    pollinations: [170, 45, 110],
+    requesty: [0, 72, 170],
     'ollama-cloud': [88, 88, 88],
   },
 }

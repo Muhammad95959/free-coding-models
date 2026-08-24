@@ -16,7 +16,7 @@ Requires Node.js 18+ and pnpm. The marketing site lives in `website/` (TanStack 
 | Path | Role |
 |------|------|
 | [`bin/free-coding-models.js`](../bin/free-coding-models.js) | CLI entrypoint — arg parsing, help text, launches the TUI or daemon. |
-| [`sources.js`](../sources.js) | The model catalog — all **222 models** across 20 providers. Edit here to add a provider. |
+| [`sources.js`](../sources.js) | The model catalog — a large catalog of models from 20+ providers. Edit here to add a provider. |
 | `src/core/` | Pure logic: config, pinging, scoring, probes, tool launchers, router daemon, telemetry, sync-set, drift detection. No rendering. |
 | `src/tui/` | The ANSI terminal UI — app loop, renderer, key/mouse handlers, overlays, command palette, theme. |
 | `src/data/benchmarks.json` | Extended benchmark overlay (Coding/Math/Agentic/Reasoning/MMLU-Pro/GPQA/HLE), refreshed via `pnpm update:benchmarks`. |

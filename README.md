@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Find the fastest free coding model in seconds</strong><br>
-  Track ~222 models across 20 trusted free or free-limited AI providers in real time, then install the one you pick straight into your favorite coding tool.<br><br>
+  Track a large catalog of free coding models from 20+ trusted AI providers in real time, then install the one you pick straight into your favorite coding tool.<br><br>
   <strong>Works with:</strong> OpenCode CLI / Desktop / WebUI, OpenClaw, Crush, Goose, Aider, Kilo CLI, Qwen Code, OpenHands, Amp, Hermes, Continue, Cline, Xcode, Pi, ZCode, ForgeCode, Copilot and more.<br><br>
   <strong>Use Kimi K2, DeepSeek V3/V4, GPT-OSS, Qwen3, MiniMax M3, GLM, Llama 4, Gemma 4, Devstral and more — for free</strong>
 </p>
@@ -15,8 +15,8 @@
   <img src="https://img.shields.io/npm/v/free-coding-models?color=3d6b00&label=npm&logo=npm" alt="npm version" width="200"><br>
   <img src="https://img.shields.io/node/v/free-coding-models?color=3d6b00&logo=node.js" alt="node version" width="200"><br>
   <img src="https://img.shields.io/npm/l/free-coding-models?color=3d6b00" alt="license" width="200"><br>
-  <img src="https://img.shields.io/badge/models-222-3d6b00?logo=nvidia" alt="models count" width="200"><br>
-  <img src="https://img.shields.io/badge/providers-20-1a56db" alt="providers count" width="200">
+  <img src="https://img.shields.io/badge/models-large%20catalog-3d6b00?logo=nvidia" alt="models count" width="200"><br>
+  <img src="https://img.shields.io/badge/providers-20%2B-1a56db" alt="providers count" width="200">
 </p>
 
 ```bash
@@ -25,7 +25,7 @@ free-coding-models
 ```
 
 <p align="center">
-  <sub>Then create a free account on one of the <a href="#-free-ai-providers">20 providers</a> to grab an API key.</sub>
+  <sub>Then create a free account on one of the <a href="#-free-ai-providers">many providers</a> to grab an API key.</sub>
 </p>
 
 <p align="center">
@@ -60,7 +60,7 @@ free-coding-models
 
 ## 💡 Why this tool?
 
-There are **~222 cataloged free or free-limited coding models** across 20 vetted providers. Which one is fastest *right now*? Which one is actually stable, versus just lucky on the last ping?
+There is a large catalog of free and free-limited coding models from 20+ vetted providers. Which one is fastest *right now*? Which one is actually stable, versus just lucky on the last ping?
 
 `free-coding-models` (FCM) answers that by pinging every model in parallel, showing live latency, and computing a **live Stability Score (0–100)**. Average latency alone is misleading — a model that randomly spikes to 6 seconds isn't reliable. The stability score combines **p95 latency** (30%), **jitter/variance** (30%), **spike rate** (20%), and **uptime** (20%) to measure true reliability.
 
@@ -94,7 +94,7 @@ Requires **Node.js 18+**. That's the only prerequisite — FCM has a single runt
 
 ### ② Grab one free API key
 
-FCM tracks ~222 models across 20 providers, but you only need **one key** to start. The fastest sign-ups (no credit card, instant key):
+FCM tracks a large catalog of models from 20+ providers, but you only need **one key** to start. The fastest sign-ups (no credit card, instant key):
 
 - **Groq** → [console.groq.com/keys](https://console.groq.com/keys) — Llama 4, GPT-OSS, blazing fast
 - **Cerebras** → [cloud.cerebras.ai](https://cloud.cerebras.ai) — the lowest latency in the whole catalog
@@ -165,30 +165,35 @@ Once the TUI feels familiar, FCM has three more surfaces — pick the one that m
 
 ## 🟢 Free AI Providers
 
-**~222 coding models** across 20 active providers, ranked by practical free-tier usefulness. Sign up on any one of them to get a key — you only need one to start.
+A large catalog of coding models from 20+ active providers, ranked by practical free-tier usefulness. Sign up on any one of them to get a key — you only need one to start.
 
 | # | Provider | Models | Tier range | Free tier | Env var |
 |---|----------|--------|-----------|-----------|--------|
-| 1 | [NVIDIA NIM](https://build.nvidia.com) | 27 | S+ → C | ~40 RPM (no credit card) | `NVIDIA_API_KEY` |
-| 2 | [Groq](https://console.groq.com/keys) | 8 | S → B | 30 RPM, 1K‑14.4K req/day (no credit card) | `GROQ_API_KEY` |
+| 1 | [NVIDIA NIM](https://build.nvidia.com) | 25 | S+ → C | ~40 RPM (no credit card) | `NVIDIA_API_KEY` |
+| 2 | [Groq](https://console.groq.com/keys) | 5 | S → B | 30 RPM, 1K‑14.4K req/day (no credit card) | `GROQ_API_KEY` |
 | 3 | [Cerebras](https://cloud.cerebras.ai) | 2 | S+ → S | 30 RPM, 1M tokens/day (no credit card) | `CEREBRAS_API_KEY` |
-| 4 | [Google AI Studio](https://aistudio.google.com/apikey) | 7 | S+ → A | Gemini free quotas vary by model/region | `GOOGLE_API_KEY` |
-| 5 | [GitHub Models](https://models.github.ai) | 15 | S+ → C | Quota depends on GitHub/Copilot tier | `GITHUB_TOKEN` |
-| 6 | [Mistral La Plateforme](https://console.mistral.ai/api-keys) | 5 | S+ → A | Experiment plan, free evaluation tier | `MISTRAL_API_KEY` |
-| 7 | [Cloudflare Workers AI](https://dash.cloudflare.com) | 16 | S+ → B | 10K neurons/day, 300 RPM (no credit card) | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
-| 8 | [OpenRouter](https://openrouter.ai/keys) | 24 | S+ → C | 50 req/day free, 1K/day with $10 spend | `OPENROUTER_API_KEY` |
-| 9 | [SambaNova](https://cloud.sambanova.ai/apis) | 7 | S+ → B+ | Small developer quota, useful for light usage | `SAMBANOVA_API_KEY` |
-| 10 | [OVHcloud AI Endpoints](https://endpoints.ai.cloud.ovh.net) | 10 | S → B | 2 req/min/IP free, 400 RPM with key | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
-| 11 | [Codestral](https://console.mistral.ai/api-keys) | 1 | B+ | 30 RPM, 2K req/day | `MISTRAL_API_KEY` |
-| 12 | [ZAI](https://z.ai) | 2 | S | Free Flash models only | `ZAI_API_KEY` |
-| 13 | [Scaleway](https://console.scaleway.com/iam/api-keys) | 10 | S+ → B | 1M free tokens | `SCALEWAY_API_KEY` |
-| 14 | [Alibaba DashScope](https://modelstudio.console.alibabacloud.com) | 11 | S+ → A+ | 1M free tokens/model, Singapore, 90 days | `DASHSCOPE_API_KEY` |
-| 15 | [OpenCode Zen](https://opencode.ai/zen) | 5 | S+ → A | Free with OpenCode account | Zen models ✨ |
-| 16 | [Kilo](https://kilo.ai) | 1 | A+ | Free auto-router works without a key | optional `KILO_API_KEY` |
-| 17 | [LLM7](https://llm7.io) | 4 | S+ → B+ | Shared free tier, optional free token | optional `LLM7_API_KEY` |
-| 18 | [Routeway](https://routeway.ai) | 15 | S+ → C | Explicit `:free` zero-price models | `ROUTEWAY_API_KEY` |
-| 19 | [Novita AI](https://novita.ai) | 4 | S+ → S | Only zero-price live chat models included | `NOVITA_API_KEY` |
-| 20 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
+| 4 | [Google AI Studio](https://aistudio.google.com/apikey) | 10 | S+ → A | Gemini free quotas vary by model/region | `GOOGLE_API_KEY` |
+| 5 | [Mistral La Plateforme](https://console.mistral.ai/api-keys) | 6 | S+ → A | Experiment plan, free evaluation tier | `MISTRAL_API_KEY` |
+| 6 | [Cloudflare Workers AI](https://dash.cloudflare.com) | 19 | S+ → B | 10K neurons/day, 300 RPM (no credit card) | `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` |
+| 7 | [OpenRouter](https://openrouter.ai/keys) | 14 | S+ → C | 50 req/day free, 1K/day with $10 spend | `OPENROUTER_API_KEY` |
+| 8 | [SambaNova](https://cloud.sambanova.ai/apis) | 6 | S+ → B+ | Small developer quota, useful for light usage | `SAMBANOVA_API_KEY` |
+| 9 | [OVHcloud AI Endpoints](https://endpoints.ai.cloud.ovh.net) | 10 | S → B | 2 req/min/IP free, 400 RPM with key | `OVH_AI_ENDPOINTS_ACCESS_TOKEN` |
+| 10 | [Codestral](https://console.mistral.ai/api-keys) | 1 | B+ | 30 RPM, 2K req/day | `MISTRAL_API_KEY` |
+| 11 | [ZAI](https://z.ai) | 7 | S | Free Flash models only | `ZAI_API_KEY` |
+| 12 | [Scaleway](https://console.scaleway.com/iam/api-keys) | 15 | S+ → B | 1M free tokens | `SCALEWAY_API_KEY` |
+| 13 | [Alibaba DashScope](https://modelstudio.console.alibabacloud.com) | 23 | S+ → A+ | 1M free tokens/model, Singapore, 90 days | `DASHSCOPE_API_KEY` |
+| 14 | [OpenCode Zen](https://opencode.ai/zen) | 5 | S+ → A | Free with OpenCode account | Zen models ✨ |
+| 15 | [Kilo](https://kilo.ai) | 2 | A+ | Free auto-router works without a key | optional `KILO_API_KEY` |
+| 16 | [LLM7](https://llm7.io) | 5 | S+ → B+ | Shared free tier, optional free token | optional `LLM7_API_KEY` |
+| 17 | [Routeway](https://routeway.ai) | 10 | S+ → C | Explicit `:free` zero-price models | `ROUTEWAY_API_KEY` |
+| 18 | [Novita AI](https://novita.ai) | 0 | - | No zero-price models currently | `NOVITA_API_KEY` |
+| 19 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
+| 20 | [Pollinations AI](https://enter.pollinations.ai) ⚠️ experimental | 10 | S+ → B+ | Daily Pollen grants, free tier via Pollen (see note below) | `POLLINATIONS_API_KEY` |
+| 21 | [SiliconFlow](https://cloud.siliconflow.cn/account/ak) | 3 | A → B+ | 3 models @ $0, 1000 RPM (phone SMS required) | `SILICONFLOW_API_KEY` |
+| 22 | [Requesty](https://app.requesty.ai/api-keys) | 12 | S+ → C | 200 req/day free, no card (4x OpenRouter) | `REQUESTY_API_KEY` |
+
+> **Pollinations Pollen, c'est quoi ?** Pollinations ne facture pas en $ mais en **Pollen** (≈ $1). Pas besoin d'acheter : tu recois du Pollen **gratuit chaque jour** selon ton tier seed/flower/nectar via quests (star le repo `pollinations/pollinations` sur GitHub, aider sur un issue). Si ton solde affiche `0.0000` sur `enter.pollinations.ai`, tout `MISS` (prompt non cache) retourne `402 PAYMENT_REQUIRED` ("Insufficient balance ~0.0001 pollen") et le ping affichera `402`. Un `HIT` Cloudflare cache peut encore passer en `200` meme avec 0 Pollen mais ce n'est pas fiable. Verifie ton solde sur `enter.pollinations.ai` -> API Keys, complete une quest et attends le grant quotidien a minuit UTC. **Note : integration Pollinations encore experimentale et non confirmee comme stable, le systeme Pollen peut changer.**
+> **SiliconFlow & Requesty** : integrations verifiees le 2026-08-24 via `/v1/models` live et docs officielles, free tiers recurrents confirmes sans Pollen.
 
 > 💡 One key is enough to start. Add more at any time by pressing **`P`** inside the TUI (or via the Web Dashboard **Settings** page). A few providers (`Kilo`, `LLM7`, OVHcloud sandbox) can even answer without a key, with tighter shared limits.
 
@@ -231,7 +236,7 @@ To protect you, FCM:
 
 The TUI is the heart of FCM. Launch it with `free-coding-models` and you get a live, sortable table of every model — real latency, stability, verdict, and a one-key launch into your coding tool.
 
-<p align="center"><video src="website/public/videos/tui-first-launch.mp4" alt="First launch — ~222 models ping in parallel" autoplay muted loop playsinline width="100%"></video></p>
+<p align="center"><video src="website/public/videos/tui-first-launch.mp4" alt="First launch — many models ping in parallel" autoplay muted loop playsinline width="100%"></video></p>
 
 ### First-run flow
 
@@ -761,7 +766,7 @@ Every routed request through the daemon feeds a persistent per-model telemetry f
 
 ### Features at a glance
 
-- **Parallel pings** — all ~222 models tested simultaneously via native `fetch`
+- **Parallel pings** — all models tested simultaneously via native `fetch`
 - **AI benchmark columns** — `Ctrl+A` / `Ctrl+U` split into AI Latency + TPS; optional Startup AI Speed Scan
 - **Adaptive monitoring** — 2s burst for 60s → 10s normal → 30s idle
 - **Stability score** — composite 0–100 (p95, jitter, spike rate, uptime)
@@ -801,7 +806,7 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
 
 ## ⚖️ Model Licensing & Commercial Use
 
-**Short answer:** the ~222 cataloged models are API/CLI-served models where generated-output ownership is generally granted by the provider/model terms. **You own the generated output** — code, text, or otherwise — and can use it commercially. The licenses below govern the *model weights themselves*, not your generated content.
+**Short answer:** the cataloged models are API/CLI-served where generated-output ownership is generally granted by the provider/model terms. **You own the generated output** — code, text, or otherwise — and can use it commercially. The licenses below govern the *model weights themselves*, not your generated content.
 
 | License | Models | Commercial Output |
 |---------|--------|:-----------------:|

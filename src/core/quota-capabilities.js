@@ -61,6 +61,9 @@ export const PROVIDER_CAPABILITIES = {
   routeway: { telemetryType: 'unknown', supportsEndpoint: false, usageDisplay: 'ok', resetCadence: 'unknown' },
   novita: { telemetryType: 'unknown', supportsEndpoint: false, usageDisplay: 'ok', resetCadence: 'unknown' },
   'ollama-cloud': { telemetryType: 'unknown', supportsEndpoint: false, usageDisplay: 'ok', resetCadence: 'rolling' },
+  pollinations: { telemetryType: 'unknown', supportsEndpoint: false, usageDisplay: 'ok', resetCadence: 'daily' },
+  siliconflow: { telemetryType: 'unknown', supportsEndpoint: false, usageDisplay: 'ok', resetCadence: 'daily' },
+  requesty: { telemetryType: 'unknown', supportsEndpoint: false, usageDisplay: 'ok', resetCadence: 'daily' },
 }
 
 /** Fallback for unrecognized providers */

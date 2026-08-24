@@ -23,6 +23,7 @@ import { ToolMarquee } from '~/components/ToolMarquee'
 import { AllToolsSection } from '~/components/AllToolsSection'
 import { ProvidersGrid } from '~/components/ProviderSection'
 import { Testimonials } from '~/components/Testimonials'
+import Scanner from '~/components/Scanner'
 import { INSTALL_COMMAND, site } from '~/lib/site'
 import { HomeStructuredData } from '~/components/StructuredData'
 
@@ -56,9 +57,39 @@ function Shell({ children, className = '' }: { children: React.ReactNode; classN
 function Hero() {
   return (
     <section className="relative border-b border-border overflow-hidden">
-      {/* 📖 Subtle radial accent wash in the top-right corner — replaces the
-          WebGL shader with a flat CSS effect. Color matches the new lime. */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_rgba(200,255,0,0.08),_transparent_60%)]" />
+      {/* Scanner — React Bits defaults (image fournie) */}
+      <div aria-hidden="true" className="absolute inset-0 z-0">
+        <Scanner
+          color1="#5227FF"
+          color2="#FF9FFC"
+          color3="#FFFFFF"
+          speed={0.5}
+          sweepSpeed={0.25}
+          sweepWidth={1.6}
+          sweepFalloff={6}
+          scale={1.5}
+          frequency={2}
+          ripple={0.22}
+          bandDensity={11}
+          lineSharpness={5.5}
+          glow={0.22}
+          scanDirection="vertical"
+          colorSpread={0.7}
+          brightness={1.0}
+          contrast={1.15}
+          softness={1.4}
+          vignette={0.45}
+          scanline
+          grain
+          grainIntensity={0.05}
+          opacity={1.0}
+          mouseInteraction
+          mouseRadius={0.5}
+          mouseStrength={0.5}
+        />
+        {/* Fade bottom into page background for text legibility */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-bg/10 to-bg" />
+      </div>
 
       <Shell className="relative z-10">
         <div className="py-14 sm:py-20 flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -111,7 +142,7 @@ function Hero() {
 
           <div className="animate-rise mt-16 grid w-full max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4">
             {[
-              { number: '222+', label: 'Models' },
+              { number: 'Many', label: 'Models' },
               { number: '20+', label: 'Providers' },
               { number: '68', label: 'S+ tier' },
               { number: '<100ms', label: 'Failover' },
