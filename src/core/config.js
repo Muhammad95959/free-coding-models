@@ -186,6 +186,7 @@ const ENV_VARS = {
   pollinations: ['POLLINATIONS_API_KEY', 'POLLINATIONS_TOKEN'],
   siliconflow: 'SILICONFLOW_API_KEY',
   requesty:   'REQUESTY_API_KEY',
+  orcarouter: 'ORCAROUTER_API_KEY',
 }
 
 // 📖 Smart Router defaults are intentionally conservative: balanced probing,

@@ -194,6 +194,7 @@ const PROVIDER_PALETTES = {
     novita: [255, 185, 120],
     pollinations: [255, 105, 180],
     requesty: [100, 149, 255],
+    orcarouter: [255, 138, 64],
     'ollama-cloud': [230, 230, 230],
   },
   light: {
@@ -226,6 +227,7 @@ const PROVIDER_PALETTES = {
     novita: [173, 84, 0],
     pollinations: [170, 45, 110],
     requesty: [0, 72, 170],
+    orcarouter: [170, 74, 0],
     'ollama-cloud': [88, 88, 88],
   },
 }

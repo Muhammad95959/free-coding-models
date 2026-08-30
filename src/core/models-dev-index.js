@@ -44,6 +44,7 @@ export const PROVIDER_ALIASES = {
   nvidiaNim:  'nvidia',
   nvidia:     'nvidia',
   openrouter: 'openrouter',
+  orcarouter: 'orcarouter',
   groq:       'groq',
   cerebras:   'cerebras',
   github:     'github-models',

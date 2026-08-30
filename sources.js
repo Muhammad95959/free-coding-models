@@ -29,7 +29,7 @@
  *   📖 Secondary: https://swe-rebench.com (independent evals, scores are lower)
  *   📖 Leaderboard tracker: https://www.marc0.dev/en/leaderboard
  *
- *   @exports nvidiaNim, groq, cerebras, sambanova, openrouter, githubModels, mistral, codestral, scaleway, googleai, zai, qwen, cloudflare, ovhcloud, opencodeZen, kilo, llm7, routeway, novita, ollamaCloud, pollinations, siliconflow, requesty — model arrays per active provider
+ *   @exports nvidiaNim, groq, cerebras, sambanova, openrouter, githubModels, mistral, codestral, scaleway, googleai, zai, qwen, cloudflare, ovhcloud, opencodeZen, kilo, llm7, routeway, novita, ollamaCloud, pollinations, siliconflow, requesty, orcarouter — model arrays per active provider
  *   @exports sources — map of active free/free-limited providers, each with { name, url, models }
 
  *   @exports MODELS — flat array of [modelId, label, tier, sweScore, ctx, providerKey]
@@ -512,6 +512,22 @@ export const requesty = [
   ['nvidia/muse-glimmer-30b', 'Muse Glimmer 30B', 'C', '-', '131k'],
 ]
 
+// 📖 OrcaRouter source - https://api.orcarouter.ai/v1
+// 📖 OpenAI-compatible gateway: https://api.orcarouter.ai/v1/chat/completions
+// 📖 Zero-markup AI gateway: token prices are passed through at provider rates, so only
+// 📖 the explicitly $-0 models are listed here. Verified live 2026-08-30 via GET /v1/models
+// 📖 (204 models, 3 with pricing.request=0). The orcarouter/fusion + orcarouter/free
+// 📖 adaptive-routing models are reachable through the same endpoint for users who opt
+// 📖 into pay-as-you-go billing, but are not free so they stay out of this catalog.
+export const orcarouter = [
+  // ── S+ tier — SWE-bench Verified ≥70% ──
+  ['deepseek/deepseek-v4-flash-free', 'DeepSeek V4 Flash (Free)', 'S+', '79.0%', '1M'],
+  // ── S tier — SWE-bench Verified 60–70% ──
+  ['tencent/hy3-free', 'Tencent Hy3 (Free)', 'S', '-', '256k'],
+  // ── A+ tier — SWE-bench Verified 50–60% ──
+  ['qwen/qwen3.8-27b-free', 'Qwen3.8 27B (Free)', 'A+', '-', '64k'],
+]
+
 // 📖 Ollama Cloud source - https://ollama.com/pricing and https://ollama.com/search?c=cloud
 // 📖 Free plan includes cloud model access with session/weekly limits. This list keeps coding-relevant cloud models only.
 // 📖 Catalog verified 2026-07-18 against official Ollama cloud model search page.
@@ -711,6 +727,13 @@ export const sources = {
     quota: 'Free · 200 req/day · no card',
     quotaCode: 'free',
     models: requesty,
+  },
+  orcarouter: {
+    name: 'OrcaRouter',
+    url: 'https://api.orcarouter.ai/v1/chat/completions',
+    quota: 'Free · 3 $-0 models · zero markup',
+    quotaCode: 'free',
+    models: orcarouter,
   },
   'ollama-cloud': {
     name: 'Ollama Cloud',
