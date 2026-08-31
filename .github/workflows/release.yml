@@ -81,7 +81,15 @@ jobs:
 
       - name: Check if release needed
         id: check
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ NPM_TOKEN is not configured — skipping release publish steps"
+            exit 0
+          fi
+
           if [ -n "${{ inputs.force_version }}" ]; then
             VERSION="${{ inputs.force_version }}"
             echo "🎯 Force version override: $VERSION"
