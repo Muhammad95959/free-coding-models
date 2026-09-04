@@ -654,7 +654,7 @@ export const sources = {
   },
 
   'opencode-zen': {
-    name: 'OpenCode Zen',
+    name: 'OpencodeZen',
     url: 'https://opencode.ai/zen/v1/chat/completions',
     quota: 'Free · Zen key required',
     quotaCode: 'free',

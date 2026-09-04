@@ -255,11 +255,11 @@ export const PROVIDER_METADATA = {
     rateLimits: 'Depends on provider subscription (e.g., Anthropic, OpenAI)',
   },
   'opencode-zen': {
-    label: 'OpenCode Zen',
+    label: 'OpencodeZen',
     color: chalk.rgb(139, 92, 246), // violet — distinctive from other providers
     signupUrl: 'https://opencode.ai/auth',
     signupHint: 'Login at opencode.ai/auth to get your Zen API key',
-    rateLimits: 'Free tier models — requires OpenCode Zen API key',
+    rateLimits: 'Free tier models — requires Zen API key',
     zenOnly: true,
   },
   chutes: {
