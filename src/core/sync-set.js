@@ -192,7 +192,7 @@ function buildHeaders(providerKey, apiKey) {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${apiKey}`,
   }
-  if (providerKey === 'openrouter') {
+  if (providerKey === 'openrouter' || providerKey === 'orcarouter') {
     headers['HTTP-Referer'] = 'https://github.com/vava-nessa/free-coding-models'
     headers['X-Title'] = 'free-coding-models'
   }

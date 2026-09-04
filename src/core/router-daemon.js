@@ -578,7 +578,7 @@ export function cloneHeadersForUpstream(reqHeaders, apiKey, providerKey) {
   }
   headers['Content-Type'] = headers['Content-Type'] || 'application/json'
   headers.Authorization = `Bearer ${apiKey}`
-  if (providerKey === 'openrouter') {
+  if (providerKey === 'openrouter' || providerKey === 'orcarouter') {
     headers['HTTP-Referer'] = 'https://github.com/vava-nessa/free-coding-models'
     headers['X-Title'] = 'free-coding-models'
   }
@@ -3619,7 +3619,7 @@ function createDefaultProbeFn(apiKeys) {
       headers.Prefer = 'wait=4'
     } else {
       headers.Authorization = `Bearer ${apiKey}`
-      if (provider === 'openrouter') {
+      if (provider === 'openrouter' || provider === 'orcarouter') {
         headers['HTTP-Referer'] = 'https://github.com/vava-nessa/free-coding-models'
         headers['X-Title'] = 'free-coding-models'
       }

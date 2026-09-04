@@ -68,6 +68,7 @@ export const PROVIDER_AUTH_ENDPOINTS = {
   siliconflow:  { url: 'https://api.siliconflow.cn/v1/models',     method: 'GET' },
   pollinations: null,
   requesty:     null,
+  orcarouter:   { url: 'https://api.orcarouter.ai/v1/models',   method: 'GET' },
   together:     { url: 'https://api.together.xyz/v1/models',        method: 'GET' },
   perplexity:   { url: 'https://api.perplexity.ai/v1/models',       method: 'GET' },
   chutes:       { url: 'https://chutes.ai/v1/models',               method: 'GET' },
@@ -103,7 +104,7 @@ export async function testProviderKeyDirect(apiKey, providerKey) {
 
   const { url, method } = authConfig
   const headers = { Authorization: `Bearer ${apiKey}` }
-  if (providerKey === 'openrouter') {
+  if (providerKey === 'openrouter' || providerKey === 'orcarouter') {
     headers['HTTP-Referer'] = 'https://github.com/vava-nessa/free-coding-models'
     headers['X-Title'] = 'free-coding-models'
   }

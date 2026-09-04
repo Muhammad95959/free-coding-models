@@ -425,6 +425,13 @@ export async function startOpenCode(model, fcmConfig) {
         options: { baseURL: 'https://openrouter.ai/api/v1', apiKey: '{env:OPENROUTER_API_KEY}' },
         models: {}
       }
+    } else if (providerKey === 'orcarouter') {
+      config.provider.orcarouter = {
+        npm: '@ai-sdk/openai-compatible',
+        name: 'OrcaRouter',
+        options: { baseURL: 'https://api.orcarouter.ai/v1', apiKey: '{env:ORCAROUTER_API_KEY}' },
+        models: {}
+      }
     } else if (providerKey === 'huggingface') {
       config.provider.huggingface = {
         npm: '@ai-sdk/openai-compatible',
@@ -791,6 +798,13 @@ export async function startOpenCodeDesktop(model, fcmConfig) {
         npm: '@ai-sdk/openai-compatible',
         name: 'OpenRouter',
         options: { baseURL: 'https://openrouter.ai/api/v1', apiKey: '{env:OPENROUTER_API_KEY}' },
+        models: {}
+      }
+    } else if (providerKey === 'orcarouter') {
+      config.provider.orcarouter = {
+        npm: '@ai-sdk/openai-compatible',
+        name: 'OrcaRouter',
+        options: { baseURL: 'https://api.orcarouter.ai/v1', apiKey: '{env:ORCAROUTER_API_KEY}' },
         models: {}
       }
     } else if (providerKey === 'huggingface') {

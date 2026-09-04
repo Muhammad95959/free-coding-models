@@ -191,6 +191,7 @@ A large catalog of coding models from 20+ active providers, ranked by practical 
 | 20 | [Pollinations AI](https://enter.pollinations.ai) ⚠️ experimental | 10 | S+ → B+ | Daily Pollen grants, free tier via Pollen (see note below) | `POLLINATIONS_API_KEY` |
 | 21 | [SiliconFlow](https://cloud.siliconflow.cn/account/ak) | 3 | A → B+ | 3 models @ $0, 1000 RPM (phone SMS required) | `SILICONFLOW_API_KEY` |
 | 22 | [Requesty](https://app.requesty.ai/api-keys) | 12 | S+ → C | 200 req/day free, no card (4x OpenRouter) | `REQUESTY_API_KEY` |
+| 23 | [OrcaRouter](https://www.orcarouter.ai) | 3 | S+ → A+ | Free Hacker tier · 3 $-0 models, zero token markup | `ORCAROUTER_API_KEY` |
 
 > **Pollinations Pollen, c'est quoi ?** Pollinations ne facture pas en $ mais en **Pollen** (≈ $1). Pas besoin d'acheter : tu recois du Pollen **gratuit chaque jour** selon ton tier seed/flower/nectar via quests (star le repo `pollinations/pollinations` sur GitHub, aider sur un issue). Si ton solde affiche `0.0000` sur `enter.pollinations.ai`, tout `MISS` (prompt non cache) retourne `402 PAYMENT_REQUIRED` ("Insufficient balance ~0.0001 pollen") et le ping affichera `402`. Un `HIT` Cloudflare cache peut encore passer en `200` meme avec 0 Pollen mais ce n'est pas fiable. Verifie ton solde sur `enter.pollinations.ai` -> API Keys, complete une quest et attends le grant quotidien a minuit UTC. **Note : integration Pollinations encore experimentale et non confirmee comme stable, le systeme Pollen peut changer.**
 > **SiliconFlow & Requesty** : integrations verifiees le 2026-08-24 via `/v1/models` live et docs officielles, free tiers recurrents confirmes sans Pollen.
@@ -413,6 +414,7 @@ services:
       FREE_CODING_MODELS_TELEMETRY: "0"
       FCM_HOST: "0.0.0.0"
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      ORCAROUTER_API_KEY: ${ORCAROUTER_API_KEY:-}
     volumes:
       - fcm-data:/home/fcm
 volumes:
@@ -969,6 +971,7 @@ Curated resources kept **outside** the active CLI catalog — IDE extensions, co
 
 | Provider | Free limits | Notable models |
 |----------|-------------|----------------|
+| [OrcaRouter](https://www.orcarouter.ai) | Free Hacker tier, zero token markup, 3 API keys | DeepSeek V4 Flash (Free), Tencent Hy3 (Free), Qwen3.8 27B (Free) |
 | [OpenRouter](https://openrouter.ai/keys) | 50 req/day, 1K/day with $10 purchase | Qwen3-Coder, Tencent HY3, Laguna, Gemma 4 |
 | [Google AI Studio](https://aistudio.google.com/apikey) | Varies by Gemini model and region | Gemini 3.1 Pro Preview, Gemini 2.5 Flash |
 | [NVIDIA NIM](https://build.nvidia.com) | ~40 RPM | MiniMax M2.7, GLM 5.1, Kimi K2.6 |

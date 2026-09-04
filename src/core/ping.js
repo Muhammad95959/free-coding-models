@@ -135,6 +135,11 @@ export function buildPingRequest(apiKey, modelId, providerKey, url, options = {}
     headers['HTTP-Referer'] = 'https://github.com/vava-nessa/free-coding-models'
     headers['X-Title'] = 'free-coding-models'
   }
+  if (providerKey === 'orcarouter') {
+    // 📖 OrcaRouter uses the same app-identification convention as OpenRouter.
+    headers['HTTP-Referer'] = 'https://github.com/vava-nessa/free-coding-models'
+    headers['X-Title'] = 'free-coding-models'
+  }
 
   return {
     url,

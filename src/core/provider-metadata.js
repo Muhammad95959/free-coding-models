@@ -65,6 +65,7 @@ export const ENV_VAR_NAMES = {
   pollinations: 'POLLINATIONS_API_KEY',
   siliconflow: 'SILICONFLOW_API_KEY',
   requesty:   'REQUESTY_API_KEY',
+  orcarouter: 'ORCAROUTER_API_KEY',
 }
 
 // 📖 OPENCODE_MODEL_MAP: sparse table of model IDs that differ between sources.js and OpenCode's
@@ -329,6 +330,14 @@ export const PROVIDER_METADATA = {
     signupUrl: 'https://app.requesty.ai/api-keys',
     signupHint: 'API Keys → Create (200 req/day free, no card)',
     rateLimits: 'Free · 200 req/day on free models (20 req/min) · no card',
+  },
+  orcarouter: {
+    label: 'OrcaRouter',
+    color: chalk.rgb(255, 138, 64),
+    signupUrl: 'https://www.orcarouter.ai',
+    signupHint: 'Register (GitHub OAuth, no credit card) → API keys',
+    rateLimits: 'Free Hacker tier · zero token markup · 3 API keys',
+    detailedLimits: 'Zero-markup AI gateway: token prices are passed through at provider rates.\nFree Hacker plan: 3 API keys, adaptive routing + automatic failover + guardrails included.\nOnly the explicit $-0 models are listed in this catalog; the orcarouter/fusion family is pay-as-you-go.',
   },
   'ollama-cloud': {
     label: 'Ollama Cloud',
