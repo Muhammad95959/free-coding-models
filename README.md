@@ -182,9 +182,9 @@ A large catalog of coding models from 20+ active providers, ranked by practical 
 | 11 | [ZAI](https://z.ai) | 7 | S | Free Flash models only | `ZAI_API_KEY` |
 | 12 | [Scaleway](https://console.scaleway.com/iam/api-keys) | 15 | S+ → B | 1M free tokens | `SCALEWAY_API_KEY` |
 | 13 | [Alibaba DashScope](https://modelstudio.console.alibabacloud.com) | 23 | S+ → A+ | 1M free tokens/model, Singapore, 90 days | `DASHSCOPE_API_KEY` |
-| 14 | [OpenCode Zen](https://opencode.ai/zen) | 5 | S+ → A | Free with OpenCode account | Zen models ✨ |
+| 14 | [OpenCode Zen](https://opencode.ai/zen) | 7 | S+ → B+ | Free with OpenCode account | Zen models ✨ |
 | 15 | [Kilo](https://kilo.ai) | 2 | A+ | Free auto-router works without a key | optional `KILO_API_KEY` |
-| 16 | [LLM7](https://llm7.io) | 5 | S+ → B+ | Shared free tier, optional free token | optional `LLM7_API_KEY` |
+| 16 | [LLM7](https://llm7.io) | 4 | S+ → A- | Shared free tier, optional free token | optional `LLM7_API_KEY` |
 | 17 | [Routeway](https://routeway.ai) | 10 | S+ → C | Explicit `:free` zero-price models | `ROUTEWAY_API_KEY` |
 | 18 | [Novita AI](https://novita.ai) | 0 | - | No zero-price models currently | `NOVITA_API_KEY` |
 | 19 | [Ollama Cloud](https://ollama.com/pricing) | 17 | S+ → A | Free cloud usage with session/weekly limits | `OLLAMA_API_KEY` |
@@ -904,6 +904,8 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
     <td align="center" width="120"><a href="https://github.com/Muhammad95959"><img src="https://avatars.githubusercontent.com/u/75130655?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="Muhammad95959"></a></td>
     <td align="center" width="120"><a href="https://github.com/FaintFlower"><img src="https://avatars.githubusercontent.com/u/310248465?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="FaintFlower"></a></td>
     <td align="center" width="120"><a href="https://github.com/lehneres"><img src="https://avatars.githubusercontent.com/u/7437288?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="lehneres"></a></td>
+    <td align="center" width="120"><a href="https://github.com/ia-S-on"><img src="https://avatars.githubusercontent.com/u/200600946?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="ia-S-on"></a></td>
+    <td align="center" width="120"><a href="https://github.com/bangla24bdrang-lab"><img src="https://avatars.githubusercontent.com/u/321290409?v=4&s=80" width="80" height="80" style="border-radius:50%" alt="bangla24bdrang-lab"></a></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/vava-nessa"><sub><b>vava-nessa</b></sub></a></td>
@@ -919,18 +921,26 @@ A: Yes — see [`sources.js`](./sources.js) for the model catalog format.
     <td align="center"><a href="https://github.com/Muhammad95959"><sub><b>Muhammad95959</b></sub></a></td>
     <td align="center"><a href="https://github.com/FaintFlower"><sub><b>FaintFlower</b></sub></a></td>
     <td align="center"><a href="https://github.com/lehneres"><sub><b>lehneres</b></sub></a></td>
+    <td align="center"><a href="https://github.com/ia-S-on"><sub><b>ia-S-on</b></sub></a></td>
+    <td align="center"><a href="https://github.com/bangla24bdrang-lab"><sub><b>bangla24bdrang-lab</b></sub></a></td>
   </tr>
   <tr>
-    <td align="center" colspan="13"><sub>🛡️ <b>fan92rus</b> — Windows path traversal fix (<code>path.sep</code>)</sub></td>
+    <td align="center" colspan="15"><sub>🛡️ <b>fan92rus</b> — Windows path traversal fix (<code>path.sep</code>)</sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="13"><sub>📁 <b>Muhammad95959</b> — <code>--config-dir</code> flag & XDG support</sub></td>
+    <td align="center" colspan="15"><sub>📁 <b>Muhammad95959</b> — <code>--config-dir</code> flag & XDG support</sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="13"><sub>⭐ <b>FaintFlower</b> — Star History chart mirror fix</sub></td>
+    <td align="center" colspan="15"><sub>⭐ <b>FaintFlower</b> — Star History chart mirror fix</sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="13"><sub>🚀 <b>lehneres</b> — Proxmox VE installation scripts</sub></td>
+    <td align="center" colspan="15"><sub>🚀 <b>lehneres</b> — Proxmox VE installation scripts</sub></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="15"><sub>🌩️ <b>ia-S-on</b> — Cloudflare <code>{account_id}</code> env resolution in launch paths</sub></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="15"><sub>🐬 <b>bangla24bdrang-lab</b> — OrcaRouter provider integration</sub></td>
   </tr>
 </table>
 
@@ -973,7 +983,7 @@ Curated resources kept **outside** the active CLI catalog — IDE extensions, co
 |----------|-------------|----------------|
 | [OrcaRouter](https://www.orcarouter.ai) | Free Hacker tier, zero token markup, 3 API keys | DeepSeek V4 Flash (Free), Tencent Hy3 (Free), Qwen3.8 27B (Free) |
 | [OpenRouter](https://openrouter.ai/keys) | 50 req/day, 1K/day with $10 purchase | Qwen3-Coder, Tencent HY3, Laguna, Gemma 4 |
-| [Google AI Studio](https://aistudio.google.com/apikey) | Varies by Gemini model and region | Gemini 3.1 Pro Preview, Gemini 2.5 Flash |
+| [Google AI Studio](https://aistudio.google.com/apikey) | Varies by Gemini model and region | Gemini 3.8 Flash, Gemini 2.5 Pro |
 | [NVIDIA NIM](https://build.nvidia.com) | ~40 RPM | MiniMax M2.7, GLM 5.1, Kimi K2.6 |
 | [GitHub Models](https://models.github.ai) | Depends on GitHub/Copilot tier | GPT-4.1, DeepSeek V3, Llama 4 |
 | [Groq](https://console.groq.com/keys) | 1K–14.4K req/day (model-dependent) | Llama 3.3 70B, Llama 4 Scout, GPT-OSS |

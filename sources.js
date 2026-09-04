@@ -109,7 +109,7 @@ export const cerebras = [
   // Removed (2026-08-23): zai-glm-4.7 (GLM 4.7) — shutdown 2026-08-17 per Cerebras official notice
   // ── S tier — SWE-bench Verified 60–70% ──
   ['gpt-oss-120b', 'GPT OSS 120B', 'S', '62.4%', '65k'], // Fixed (2026-07-27): ctx '128k' → '65k' (free tier per official docs)
-  ['MiniMax-M3', 'MiniMax M3', 'S+', '78.4%', '65k'], // Added (2026-09-02) — new in Cerebras free catalog
+  // Removed (2026-09-05): MiniMax-M3 (MiniMax M3) — HTTP 404 "Model does not exist" per live API ping (PR #178 addition reverted)
   // ── A tier — SWE-bench Verified 40–50% ──
   ['gemma-4-31b', 'Gemma 4 31B', 'A+', '52.0%', '65k'], // Fixed (2026-07-27): ctx '128k' → '65k' (free tier per official docs)
 ]
@@ -120,7 +120,7 @@ export const cerebras = [
 export const sambanova = [
   // ── S+ tier ──
   ['MiniMax-M2.7',                         'MiniMax M2.7',       'S+', '78.0%', '196k'], // Fixed (2026-07-27): ctx '192k' → '196k' (API exact 196608)
-  ['MiniMax-M3',                            'MiniMax M3',         'S+', '78.4%', '196k'], // Added (2026-09-02)
+  ['MiniMax-M3',                            'MiniMax M3',         'S+', '78.4%', '196k'], // Added (2026-09-02) — verified live 2026-09-05 via /v1/models
   // ── S tier ──
   ['DeepSeek-V3.1',                        'DeepSeek V3.1',      'S',  '66.0%', '131k'], // Fixed (2026-07-27): ctx '128k' → '131k' (API exact 131072)
   ['DeepSeek-V3.2',                        'DeepSeek V3.2',      'S+', '70.0%', '32k'],
@@ -213,7 +213,7 @@ export const scaleway = [
   // ── S+ tier — SWE-bench Verified ≥70% ──
   ['glm-5.2', 'GLM 5.2', 'S+', '82.8%', '256k'], // Fixed (2026-08-13): ctx '1M' → '256k' (Serverless tier per official catalog)
   ['deepseek-v4-flash-0731', 'DeepSeek V4 Flash', 'S+', '-', '256k'], // Added (2026-08-13)
-  // Removed (2026-09-02): devstral-2-123b-instruct-2512 (Devstral 2 123B) — EOL 1 July 2026 per Scaleway docs (replaced by qwen3.5-397b-a17b)
+  ['devstral-2-123b-instruct-2512', 'Devstral 2 123B', 'S+', '72.2%', '200k'], // Restored (2026-09-05) — still Serverless per official docs; PR #178 EOL claim not confirmed
   // ── S tier — SWE-bench Verified 60–70% ──
   ['qwen3.5-397b-a17b', 'Qwen3.5 400B VLM', 'S+', '76.2%', '250k'],
   ['gpt-oss-120b', 'GPT OSS 120B', 'S', '62.4%', '128k'],
@@ -224,12 +224,12 @@ export const scaleway = [
   ['holo2-30b-a3b', 'Holo2 30B', 'A+', '52.0%', '22k'], // Added (2026-08-13)
   ['gemma-4-26b-a4b-it', 'Gemma 4 26B MoE', 'A+', '-', '256k'],
   // Removed (2026-09-02): gemma-4-31b-it (Gemma 4 31B IT) — Dedicated tier only, not available on Serverless
-  // Removed (2026-09-02): gemma-3-27b-it (Gemma 3 27B) — EOL 1 July 2026 per Scaleway docs (replaced by gemma-4-26b-a4b-it)
+  ['qwen3-235b-a22b-instruct-2507', 'Qwen3 235B', 'A', '45.2%', '250k'], // Restored (2026-09-05) — still Serverless per official docs (silently dropped by PR #178)
   // ── A- tier — SWE-bench Verified 35–40% ──
   ['llama-3.3-70b-instruct', 'Llama 3.3 70B', 'B', '22.0%', '100k'], // Fixed (2026-08-13): ctx '128k' → '100k' (Serverless tier per official catalog)
   // ── B+ tier — SWE-bench Verified 30–35% ──
   ['mistral-small-3.2-24b-instruct-2506', 'Mistral Small 3.2', 'B', '20.0%', '128k'],
-  // Removed (2026-09-02): pixtral-12b-2409 (Pixtral 12B) — EOL 1 July 2026 per Scaleway docs
+  ['pixtral-12b-2409', 'Pixtral 12B', 'B+', '-', '128k'], // Restored (2026-09-05) — still Serverless per official docs; PR #178 EOL claim not confirmed
   // ── B tier — SWE-bench Verified 20–30% ──
   ['gemma-3-27b-it', 'Gemma 3 27B', 'B', '22.0%', '40k'],
 ]
@@ -245,10 +245,10 @@ export const googleai = [
   ['gemini-3.1-flash-lite',                     'Gemini 3.1 Flash Lite',        'S', '62.8%', '1M'],
   ['gemini-2.5-flash',                          'Gemini 2.5 Flash',             'A+', '54.0%', '1M'],
   ['gemini-2.5-flash-lite',                     'Gemini 2.5 Flash Lite',        'A',  '42.6%', '1M'],
-  ['gemini-2.0-flash',                          'Gemini 2.0 Flash',             'S',  '-',        '1M'], // Added (2026-09-02) — legacy free tier
-  // Removed (2026-09-02): gemini-3.1-pro-preview (Gemini 3.1 Pro Preview) — Pro models moved to paid-only in April 2026
-  // Removed (2026-09-02): gemini-3-flash-preview (Gemini 3 Flash Preview) — Pro models moved to paid-only in April 2026
-  // Removed (2026-09-02): gemini-2.5-pro (Gemini 2.5 Pro) — Pro models moved to paid-only in April 2026
+  ['gemini-3-flash-preview',                    'Gemini 3 Flash Preview',       'S+',  '78.0%', '1M'], // Restored (2026-09-05) — free tier confirmed per official pricing page
+  ['gemini-2.5-pro',                            'Gemini 2.5 Pro',               'S', '63.8%', '1M'], // Restored (2026-09-05) — free tier confirmed per official pricing page
+  // Removed (2026-09-02): gemini-3.1-pro-preview (Gemini 3.1 Pro Preview) — free tier "Not available" per official pricing page (rechecked 2026-09-05)
+  // Removed (2026-09-05): gemini-2.0-flash — not listed on the official pricing page (PR #178 addition reverted)
 ]
 
 // 📖 ZAI source - https://open.z.ai
@@ -375,8 +375,10 @@ export const opencodeZen = [
   ['deepseek-v4-flash-free',           'DeepSeek V4 Flash Free',  'S+', '79.0%', '200k'], // Restored (2026-09-02) — still in /v1/models live
   ['mimo-v2.5-free',                   'MiMo-V2.5 Free',          'S+', '-',     '200k'],
   ['nemotron-3-ultra-free',            'Nemotron 3 Ultra Free',   'S+', '71.9%', '200k'],
-  ['hy3-free',                         'Tencent Hy3 Free',        'S',  '-',     '200k'], // Added (2026-08-13) — brought back after July removal
+  // Removed (2026-09-05): hy3-free (Tencent Hy3 Free) — absent from live /v1/models (66 models checked)
   ['nemotron-3.5-lightning-free',      'Nemotron 3.5 Lightning Free','S+','-',    '200k'], // Added (2026-08-13)
+  ['laguna-s-2.1-free',                'Laguna S 2.1 Free',       'S+', '-',     '200k'], // Restored (2026-09-05) — back in live /v1/models
+  ['ling-3.0-flash-fin-free',          'Ling 3.0 Flash Fin Free', 'B+', '-',     '200k'], // Added (2026-09-05) — new id in live /v1/models (was ling-3.0-flash-free)
 ]
 
 // 📖 Kilo source - https://api.kilo.ai/api/gateway
@@ -392,21 +394,14 @@ export const kilo = [
 // 📖 Pro-tagged models from /v1/models are intentionally excluded.
 export const llm7 = [
   // 📖 LLM7 live /v1/models: only `turbo` tier is free (noKeyNeeded). All `pro` models are usage-based paid.
+  // 📖 Verified live 2026-09-05: turbo tier = minimax-m2.7, gpt-oss, mistral-Nemo-Instruct-2407, codestral-latest.
+  // Removed (2026-09-05): glm-5.3, glm-5.3-flash, gemini-3.5-flash-low, gpt-5.4, gpt-5.4-mini, gpt-5.5, gpt-5.6-sol, grok-4.5, grok-4.6 — tier=pro usage_based_only (paid) or nonexistent on /v1/models (PR #178 additions reverted)
   // ── S+ tier — SWE-bench Verified ≥70% ──
   ['minimax-m2.7', 'MiniMax M2.7', 'S+', '78.0%', '180k'],
-  ['glm-5.3', 'GLM-5.3', 'S+', '-', '180k'], // Added (2026-09-02)
-  ['glm-5.3-flash', 'GLM-5.3 Flash', 'S+', '-', '180k'], // Added (2026-09-02)
   // ── A+ tier — SWE-bench Verified 50–60% ──
-  ['gemini-3.1-flash-lite', 'Gemini 3.1 Flash Lite', 'A+', '-', '256k'], // Fixed (2026-08-13): ctx '1M' → '256k' (real LLM7 ctx limit)
-  ['gpt-oss:20b', 'GPT OSS 20B', 'A+', '50.3%', '128k'],
+  // Removed (2026-09-05): gemini-3.1-flash-lite (Gemini 3.1 Flash Lite) — now tier=pro usage_based_only (paid) per live /v1/models
+  ['gpt-oss', 'GPT OSS 20B', 'A+', '50.3%', '131k'], // Fixed (2026-09-05): id 'gpt-oss:20b' → 'gpt-oss', ctx '128k' → '131k' (live 131072)
   ['mistral-Nemo-Instruct-2407', 'Mistral Nemo 12B Instruct', 'A-', '-', '128k'], // Added (2026-08-13)
-  ['gemini-3.5-flash-low', 'Gemini 3.5 Flash Low', 'A+', '-', '180k'], // Added (2026-09-02)
-  ['gpt-5.4', 'GPT 5.4', 'S+', '-', '180k'], // Added (2026-09-02)
-  ['gpt-5.4-mini', 'GPT 5.4 Mini', 'S+', '-', '180k'], // Added (2026-09-02)
-  ['gpt-5.5', 'GPT 5.5', 'S+', '-', '180k'], // Added (2026-09-02)
-  ['gpt-5.6-sol', 'GPT 5.6 Sol', 'S+', '-', '180k'], // Added (2026-09-02)
-  ['grok-4.5', 'Grok 4.5', 'S+', '-', '180k'], // Added (2026-09-02)
-  ['grok-4.6', 'Grok 4.6', 'S+', '-', '180k'], // Added (2026-09-02)
   // ── A tier — SWE-bench Verified 40–50% ──
   ['codestral-latest', 'Codestral Latest', 'A', '40.0%', '32k'],
 ]

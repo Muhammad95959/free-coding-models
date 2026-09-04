@@ -112,6 +112,8 @@ When new PRs are merged, add the contributor's GitHub handle to the footer in `b
 - @Muhammad95959
 - @FaintFlower
 - @lehneres
+- @ia-S-on
+- @bangla24bdrang-lab
 
 ## Testing the TUI with tmux
 
