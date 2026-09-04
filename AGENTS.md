@@ -381,7 +381,7 @@ After every successful `bump` (npm publish verified + `free-coding-models --help
 ```
 
 
-<!-- kandown:agent-ref -->
+This project uses Kandown. Before task work, run `kandown work` and follow its output. <!-- kandown:agent-ref -->
 ## Task management
 
 This project uses **kandown** for task management. **Always run `kandown work` when starting a new task** — it prints the current rules and board state, kept in sync with the installed CLI version. (Tasks live in `./tasks/*.md`.)
