@@ -171,7 +171,10 @@ function resolveProviderBaseUrl(providerKey) {
   if (providerKey === 'cloudflare') {
     const accountId = (process.env.CLOUDFLARE_ACCOUNT_ID || '').trim()
     if (!accountId) return null
-    return providerUrl.replace('{account_id}', accountId).replace(/\/chat\/completions$/i, '')
+    return providerUrl
+      .replace(/\{\$CLOUDFLARE_ACCOUNT_ID\}/g, encodeURIComponent(accountId))
+      .replace(/\{account_id\}/g, encodeURIComponent(accountId))
+      .replace(/\/chat\/completions$/i, '')
   }
 
   return providerUrl
@@ -189,7 +192,9 @@ function resolveGooseBaseUrl(providerKey) {
   if (providerKey === 'cloudflare') {
     const accountId = (process.env.CLOUDFLARE_ACCOUNT_ID || '').trim()
     if (!accountId) return null
-    return providerUrl.replace('{account_id}', accountId)
+    return providerUrl
+      .replace(/\{\$CLOUDFLARE_ACCOUNT_ID\}/g, encodeURIComponent(accountId))
+      .replace(/\{account_id\}/g, encodeURIComponent(accountId))
   }
   return providerUrl
 }

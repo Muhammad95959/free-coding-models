@@ -598,7 +598,7 @@ export const sources = {
   },
   cloudflare: {
     name: 'Cloudflare AI',
-    url: 'https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions',
+    url: 'https://api.cloudflare.com/client/v4/accounts/{$CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions',
     quota: 'Free · 10k neurons/day',
     quotaCode: 'limited',
     models: cloudflare,

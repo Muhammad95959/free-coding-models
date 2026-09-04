@@ -50,6 +50,7 @@ import { PROVIDER_METADATA } from './provider-metadata.js'
 import { resolveToolBinaryPath } from './tool-bootstrap.js'
 import { ensureDir, readJson, writeJson } from './shared-helpers.js'
 import { parseContextWindow } from './endpoint-installer.js'
+import { resolveCloudflareUrl } from './ping.js'
 
 const OPENAI_COMPAT_ENV_KEYS = [
   'OPENAI_API_KEY',
@@ -108,10 +109,15 @@ function backupIfExists(filePath) {
 function getProviderBaseUrl(providerKey) {
   const url = sources[providerKey]?.url
   if (!url) return null
-  return url
+  let resolvedUrl = url
     .replace(/\/chat\/completions$/i, '')
     .replace(/\/responses$/i, '')
     .replace(/\/predictions$/i, '')
+  // 📖 Cloudflare uses account_id in URL - resolve from CLOUDFLARE_ACCOUNT_ID env var
+  if (providerKey === 'cloudflare') {
+    resolvedUrl = resolveCloudflareUrl(resolvedUrl)
+  }
+  return resolvedUrl
 }
 
 function deleteEnvKeys(env, keys) {
@@ -579,9 +585,9 @@ export function writeZCodeConfig(model, config, paths = getDefaultToolPaths()) {
 
   const providerKey = model.providerKey || 'nvidia'
   const apiKey = getApiKey(config, providerKey)
-  const baseUrl = sources[providerKey]?.url
-    ? sources[providerKey].url.replace(/\/chat\/completions$/i, '').replace(/\/responses$/i, '').replace(/\/predictions$/i, '')
-    : null
+  // 📖 Use getProviderBaseUrl so Cloudflare's {account_id} placeholder is resolved
+  // 📖 (raw sources[].url would leave it literal and ZCode would fail on Cloudflare models).
+  const baseUrl = getProviderBaseUrl(providerKey)
   const providerId = `fcm-${providerKey}`
   const providerLabel = `FCM ${sources[providerKey]?.name || providerKey}`
 
@@ -838,7 +844,11 @@ export function prepareExternalToolLaunch(mode, model, config, options = {}) {
   }
 
   if (mode === 'goose') {
-    const gooseBaseUrl = sources[model.providerKey]?.url || baseUrl || ''
+    // 📖 Always use the resolved provider base URL from buildToolEnv (getProviderBaseUrl),
+    // 📖 which substitutes Cloudflare's {account_id} placeholder via resolveCloudflareUrl.
+    // 📖 Using the raw sources[].url would leave the literal {account_id} in the Goose
+    // 📖 provider config, so Goose would POST to /accounts/{account_id}/... and 400.
+    const gooseBaseUrl = baseUrl
     const gooseModelId = resolveLauncherModelId(model)
     const result = writeGooseConfig({ ...model, modelId: gooseModelId }, apiKey, gooseBaseUrl, model.providerKey, paths)
     env.GOOSE_PROVIDER = `fcm-${model.providerKey}`
